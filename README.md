@@ -1,3 +1,7 @@
+# Salt Swap V1.1.1
+
+Logo-path hotfix: the Salt shaker logo is embedded directly in the HTML so it renders reliably on Vercel regardless of asset routing.
+
 # Salt Swap V1.1 — Light Blue UI
 
 Vercel-ready static Salt Swap prototype.
