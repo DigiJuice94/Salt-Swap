@@ -1,4 +1,4 @@
-# Salt Swap V1.1.6
+# Salt Swap V1.1.7
 
 Vercel-ready static Salt Swap build.
 
@@ -12,10 +12,12 @@ Vercel-ready static Salt Swap build.
 Deploy the contents of this folder at the root of the GitHub repository.
 
 
-## V1.1.6
+## V1.1.7
 Floating token artwork is embedded directly in index.html, with stronger visibility and larger motion so deployment does not depend on an assets folder.
 
 
-Updated in V1.1.6: replaced the floating artwork for CateCoin, TOAD and CUPSEY with the exact user-provided images.
+Updated in V1.1.7: replaced the floating artwork for CateCoin, TOAD and CUPSEY with the exact user-provided images.
 
-Updated in V1.1.6: replaced the floating Bonk artwork with the exact user-provided image.
+Updated in V1.1.7: replaced the floating Bonk artwork with the exact user-provided image.
+
+Updated in V1.1.7: replaced the floating artwork for Cupsey, Pepe, Toad, Cash Cat, and Popcat with the exact user-provided images.
