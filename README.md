@@ -1,23 +1,29 @@
-# Salt Swap V1.1.7
+# Salt Swap V1.2.0 — Multi-Chain Meme Coin Check
 
-Vercel-ready static Salt Swap build.
+Salt Swap now supports meme-coin contract scanning on:
 
-## Update
-- Light blue / icy interface
-- Clean scan-first landing page
-- Results stay hidden until a CA is checked
-- Floating blurred background uses real token/project artwork for PEPE, CateCoin, ANSEM, CASHCAT, TOAD, CUPSEY, BONK, POPCAT and WIF
-- Local image assets are included in `/assets` so the background does not rely on hotlinked images
+- Solana
+- Ethereum
+- BNB Chain
 
-Deploy the contents of this folder at the root of the GitHub repository.
+## V1.2.0 changes
 
+- Homepage branding changed to **Meme Coin Intelligence**.
+- Added **Auto-detect**, Solana, Ethereum and BNB Chain selection.
+- Solana keeps live mint-authority, freeze-authority and raw top-10 token-account concentration checks.
+- Ethereum / BNB Chain now detect deployed contracts and read basic ERC-20 metadata when available.
+- Ethereum / BNB Chain check the common `owner()` signal and the standard EIP-1967 implementation slot for an upgradeable-proxy signal.
+- Honeypot, buy/sell tax, liquidity, holder concentration, bundle, sniper, duplicate and creator-history metrics are clearly marked **Needs deeper scan** until a trustworthy indexed/simulation data source is connected.
+- Results display the detected chain and the swap preview changes the pay asset to SOL, ETH or BNB.
 
-## V1.1.7
-Floating token artwork is embedded directly in index.html, with stronger visibility and larger motion so deployment does not depend on an assets folder.
+## Optional Vercel environment variables
 
+You can leave these unset for the public-RPC defaults, or provide your own endpoints:
 
-Updated in V1.1.7: replaced the floating artwork for CateCoin, TOAD and CUPSEY with the exact user-provided images.
+```
+SOLANA_RPC_URL=
+ETH_RPC_URL=
+BNB_RPC_URL=
+```
 
-Updated in V1.1.7: replaced the floating Bonk artwork with the exact user-provided image.
-
-Updated in V1.1.7: replaced the floating artwork for Cupsey, Pepe, Toad, Cash Cat, and Popcat with the exact user-provided images.
+No seed phrase or private key is required for scanning.
