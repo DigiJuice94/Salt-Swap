@@ -1,4 +1,4 @@
-# Salt Swap V1.2.1 — Multi-Chain Meme Coin Check
+# Salt Swap V1.2.2 — Multi-Chain Meme Coin Check
 
 Salt Swap now supports meme-coin contract scanning on:
 
@@ -6,7 +6,7 @@ Salt Swap now supports meme-coin contract scanning on:
 - Ethereum
 - BNB Chain
 
-## V1.2.1 changes
+## V1.2.2 changes
 
 - Homepage branding changed to **Meme Coin Intelligence**.
 - Added **Auto-detect**, Solana, Ethereum and BNB Chain selection.
@@ -28,4 +28,6 @@ BNB_RPC_URL=
 
 No seed phrase or private key is required for scanning.
 
-Updated in V1.2.1: top-left header logo now uses the transparent salt shaker look with no border, no white background tile, and a cleaner inline brand presentation.
+Updated in V1.2.2: top-left header logo now uses the transparent salt shaker look with no border, no white background tile, and a cleaner inline brand presentation.
+
+Updated in V1.2.2: removed the small "Token Intelligence" / subtitle text from the top-left brand so the header only shows the transparent salt shaker logo and SaltSwap wordmark.
