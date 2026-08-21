@@ -1,4 +1,4 @@
-# Salt Swap V1.1.3
+# Salt Swap V1.1.4
 
 Vercel-ready static Salt Swap build.
 
@@ -10,3 +10,7 @@ Vercel-ready static Salt Swap build.
 - Local image assets are included in `/assets` so the background does not rely on hotlinked images
 
 Deploy the contents of this folder at the root of the GitHub repository.
+
+
+## V1.1.4
+Floating token artwork is embedded directly in index.html, with stronger visibility and larger motion so deployment does not depend on an assets folder.
