@@ -1,29 +1,12 @@
-# Salt Swap V1.1.1
+# Salt Swap V1.1.3
 
-Logo-path hotfix: the Salt shaker logo is embedded directly in the HTML so it renders reliably on Vercel regardless of asset routing.
+Vercel-ready static Salt Swap build.
 
-# Salt Swap V1.1 — Light Blue UI
+## Update
+- Light blue / icy interface
+- Clean scan-first landing page
+- Results stay hidden until a CA is checked
+- Floating blurred background uses real token/project artwork for PEPE, CateCoin, ANSEM, CASHCAT, TOAD, CUPSEY, BONK, POPCAT and WIF
+- Local image assets are included in `/assets` so the background does not rely on hotlinked images
 
-Vercel-ready static Salt Swap prototype.
-
-## What changed in V1.1
-- New light-blue / icy fintech visual direction.
-- Uses the Salt Swap salt-shaker logo supplied by the project owner.
-- Homepage stays clean: token data is hidden until a contract address is scanned.
-- Beginner-first result view with Salt Risk Score and plain-English explanation.
-- Detailed risk data appears only after the scan.
-- Responsive desktop/mobile layout.
-- Preserves the Vercel serverless `/api/scan` Solana RPC check from V1.0.3.
-- No React, Vite, npm install, or build step required.
-
-## Deploy to Vercel
-Upload the contents of this folder directly to the root of the Salt-Swap GitHub repository. Vercel should use:
-- Framework preset: Other
-- Root directory: `./`
-- Build command: none
-- Output directory: none
-
-Vercel will redeploy automatically after the GitHub commit.
-
-## Current scanner limits
-V1.1 uses real Solana RPC data for mint/freeze authority and raw largest-account concentration. Bundle detection, creator-linked ownership, liquidity, duplicate detection, creator history, live swap routing, and project verification still need dedicated data sources. Missing signals are intentionally labeled unknown instead of being invented.
+Deploy the contents of this folder at the root of the GitHub repository.
