@@ -1,38 +1,25 @@
-# Salt Swap V1.0.3 — Vercel Ready
+# Salt Swap V1.1 — Light Blue UI
 
-This version intentionally uses plain HTML, CSS and browser JavaScript so there is **no npm install and no frontend build step** to fail on Vercel.
+Vercel-ready static Salt Swap prototype.
 
-## Correct GitHub root
-Upload these exact files/folders directly to the root of the `Salt-Swap` repository:
-
-- `api/`
-  - `scan.js`
-- `.env.example`
-- `.gitignore`
-- `app.js`
-- `index.html`
-- `README.md`
-- `styles.css`
-- `vercel.json`
-
-There should be **no `src/` folder, no `package.json`, no duplicate index files, and no Vite config** in this version.
+## What changed in V1.1
+- New light-blue / icy fintech visual direction.
+- Uses the Salt Swap salt-shaker logo supplied by the project owner.
+- Homepage stays clean: token data is hidden until a contract address is scanned.
+- Beginner-first result view with Salt Risk Score and plain-English explanation.
+- Detailed risk data appears only after the scan.
+- Responsive desktop/mobile layout.
+- Preserves the Vercel serverless `/api/scan` Solana RPC check from V1.0.3.
+- No React, Vite, npm install, or build step required.
 
 ## Deploy to Vercel
-- Framework Preset: `Other`
-- Root Directory: `./`
-- Build Command: leave blank/default
-- Output Directory: leave blank/default
-- Environment Variables: optional; `SOLANA_RPC_URL` can be added later
+Upload the contents of this folder directly to the root of the Salt-Swap GitHub repository. Vercel should use:
+- Framework preset: Other
+- Root directory: `./`
+- Build command: none
+- Output directory: none
 
-Commit the files to GitHub and Vercel should auto-redeploy.
+Vercel will redeploy automatically after the GitHub commit.
 
-## V1 capabilities
-- Beginner-friendly Salt Risk Score UI
-- Real Solana contract-address scan through `/api/scan?mint=...`
-- Mint authority status
-- Freeze authority status
-- Raw Top-10 token-account concentration
-- Clear `Coming next` labels rather than fabricated bundle/owner/liquidity numbers
-- Demo token to preview the future full data experience
-
-Wallet connection and actual swap execution are deliberately labeled as not active in this prototype yet.
+## Current scanner limits
+V1.1 uses real Solana RPC data for mint/freeze authority and raw largest-account concentration. Bundle detection, creator-linked ownership, liquidity, duplicate detection, creator history, live swap routing, and project verification still need dedicated data sources. Missing signals are intentionally labeled unknown instead of being invented.

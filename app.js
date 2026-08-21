@@ -1,8 +1,51 @@
-const demo={mint:'SALTdemo11111111111111111111111111111111111',name:'Salty Pepe',symbol:'SPEPE',verified:false,score:72,label:'BE CAREFUL',tone:'warn',summary:'This appears tradeable and the contract controls look good, but ownership is concentrated enough that a few wallets could move the price quickly.',authenticity:{value:'Likely real',status:'good',detail:'Official links and contract identity are consistent in this demo.'},sellable:{value:'Yes',status:'good',detail:'A sell route is currently available in this demo.'},mintAuthority:{value:'Disabled',status:'good',detail:'No additional tokens can be minted by a mint authority.'},freezeAuthority:{value:'Disabled',status:'good',detail:'The token cannot be frozen by a freeze authority.'},top10:{value:'28.4%',status:'warn',detail:'The 10 largest token accounts control 28.4% of supply.'},owner:{value:'3.1%',status:'good',detail:'Estimated creator-linked holdings in this demo are modest.'},bundled:{value:'17.8%',status:'bad',detail:'Demo clustering finds several wallets that appear related.'},snipers:{value:'8.6%',status:'warn',detail:'A noticeable share was purchased very early.'},liquidity:{value:'$184K',status:'good',detail:'Enough liquidity for ordinary small trades, but still volatile.'},holders:{value:'1,842',status:'good',detail:'Holder count is broad enough to be useful, though not proof of safety.'},duplicates:{value:'6 found',status:'warn',detail:'Several tokens share similar branding. Always use the exact mint address.'},creatorHistory:{value:'Mixed',status:'warn',detail:'Demo creator launched 5 prior tokens; 2 became inactive quickly.'}};
 const labels={authenticity:'Real contract?',sellable:'Can I sell it?',mintAuthority:'Can more coins be created?',freezeAuthority:'Can wallets be frozen?',top10:'Top 10 wallets',owner:'Creator / owner share',bundled:'Possible bundled supply',snipers:'Early sniper share',liquidity:'Liquidity',holders:'Holders',duplicates:'Duplicate coins',creatorHistory:'Creator history'};
 const explain={top10:'If a few wallets own too much, one big sell can hurt everyone.',owner:'Shows how much supply may still be controlled by the creator or linked wallets.',bundled:'Connected wallets can make ownership look more spread out than it really is.',snipers:'Very early buyers can hold cheap supply and dump into later buyers.',liquidity:'More liquidity generally makes it easier to enter and exit without huge price impact.'};
 const $=id=>document.getElementById(id);
+let currentMint='';
 function esc(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
-function render(data){const symbol=data.symbol||'TOKEN';$('tokenIcon').textContent=symbol.slice(0,2);$('tokenName').textContent=data.name||'Unknown token';$('tokenSymbol').textContent='$'+symbol;$('receiveSymbol').textContent=symbol+' ▾';$('tokenCA').textContent=data.mint?`${data.mint.slice(0,9)}…${data.mint.slice(-7)}`:'Unknown mint';$('verifiedBadge').classList.toggle('hidden',!data.verified);$('scoreBox').className=`score ${data.tone||'unknown'}`;$('scoreNum').innerHTML=`${data.score??'—'}<span>/100</span>`;$('scoreLabel').textContent=data.label||'NOT ENOUGH DATA';$('swapLabel').textContent=data.label||'UNKNOWN';$('summaryText').textContent=data.summary||'Salt does not have enough data to summarize this token yet.';$('qAuthenticity').textContent=data.authenticity?.value||'Unknown';$('qOwnership').textContent=data.top10?.value||'Unknown';$('qBundles').textContent=data.bundled?.value||'Unknown';$('qLiquidity').textContent=data.liquidity?.value||'Unknown';$('metrics').innerHTML=Object.keys(labels).filter(k=>data[k]).map(k=>{const v=data[k];const icon=v.status==='good'?'✓':v.status==='bad'?'✕':v.status==='warn'?'⚠':'?';return `<div class="metric ${esc(v.status||'unknown')}"><div class="metricTop"><span>${icon}</span><span class="metricLabel">${esc(labels[k])}</span><strong>${esc(v.value)}</strong></div><p>${esc(v.detail)}</p>${explain[k]?`<small><b>Why it matters:</b> ${esc(explain[k])}</small>`:''}</div>`}).join('');}
-async function scan(){const mint=$('mintInput').value.trim();$('error').classList.add('hidden');if(!mint){$('error').textContent='Paste a Solana contract address first.';$('error').classList.remove('hidden');return;}$('scanBtn').disabled=true;$('scanBtn').textContent='Scanning…';try{const r=await fetch(`/api/scan?mint=${encodeURIComponent(mint)}`);const body=await r.json();if(!r.ok)throw new Error(body.error||'Scan failed');render(body);}catch(e){$('error').textContent=e.message||'Scan failed';$('error').classList.remove('hidden');}finally{$('scanBtn').disabled=false;$('scanBtn').textContent='Salt Check';}}
-$('scanBtn').addEventListener('click',scan);$('mintInput').addEventListener('keydown',e=>{if(e.key==='Enter')scan();});$('demoBtn').addEventListener('click',()=>{render(demo);$('mintInput').value='';$('error').classList.add('hidden');});function walletNotice(){alert('Wallet connection and live swap execution are planned for the next Salt Swap build. V1 focuses on the token-risk scanner.');}$('walletBtn').addEventListener('click',walletNotice);$('swapWalletBtn').addEventListener('click',walletNotice);render(demo);
+function render(data){
+  const symbol=data.symbol||'TOKEN'; currentMint=data.mint||'';
+  $('tokenIcon').textContent=symbol.slice(0,2).toUpperCase();
+  $('tokenName').textContent=data.name||'Unknown token';
+  $('tokenSymbol').textContent='$'+symbol;
+  $('receiveSymbol').innerHTML=`${esc(symbol)} <span>⌄</span>`;
+  $('tokenCA').textContent=data.mint?`${data.mint.slice(0,12)}…${data.mint.slice(-8)}`:'Unknown mint';
+  $('verifiedBadge').classList.toggle('hidden',!data.verified);
+  $('scoreBox').className=`scoreBox ${data.tone||'unknown'}`;
+  $('scoreNum').textContent=data.score??'—';
+  $('scoreLabel').textContent=data.label||'NOT ENOUGH DATA';
+  $('swapLabel').textContent=data.label||'UNKNOWN';
+  $('scoreHint').textContent=data.tone==='good'?'No major warning in the checks Salt can verify.':data.tone==='warn'?'There are risks worth reviewing before you trade.':data.tone==='bad'?'Serious warning signs were detected.':'Salt only scores checks it can actually verify.';
+  $('summaryText').textContent=data.summary||'Salt does not have enough data to summarize this token yet.';
+  $('qAuthenticity').textContent=data.authenticity?.value||'Unknown';
+  $('qOwnership').textContent=data.top10?.value||'Unknown';
+  $('qBundles').textContent=data.bundled?.value||'Unknown';
+  $('qLiquidity').textContent=data.liquidity?.value||'Unknown';
+  $('metrics').innerHTML=Object.keys(labels).filter(k=>data[k]).map(k=>{
+    const v=data[k]; const icon=v.status==='good'?'✓':v.status==='bad'?'!':v.status==='warn'?'⚠':'?';
+    return `<div class="metric ${esc(v.status||'unknown')}"><div class="metricTop"><span>${icon}</span><span class="metricLabel">${esc(labels[k])}</span><strong>${esc(v.value)}</strong></div><p>${esc(v.detail)}</p>${explain[k]?`<small><b>Why it matters:</b> ${esc(explain[k])}</small>`:''}</div>`;
+  }).join('');
+  $('results').classList.remove('hidden');
+  setTimeout(()=>$('results').scrollIntoView({behavior:'smooth',block:'start'}),70);
+}
+async function scan(){
+  const mint=$('mintInput').value.trim();
+  $('error').classList.add('hidden');
+  if(!mint){$('error').textContent='Paste a Solana contract address first.';$('error').classList.remove('hidden');return;}
+  $('scanBtn').disabled=true;$('scanBtn').textContent='Checking…';
+  try{
+    const r=await fetch(`/api/scan?mint=${encodeURIComponent(mint)}`);
+    const body=await r.json();
+    if(!r.ok)throw new Error(body.error||'Scan failed');
+    render(body);
+  }catch(e){$('error').textContent=e.message||'Scan failed';$('error').classList.remove('hidden');}
+  finally{$('scanBtn').disabled=false;$('scanBtn').textContent='Salt Check';}
+}
+function walletNotice(){alert('Wallet connection and live swaps are coming in the next Salt Swap build. V1.1 focuses on the scan experience.');}
+$('scanBtn').addEventListener('click',scan);
+$('mintInput').addEventListener('keydown',e=>{if(e.key==='Enter')scan();});
+$('walletBtn').addEventListener('click',walletNotice);
+$('swapWalletBtn').addEventListener('click',walletNotice);
+$('newScanBtn').addEventListener('click',()=>{$('results').classList.add('hidden');$('mintInput').value='';$('mintInput').focus();window.scrollTo({top:0,behavior:'smooth'});});
+$('copyCA').addEventListener('click',async()=>{if(!currentMint)return;try{await navigator.clipboard.writeText(currentMint);const b=$('copyCA').querySelector('b');const old=b.textContent;b.textContent='Copied';setTimeout(()=>b.textContent=old,1100);}catch{}});
+document.querySelectorAll('[data-coming]').forEach(btn=>btn.addEventListener('click',()=>alert(`${btn.dataset.coming} is part of the Salt Swap roadmap. The scanner is live in V1.1.`)));

@@ -3,78 +3,131 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#0a0b0d" />
-  <meta name="description" content="Salt Swap — see the risk before you swap." />
+  <meta name="theme-color" content="#eaf6ff" />
+  <meta name="description" content="Salt Swap — understand a token before you swap it." />
   <title>Salt Swap</title>
+  <link rel="icon" href="/assets/salt-logo.png" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-  <div class="app">
-    <header>
-      <div class="brand"><div class="saltmark">S</div><div><b>SALT</b><span>SWAP</span></div></div>
-      <nav><button>Swap</button><button class="active">Scan</button><button>Explore</button><button>Verified</button></nav>
-      <button id="walletBtn" class="wallet">◉ Connect Wallet</button>
-    </header>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
 
-    <main>
-      <section class="hero">
-        <div class="eyebrow">🛡 CRYPTO DATA, WITHOUT THE CRYPTO CONFUSION</div>
-        <h1>See the risk <em>before</em> you swap.</h1>
-        <p>Paste any Solana contract address. Salt translates on-chain risk into plain English.</p>
-        <div class="search">
-          <span>⌕</span>
-          <input id="mintInput" autocomplete="off" spellcheck="false" placeholder="Paste Solana contract address…" />
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="Salt Swap home">
+      <span class="logoShell"><img src="/assets/salt-logo.png" alt="Salt Swap salt shaker" /></span>
+      <span class="wordmark"><strong>SALT</strong><small>SWAP</small></span>
+    </a>
+
+    <nav class="nav" aria-label="Primary navigation">
+      <button data-coming="Swap">Swap</button>
+      <button class="active">Scan</button>
+      <button data-coming="Explore">Explore</button>
+      <button data-coming="Verified">Verified</button>
+    </nav>
+
+    <button id="walletBtn" class="walletBtn">Connect Wallet</button>
+  </header>
+
+  <main>
+    <section class="hero" id="home">
+      <div class="heroBadge">SOLANA TOKEN INTELLIGENCE</div>
+      <h1>Know what you’re buying<br /><span>before you swap.</span></h1>
+      <p class="heroCopy">Paste a contract address. Salt turns confusing on-chain data into a simple risk check anyone can understand.</p>
+
+      <div class="scanShell">
+        <div class="scanLabel">Check a Solana token</div>
+        <div class="scanBar">
+          <span class="searchIcon">⌕</span>
+          <input id="mintInput" autocomplete="off" spellcheck="false" placeholder="Paste contract address (CA)" aria-label="Solana contract address" />
           <button id="scanBtn">Salt Check</button>
         </div>
-        <div id="error" class="error hidden"></div>
-        <button id="demoBtn" class="demoBtn">Preview with demo token</button>
-      </section>
+        <div class="scanFoot">
+          <span>✓ No wallet required to scan</span>
+          <span>✓ Unknown data is never guessed</span>
+        </div>
+      </div>
+      <div id="error" class="error hidden"></div>
+    </section>
 
-      <section class="resultGrid">
-        <div class="scoreCard">
-          <div class="tokenRow">
-            <div id="tokenIcon" class="tokenIcon">SP</div>
-            <div><h2><span id="tokenName">Salty Pepe</span> <small id="tokenSymbol">$SPEPE</small></h2><div id="tokenCA" class="ca">SALTdemo…1111111</div></div>
-            <div id="verifiedBadge" class="verified hidden">✓ Salt Verified</div>
-          </div>
-          <div id="scoreBox" class="score warn">
-            <div id="scoreNum" class="scoreNum">72<span>/100</span></div>
-            <div><b id="scoreLabel">BE CAREFUL</b><p>Salt Risk Score</p></div>
-          </div>
-          <div class="summary"><b>Salt's take</b><p id="summaryText">This appears tradeable and the contract controls look good, but ownership is concentrated enough that a few wallets could move the price quickly.</p></div>
-          <div class="quick">
-            <div><span>Authenticity</span><b id="qAuthenticity">Likely real</b></div>
-            <div><span>Top 10 wallets</span><b id="qOwnership">28.4%</b></div>
-            <div><span>Bundles</span><b id="qBundles">17.8%</b></div>
-            <div><span>Liquidity</span><b id="qLiquidity">$184K</b></div>
+    <section id="results" class="results hidden" aria-live="polite">
+      <div class="resultsHeader">
+        <div class="tokenIdentity">
+          <div id="tokenIcon" class="tokenIcon">TK</div>
+          <div>
+            <div class="tokenTitleRow">
+              <h2 id="tokenName">On-chain token</h2>
+              <span id="tokenSymbol" class="symbol">$TOKEN</span>
+              <span id="verifiedBadge" class="verified hidden">✓ Salt Verified</span>
+            </div>
+            <button id="copyCA" class="caButton" title="Copy contract address"><span id="tokenCA">—</span> <b>Copy</b></button>
           </div>
         </div>
+        <button id="newScanBtn" class="secondaryBtn">Check another token</button>
+      </div>
 
-        <div class="swapCard">
-          <div class="swapTitle"><b>Swap</b><span>V1 preview</span></div>
-          <label>YOU PAY</label><div class="amount"><input placeholder="0.00"/><button>◎ SOL ▾</button></div>
-          <div class="arrow">↓</div>
-          <label>YOU RECEIVE</label><div class="amount"><input placeholder="0.00"/><button id="receiveSymbol">SPEPE ▾</button></div>
-          <div class="swapSafety">🛡 Salt check: <b id="swapLabel">BE CAREFUL</b></div>
-          <button id="swapWalletBtn" class="connect">Connect wallet to swap</button>
-          <small>Swap execution is not enabled in this prototype yet. Never paste a seed phrase or private key.</small>
+      <div class="resultGrid">
+        <article class="mainAnalysis">
+          <div id="scoreBox" class="scoreBox unknown">
+            <div class="scoreGauge">
+              <strong id="scoreNum">—</strong><span>/100</span>
+            </div>
+            <div class="scoreWords">
+              <small>SALT RISK SCORE</small>
+              <h3 id="scoreLabel">NOT ENOUGH DATA</h3>
+              <p id="scoreHint">Salt only scores checks it can actually verify.</p>
+            </div>
+          </div>
+
+          <div class="takeCard">
+            <div class="takeTop"><span class="miniShaker">🧂</span><strong>Salt’s take</strong></div>
+            <p id="summaryText">Salt is scanning this token.</p>
+          </div>
+
+          <div class="quickGrid">
+            <div class="quickCard"><small>Authenticity</small><strong id="qAuthenticity">—</strong><span>Is this likely the real CA?</span></div>
+            <div class="quickCard"><small>Top 10 wallets</small><strong id="qOwnership">—</strong><span>How concentrated is supply?</span></div>
+            <div class="quickCard"><small>Bundles</small><strong id="qBundles">—</strong><span>Possible linked ownership</span></div>
+            <div class="quickCard"><small>Liquidity</small><strong id="qLiquidity">—</strong><span>How easy is it to exit?</span></div>
+          </div>
+        </article>
+
+        <aside class="swapCard">
+          <div class="swapHead"><div><small>TRADE</small><h3>Swap</h3></div><span>Preview</span></div>
+          <label>You pay</label>
+          <div class="amountBox"><input inputmode="decimal" placeholder="0.00" /><button>◎ SOL <span>⌄</span></button></div>
+          <div class="flip">↓</div>
+          <label>You receive</label>
+          <div class="amountBox"><input inputmode="decimal" placeholder="0.00" /><button id="receiveSymbol">TOKEN <span>⌄</span></button></div>
+          <div class="safetyLine"><span class="shield">◈</span><span>Salt check</span><strong id="swapLabel">UNKNOWN</strong></div>
+          <button id="swapWalletBtn" class="primaryFull">Connect wallet to swap</button>
+          <p class="swapNote">Live swap execution is coming next. Never enter a seed phrase or private key.</p>
+        </aside>
+      </div>
+
+      <section class="detailsCard">
+        <div class="detailsIntro">
+          <div><small>FULL CHECK</small><h2>What you should know</h2></div>
+          <p>Plain English first. The technical signal is still there when you want it.</p>
         </div>
-      </section>
-
-      <section class="details">
-        <div class="sectionTitle"><div><h2>What you should know</h2><p>Simple explanations first. Technical data stays available underneath.</p></div></div>
         <div id="metrics" class="metrics"></div>
       </section>
 
-      <section class="legend">
-        <div><i class="dot green"></i><b>Looks healthy</b><p>No major issue detected in this check.</p></div>
-        <div><i class="dot yellow"></i><b>Be careful</b><p>There are risks worth understanding first.</p></div>
-        <div><i class="dot red"></i><b>High risk</b><p>Serious warning signs are present.</p></div>
-        <div><i class="dot gray"></i><b>Not enough data</b><p>Salt refuses to guess when evidence is missing.</p></div>
-      </section>
-    </main>
-    <footer>Salt Swap V1 • Risk information is not financial advice. Crypto can lose value quickly.</footer>
-  </div>
+      <div class="riskLegend">
+        <div><i class="dot green"></i><span><b>Looks healthy</b><small>No major issue detected in this check.</small></span></div>
+        <div><i class="dot yellow"></i><span><b>Be careful</b><small>There are risks worth understanding.</small></span></div>
+        <div><i class="dot red"></i><span><b>High risk</b><small>Serious warning signs are present.</small></span></div>
+        <div><i class="dot gray"></i><span><b>Unknown</b><small>Salt refuses to guess without evidence.</small></span></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footerBrand"><img src="/assets/salt-logo.png" alt="" /><b>Salt Swap</b></div>
+    <span>Risk information is not financial advice. Crypto can lose value quickly.</span>
+    <span>V1.1</span>
+  </footer>
+
   <script src="/app.js" defer></script>
 </body>
 </html>
