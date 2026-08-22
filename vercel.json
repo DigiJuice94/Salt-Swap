@@ -2,14 +2,43 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
   "builds": [
-    { "src": "api.mjs", "use": "@vercel/node" },
-    { "src": "index.html", "use": "@vercel/static" },
-    { "src": "styles.css", "use": "@vercel/static" }
+    {
+      "src": "api.mjs",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "index.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "styles.css",
+      "use": "@vercel/static"
+    }
   ],
   "routes": [
-    { "src": "/api/health", "dest": "/api.mjs?route=health" },
-    { "src": "/api/scan", "dest": "/api.mjs?route=scan" },
-    { "src": "/styles.css", "dest": "/styles.css" },
-    { "src": "/", "dest": "/index.html" }
+    {
+      "src": "/api/health",
+      "dest": "/api.mjs?route=health"
+    },
+    {
+      "src": "/api/scan",
+      "dest": "/api.mjs?route=scan"
+    },
+    {
+      "src": "/api/quote",
+      "dest": "/api.mjs?route=quote"
+    },
+    {
+      "src": "/api/execute",
+      "dest": "/api.mjs?route=execute"
+    },
+    {
+      "src": "/styles.css",
+      "dest": "/styles.css"
+    },
+    {
+      "src": "/",
+      "dest": "/index.html"
+    }
   ]
 }

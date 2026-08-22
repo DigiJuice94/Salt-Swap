@@ -1,4 +1,4 @@
-# Salt Swap V1.6.6 — Root Backend Verified
+# Salt Swap V1.7.0 — Root Backend Verified
 
 This build is designed for simple GitHub web uploads without folders being flattened.
 
@@ -19,12 +19,12 @@ Environment variables in Vercel:
 
 The scanner frontend is embedded directly in index.html, so there is no external app.js dependency.
 
-V1.6.6: backend changed to api.mjs with a Vercel-compatible default ES module export. /api/health and /api/scan route explicitly through route query parameters so the function does not depend on rewritten request path behavior.
+V1.7.0: backend changed to api.mjs with a Vercel-compatible default ES module export. /api/health and /api/scan route explicitly through route query parameters so the function does not depend on rewritten request path behavior.
 
-V1.6.6 Token Identity Resolution: Solana scans now request Helius getAsset metadata in the same backend batch and prefer Helius metadata for name/symbol/image, then Birdeye as fallback, then Unknown token. This improves identity for newly launched meme coins before third-party indexers catch up.
+V1.7.0 Token Identity Resolution: Solana scans now request Helius getAsset metadata in the same backend batch and prefer Helius metadata for name/symbol/image, then Birdeye as fallback, then Unknown token. This improves identity for newly launched meme coins before third-party indexers catch up.
 
 
-V1.6.6 — Holder Intelligence
+V1.7.0 — Holder Intelligence
 - Adds Birdeye Token Holder Profile to Solana scans.
 - Populates live current-supply share for bundler, sniper, insider, dev, and smart-trader cohorts when indexed.
 - Uses include_zero_balance=false so the percentages focus on wallets still holding the token.
@@ -33,14 +33,29 @@ V1.6.6 — Holder Intelligence
 - Birdeye holder-profile costs provider compute credits per request; usage limits can temporarily make these fields unavailable.
 
 
-V1.6.6 coverage update: holder-profile fallbacks through Birdeye Top Traders, Helius creator-wallet tracing and creator supply share, Helius creator activity context, and DexScreener duplicate-name/symbol identity screening. Unknown now means Could not verify rather than implying 0%.
+V1.7.0 coverage update: holder-profile fallbacks through Birdeye Top Traders, Helius creator-wallet tracing and creator supply share, Helius creator activity context, and DexScreener duplicate-name/symbol identity screening. Unknown now means Could not verify rather than implying 0%.
 
-V1.6.6 adds deeper new-token image resolution and Salt launch-bundle fallback analysis.
+V1.7.0 adds deeper new-token image resolution and Salt launch-bundle fallback analysis.
 
 
-V1.6.6 Hard Risk Override Engine
+V1.7.0 Hard Risk Override Engine
 - Keeps the normal weighted Salt Score visible.
 - Forces the final verdict to HIGH RISK if a verified core safety check fails: authenticity, sellability, active mint capability, or active freeze capability.
 - Forces HIGH RISK when Top 10 concentration is >80%, bundled supply is >25%, or Top 10 is >70% AND bundled supply is >15%.
 - Positive liquidity/holder/contract checks cannot cancel these severe structural risks.
 - Returns hardRiskOverride and hardRiskReasons so the UI explains exactly why the verdict was forced.
+
+
+## V1.7.0 — Live Solana Swap
+- Live SOL -> scanned-token quotes from Jupiter Swap API V2 `/order`.
+- Quote-only mode works before wallet connection; quotes refresh every 10 seconds while an amount is entered.
+- Connects injected Solana wallets such as Phantom/Solflare.
+- Requests a brand-new executable Jupiter order immediately before wallet signing.
+- User signs a versioned transaction locally in the wallet; Salt never receives a seed phrase or private key.
+- Signed transaction is sent to Salt's `/api/execute`, which forwards it to Jupiter `/execute` for managed landing.
+- Displays expected output, effective live rate, router, price impact when supplied, and Jupiter RTSE slippage protection.
+- HIGH RISK tokens require an additional confirmation before the wallet signature prompt.
+- Live execution is Solana-only in this version; Ethereum and BNB scans remain available but their swap execution is intentionally disabled.
+
+### Required Vercel variable
+`JUPITER_API_KEY` — create a free API key in the Jupiter developer portal and add it to Production and Preview environments.

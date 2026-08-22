@@ -2,6 +2,8 @@ const HELIUS_BASE='https://mainnet.helius-rpc.com/';
 const BIRDEYE_BASE='https://public-api.birdeye.so';
 const ETH_RPC='https://ethereum-rpc.publicnode.com';
 const BNB_RPC='https://bsc-dataseed.binance.org';
+const JUPITER_BASE='https://api.jup.ag/swap/v2';
+const SOL_MINT='So11111111111111111111111111111111111111112';
 
 const metric=(value,status,detail,source='Salt')=>({value,status,detail,source});
 const number=v=>{if(v==null||v==='')return null;const n=Number(v);return Number.isFinite(n)?n:null};
@@ -133,6 +135,7 @@ async function scanSolana(mint){
   const info=batch[1]?.result, supply=batch[2]?.result, largest=batch[3]?.result, asset=batch[4]?.result;
   const parsed=info?.value?.data?.parsed?.info;if(!parsed)throw Object.assign(new Error('No standard Solana token mint was found at that address.'),{status:404});
   const supplyUi=Number(supply?.value?.uiAmountString??supply?.value?.uiAmount??0)||null;
+  const decimals=number(supply?.value?.decimals)??number(parsed?.decimals)??0;
   const top10=top10FromRpc(largest,supply), mintActive=parsed.mintAuthority!=null, freezeActive=parsed.freezeAuthority!=null;
   const liq=number(field(overview,'liquidity','liquidityUsd','liquidity_usd')), holders=number(field(overview,'holder','holderCount','holder_count','holders'));
   const identity=await resolveSolanaIdentity(asset,overview,security,mint);
@@ -162,7 +165,7 @@ async function scanSolana(mint){
   const baseScore=finalize(checks);
   const s=applyHardRiskOverrides(baseScore,{mintable,freezable,top10,bundlePct});
   const creatorHistory=creator?metric(creator.mintLike?`${creator.mintLike} recent mint/create event${creator.mintLike===1?'':'s'}`:'Creator identified',creator.mintLike>=3?'warn':'good',`Salt traced a likely launch signer ${creator.address.slice(0,6)}…${creator.address.slice(-4)}. Helius returned ${creator.recentCount} recent parsed transactions${creator.createdAt?` and the earliest sampled mint activity was ${new Date(creator.createdAt*1000).toLocaleDateString('en-US')}`:''}. This is creator-wallet context, not proof of every prior deployment.`,'Helius launch history'):metric('Could not verify','unknown','Salt could not reliably trace a creator wallet from the mint history for this scan.','Salt');
-  return {mint,chain:'solana',name,symbol,logoUri,logoUris,identitySource,verified,...s,
+  return {mint,chain:'solana',name,symbol,decimals,logoUri,logoUris,identitySource,verified,...s,
     summary:s.hardRiskOverride?`HIGH RISK override triggered: ${s.hardRiskReasons.join('; ')}. Salt completed ${s.checksCompleted}/${s.checksTotal} core checks. The numerical Salt Score is still shown, but positive checks cannot cancel these severe structural risks.`:risks.length?`Salt completed ${s.checksCompleted}/${s.checksTotal} core checks and found ${risks.join(', ')}.`:`Salt completed ${s.checksCompleted}/${s.checksTotal} core checks. No major warning was found in the data currently available.`,
     authenticity:metric('Mint confirmed','good','Helius confirmed a valid Solana token mint on-chain.','Helius'),
     sellable:metric(liq!=null?'Market found':'Not simulated',liq!=null?'good':'unknown',liq!=null?'Birdeye returned live market/liquidity data.':'A real swap-route simulation is a later Salt layer.',liq!=null?'Birdeye':'Salt'),
@@ -197,8 +200,8 @@ async function scanEvm(address,pref){
   const honeypot=securityBool(security,'is_honeypot','honeypot');const mintable=securityBool(security,'is_mintable','mintable');const proxy=securityBool(security,'is_proxy','proxy');const blacklist=securityBool(security,'is_blacklisted','blacklist');
   const buyTax=number(field(security,'buy_tax','buyTax')),sellTax=number(field(security,'sell_tax','sellTax'));const maxTax=Math.max(buyTax??0,sellTax??0);
   const checks=[{known:true,weight:15,risk:0},{known:honeypot!=null,weight:20,risk:honeypot?100:0},{known:buyTax!=null||sellTax!=null,weight:15,risk:maxTax>=20?80:maxTax>=10?50:maxTax>=5?20:0},{known:mintable!=null,weight:10,risk:mintable?70:0},{known:proxy!=null,weight:10,risk:proxy?35:0},{known:blacklist!=null,weight:10,risk:blacklist?70:0},{known:liq!=null,weight:10,risk:liq<5000?100:liq<20000?75:liq<50000?45:10},{known:holders!=null,weight:10,risk:0}];
-  const baseScore=finalize(checks);const s=applyHardRiskOverrides(baseScore,{sellabilityBad:honeypot===true,mintable});const name=field(overview,'name')||`${chainLabel} token`,symbol=field(overview,'symbol')||'TOKEN';
-  return {mint:address,chain,name,symbol,verified:false,...s,summary:s.hardRiskOverride?`HIGH RISK override triggered: ${s.hardRiskReasons.join('; ')}. Salt confirmed the contract on ${chainLabel}. The numerical Salt Score is still shown, but positive checks cannot cancel these severe safety risks.`:`Salt confirmed the contract on ${chainLabel} and completed ${s.checksCompleted}/${s.checksTotal} core checks${process.env.BIRDEYE_API_KEY?' using Birdeye market/security data.':'. Add BIRDEYE_API_KEY for deeper EVM market/security intelligence.'}`,
+  const baseScore=finalize(checks);const s=applyHardRiskOverrides(baseScore,{sellabilityBad:honeypot===true,mintable});const name=field(overview,'name')||`${chainLabel} token`,symbol=field(overview,'symbol')||'TOKEN',decimals=number(field(overview,'decimals','decimal'))??18;
+  return {mint:address,chain,name,symbol,decimals,verified:false,...s,summary:s.hardRiskOverride?`HIGH RISK override triggered: ${s.hardRiskReasons.join('; ')}. Salt confirmed the contract on ${chainLabel}. The numerical Salt Score is still shown, but positive checks cannot cancel these severe safety risks.`:`Salt confirmed the contract on ${chainLabel} and completed ${s.checksCompleted}/${s.checksTotal} core checks${process.env.BIRDEYE_API_KEY?' using Birdeye market/security data.':'. Add BIRDEYE_API_KEY for deeper EVM market/security intelligence.'}`,
     authenticity:metric('Contract confirmed','good',`Deployed bytecode exists on ${chainLabel}.`,'RPC'),
     sellable:metric(honeypot==null?'Not simulated':honeypot?'Possible block':'No honeypot flag',honeypot==null?'unknown':honeypot?'bad':'good','Birdeye token-security result when available.',honeypot==null?'Salt':'Birdeye'),
     honeypot:metric(honeypot==null?'Unknown':honeypot?'Detected':'Not detected',honeypot==null?'unknown':honeypot?'bad':'good','Current indexed honeypot flag.',honeypot==null?'Salt':'Birdeye'),
@@ -226,9 +229,48 @@ async function scanHandler(req,res){
 };
 
 
+
+function jupiterKey(){const key=process.env.JUPITER_API_KEY;if(!key){const e=new Error('Jupiter is not configured yet. Add JUPITER_API_KEY in Vercel Environment Variables, then redeploy.');e.status=503;throw e}return key}
+function validSolAddress(v){return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(String(v||''))}
+function validPositiveInteger(v){return /^\d+$/.test(String(v||''))&&BigInt(String(v))>0n}
+function normalizePriceImpact(order){const direct=number(field(order,'priceImpact'));if(direct!=null)return direct;const pct=number(field(order,'priceImpactPct'));if(pct==null)return null;return Math.abs(pct)<=1?pct*100:pct}
+async function getJupiterOrder({outputMint,amount,taker}){
+  const key=jupiterKey();
+  if(!validSolAddress(outputMint))throw Object.assign(new Error('Invalid Solana output mint.'),{status:400});
+  if(!validPositiveInteger(amount))throw Object.assign(new Error('Swap amount must be a positive integer in lamports.'),{status:400});
+  if(taker&&!validSolAddress(taker))throw Object.assign(new Error('Invalid Solana wallet address.'),{status:400});
+  const params=new URLSearchParams({inputMint:SOL_MINT,outputMint:String(outputMint),amount:String(amount)});if(taker)params.set('taker',String(taker));
+  const order=await fetchJson(`${JUPITER_BASE}/order?${params.toString()}`,{headers:{accept:'application/json','x-api-key':key}},12000);
+  if(!order?.outAmount||String(order.outAmount)==='0')throw Object.assign(new Error(order?.errorMessage||'Jupiter could not find a live route for this amount.'),{status:422});
+  return {
+    inputMint:field(order,'inputMint')||SOL_MINT,outputMint:field(order,'outputMint')||String(outputMint),
+    inAmount:String(field(order,'inAmount')||amount),outAmount:String(order.outAmount),
+    transaction:taker?(order.transaction??null):null,requestId:order.requestId||null,
+    router:order.router||'Jupiter',mode:order.mode||'ultra',feeBps:number(order.feeBps),feeMint:order.feeMint||null,
+    priceImpactPct:normalizePriceImpact(order),otherAmountThreshold:order.otherAmountThreshold?String(order.otherAmountThreshold):null,
+    slippageBps:number(order.slippageBps),expireAt:order.expireAt||null,lastValidBlockHeight:order.lastValidBlockHeight||null,
+    errorCode:order.errorCode??null,errorMessage:order.errorMessage||null,quotedAt:Date.now()
+  };
+}
+async function quoteHandler(req,res){
+  res.setHeader('Cache-Control','no-store');
+  if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});
+  try{const outputMint=String(req.query.outputMint||'').trim(),amount=String(req.query.amount||'').trim(),taker=String(req.query.taker||'').trim()||null;const order=await getJupiterOrder({outputMint,amount,taker});return res.status(200).json(order)}catch(e){console.error('Salt quote error',e);return res.status(Number(e?.status)||500).json({error:errorText(e)})}
+}
+async function executeHandler(req,res){
+  res.setHeader('Cache-Control','no-store');
+  if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});
+  try{
+    const key=jupiterKey(),body=typeof req.body==='string'?JSON.parse(req.body||'{}'):(req.body||{}),signedTransaction=String(body.signedTransaction||''),requestId=String(body.requestId||'');
+    if(!signedTransaction||!requestId)return res.status(400).json({error:'Missing signedTransaction or requestId.'});
+    const result=await fetchJson(`${JUPITER_BASE}/execute`,{method:'POST',headers:{'content-type':'application/json',accept:'application/json','x-api-key':key},body:JSON.stringify({signedTransaction,requestId,...(body.lastValidBlockHeight?{lastValidBlockHeight:String(body.lastValidBlockHeight)}:{})})},30000);
+    return res.status(200).json(result);
+  }catch(e){console.error('Salt execute error',e);return res.status(Number(e?.status)||500).json({error:errorText(e)})}
+}
+
 async function healthHandler(req,res){
   res.setHeader('Cache-Control','no-store');
-  return res.status(200).json({ok:true,service:'Salt Swap scanner',version:'1.6.6',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY)}});
+  return res.status(200).json({ok:true,service:'Salt Swap scanner',version:'1.7.0',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY)}});
 }
 
 export default async function handler(req,res){
@@ -236,6 +278,8 @@ export default async function handler(req,res){
     const route=String(req.query?.route||'').toLowerCase();
     if(route==='health')return healthHandler(req,res);
     if(route==='scan')return scanHandler(req,res);
+    if(route==='quote')return quoteHandler(req,res);
+    if(route==='execute')return executeHandler(req,res);
     return res.status(404).json({error:'Salt API route not found.'});
   }catch(e){
     console.error('Salt API router error',e);
