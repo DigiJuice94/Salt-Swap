@@ -1,33 +1,39 @@
-# Salt Swap V1.2.2 — Multi-Chain Meme Coin Check
+# Salt Swap V1.3.0 — Functional Scanner
 
-Salt Swap now supports meme-coin contract scanning on:
+V1.3.0 keeps the approved Salt Swap design and turns the scanner into a real multi-chain meme-coin risk checker.
 
-- Solana
-- Ethereum
-- BNB Chain
+## Live checks
 
-## V1.2.2 changes
+### Solana
+- Mint account existence, supply, mint authority and freeze authority from Solana RPC
+- Raw top-account concentration fallback from Solana RPC
+- GoPlus Solana Token Security enrichment when available
+- Token metadata/name/symbol when returned
+- Indexed top holders and tagged creator/deployer holdings when available
+- SPL/SPL-2022 risks: mintable, freezable, non-transferable, default frozen state, transfer hook, closable, mutable balances and transfer fee data
+- DEX TVL/liquidity and market presence when returned by GoPlus
+- Malicious-creator flag when returned
 
-- Homepage branding changed to **Meme Coin Intelligence**.
-- Added **Auto-detect**, Solana, Ethereum and BNB Chain selection.
-- Solana keeps live mint-authority, freeze-authority and raw top-10 token-account concentration checks.
-- Ethereum / BNB Chain now detect deployed contracts and read basic ERC-20 metadata when available.
-- Ethereum / BNB Chain check the common `owner()` signal and the standard EIP-1967 implementation slot for an upgradeable-proxy signal.
-- Honeypot, buy/sell tax, liquidity, holder concentration, bundle, sniper, duplicate and creator-history metrics are clearly marked **Needs deeper scan** until a trustworthy indexed/simulation data source is connected.
-- Results display the detected chain and the swap preview changes the pay asset to SOL, ETH or BNB.
+### Ethereum + BNB Chain
+- On-chain contract existence, ERC-20 name/symbol/supply and standard owner() fallback
+- EIP-1967 proxy-slot fallback
+- GoPlus Token Security: honeypot, cannot-sell, taxes, open source, minting, ownership/admin risks, pause/blacklist/balance controls, top holders, creator/owner percentage, holder count, DEX liquidity and counterfeit-token signals when available
 
-## Optional Vercel environment variables
+## Salt Score + Data Confidence
+The score is calculated only from checks that returned real data. Data Confidence is separate and shows how much of the core checklist was actually completed. Low-confidence scans are labeled PRELIMINARY instead of being presented as fully trustworthy.
 
-You can leave these unset for the public-RPC defaults, or provide your own endpoints:
+## Still intentionally not guessed
+- True bundled supply / linked-wallet percentage
+- Accurate launch-sniper share
+- Full deployer launch history
+- Full official-project/duplicate-CA identity graph
 
-```
-SOLANA_RPC_URL=
-ETH_RPC_URL=
-BNB_RPC_URL=
-```
+Those need dedicated transaction indexing and wallet-graph analysis and should be built as the next intelligence layer.
 
-No seed phrase or private key is required for scanning.
+## Vercel
+This remains a no-build static frontend + Vercel serverless API. Deploy as Framework: Other. Root: `./`. No npm install/build is needed.
 
-Updated in V1.2.2: top-left header logo now uses the transparent salt shaker look with no border, no white background tile, and a cleaner inline brand presentation.
+You can optionally add the variables from `.env.example` in Vercel Project Settings → Environment Variables.
 
-Updated in V1.2.2: removed the small "Token Intelligence" / subtitle text from the top-left brand so the header only shows the transparent salt shaker logo and SaltSwap wordmark.
+## Important
+Security APIs and RPC providers can fail, rate-limit, or return incomplete results. Salt shows unknown/preliminary states instead of inventing missing values. This is risk information, not financial advice.
