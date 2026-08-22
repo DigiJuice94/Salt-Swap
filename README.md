@@ -1,6 +1,6 @@
-# Salt Swap V1.3.2 — Functional Scanner
+# Salt Swap V1.3.3 — Functional Scanner
 
-V1.3.2 keeps the approved Salt Swap design and turns the scanner into a real multi-chain meme-coin risk checker.
+V1.3.3 keeps the approved Salt Swap design and turns the scanner into a real multi-chain meme-coin risk checker.
 
 ## Live checks
 
@@ -38,6 +38,8 @@ You can optionally add the variables from `.env.example` in Vercel Project Setti
 ## Important
 Security APIs and RPC providers can fail, rate-limit, or return incomplete results. Salt shows unknown/preliminary states instead of inventing missing values. This is risk information, not financial advice.
 
-V1.3.2: fixed Salt Check initialization and silent-failure behavior; added scanning state, cache busting, request timeout, and visible API errors.
+V1.3.3: fixed Salt Check initialization and silent-failure behavior; added scanning state, cache busting, request timeout, and visible API errors.
 
-V1.3.2 hardens Salt Check by embedding the application JavaScript directly in index.html and adding a direct button fallback, eliminating external app.js loading/cache as a silent failure point.
+V1.3.3 hardens Salt Check by embedding the application JavaScript directly in index.html and adding a direct button fallback, eliminating external app.js loading/cache as a silent failure point.
+
+V1.3.3: readable structured scanner/provider errors instead of [object Object].

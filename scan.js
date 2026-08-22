@@ -13,7 +13,7 @@ const yn=v=>v==='1'||v===1||v===true?true:v==='0'||v===0||v===false?false:null;
 const money=n=>{n=Number(n);if(!Number.isFinite(n))return null;if(n>=1e9)return `$${(n/1e9).toFixed(2)}B`;if(n>=1e6)return `$${(n/1e6).toFixed(2)}M`;if(n>=1e3)return `$${(n/1e3).toFixed(1)}K`;return `$${n.toFixed(n<10?2:0)}`;};
 const count=n=>{n=Number(n);if(!Number.isFinite(n))return null;return n>=1e6?`${(n/1e6).toFixed(1)}M`:n>=1e3?`${(n/1e3).toFixed(1)}K`:Math.round(n).toLocaleString('en-US');};
 async function fetchJson(url,options={},timeout=6500){const controller=new AbortController();const t=setTimeout(()=>controller.abort(),timeout);try{const r=await fetch(url,{...options,signal:controller.signal});if(!r.ok)throw new Error(`HTTP ${r.status}`);return await r.json();}finally{clearTimeout(t);}}
-async function jsonRpc(url,method,params){const j=await fetchJson(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params})},7000);if(j.error)throw new Error(j.error.message||'RPC error');return j.result;}
+function errText(v){if(v==null)return 'Unknown error';if(typeof v==='string')return v;if(typeof v==='object'){const x=v.message??v.error??v.details??v.reason;if(x!=null&&x!==v)return errText(x);try{return JSON.stringify(v);}catch{return 'Unknown error';}}return String(v);}async function jsonRpc(url,method,params){const j=await fetchJson(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params})},7000);if(j.error)throw new Error(errText(j.error));return j.result;}
 function solRpc(method,params){return jsonRpc(SOL_RPC,method,params);}
 function gpHeaders(){return GOPLUS_TOKEN?{Authorization:`Bearer ${GOPLUS_TOKEN}`}:{ };}
 function findResult(result,address){if(!result)return null;if(Array.isArray(result))return result[0]||null;if(typeof result!=='object')return null;if(result[address])return result[address];const lower=address.toLowerCase();const key=Object.keys(result).find(k=>k.toLowerCase()===lower);return key?result[key]:(result.metadata||result.holders||result.token_name?result:null);}
@@ -155,5 +155,5 @@ module.exports=async function handler(req,res){
     if(preferred==='solana'||(preferred==='auto'&&isSol)){if(!isSol)return res.status(400).json({error:'That does not look like a Solana mint address.'});return res.status(200).json(await scanSolana(mint));}
     if(isEvm){const target=await detectEvm(mint,preferred);return res.status(200).json(await scanEvm(mint.toLowerCase(),target.chain,target.url,target.id));}
     return res.status(400).json({error:'The selected chain does not match that contract-address format.'});
-  }catch(e){return res.status(500).json({error:`Scan failed: ${e.message}`});}
+  }catch(e){return res.status(500).json({error:`Scan failed: ${errText(e?.message??e)}`});}
 };
