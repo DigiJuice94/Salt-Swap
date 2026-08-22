@@ -1,4 +1,4 @@
-# Salt Swap V1.4.0 — No-Backend Scanner
+# Salt Swap V1.4.1 — No-Backend Scanner
 
 This release removes the Vercel serverless API requirement for the first working scanner. Salt Check runs directly in the browser using public/no-key data sources.
 
@@ -15,3 +15,10 @@ Current live data paths:
 - Ethereum and BNB Chain: public JSON-RPC for contract detection; GoPlus public token-security data when available.
 
 No API key is required for this release. Missing provider data remains Unknown rather than being guessed.
+
+V1.4.1 Solana RPC reliability update:
+- Tries PublicNode before the official Solana public RPC.
+- Falls back across multiple no-key RPC endpoints.
+- Batches the three core Solana reads into one JSON-RPC request per provider.
+- Retries once with a short backoff on HTTP 429.
+- Shows a clean temporary-provider-busy message instead of exposing raw 429 errors.
