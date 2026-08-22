@@ -18,27 +18,51 @@ function errorText(v){if(v==null)return 'Request failed.';if(typeof v==='string'
 function finalize(checks,critical=false){const known=checks.filter(x=>x.known),tw=checks.reduce((s,x)=>s+x.weight,0)||1,kw=known.reduce((s,x)=>s+x.weight,0),risk=known.reduce((s,x)=>s+x.weight*Math.max(0,Math.min(100,x.risk))/100,0);let score=kw?Math.round(100-(risk/kw)*100):null;if(critical&&score!=null)score=Math.min(score,20);const confidence=Math.round(kw/tw*100);let tone='unknown',label='PRELIMINARY';if(score!=null&&confidence>=45){tone=score>=80?'good':score>=55?'warn':'bad';label=score>=80?'LOOKS HEALTHY':score>=55?'BE CAREFUL':'HIGH RISK'}return{score,confidence,checksCompleted:known.length,checksTotal:checks.length,label,tone}}
 function applyHardRiskOverrides(summary,ctx={}){const reasons=[];if(ctx.authenticityBad===true)reasons.push('contract authenticity failed');if(ctx.sellabilityBad===true)reasons.push('sellability failed');if(ctx.freezable===true)reasons.push('freeze capability is active');const top10=number(ctx.top10),bundle=number(ctx.bundlePct),dev=number(ctx.devPct);if(top10!=null&&top10>80)reasons.push(`top 10 wallets hold ${top10.toFixed(1)}% of supply`);if(bundle!=null&&bundle>25)reasons.push(`bundled wallets hold ${bundle.toFixed(1)}% of supply`);if(top10!=null&&bundle!=null&&top10>70&&bundle>15&&!(top10>80)&&!(bundle>25))reasons.push(`top 10 concentration (${top10.toFixed(1)}%) and bundled supply (${bundle.toFixed(1)}%) are both severe`);if(ctx.mintable===true){if(top10!=null&&top10>70&&top10<=80)reasons.push(`mint capability is active alongside high top 10 concentration (${top10.toFixed(1)}%)`);if(bundle!=null&&bundle>15&&bundle<=25)reasons.push(`mint capability is active alongside elevated bundled supply (${bundle.toFixed(1)}%)`);if(dev!=null&&dev>=10)reasons.push(`mint capability is active while the creator/dev cohort still holds ${dev.toFixed(1)}% of supply`)}if(!reasons.length)return{...summary,hardRiskOverride:false,hardRiskReasons:[]};return{...summary,label:'HIGH RISK',tone:'bad',hardRiskOverride:true,hardRiskReasons:reasons}}
 async function fetchJson(url,options={},timeout=12000){const c=new AbortController();const t=setTimeout(()=>c.abort(),timeout);try{const r=await fetch(url,{...options,signal:c.signal});const text=await r.text();let data;try{data=text?JSON.parse(text):{}}catch{data={message:text}}if(!r.ok){const err=new Error(errorText(data?.message??data?.error??data) || `HTTP ${r.status}`);err.status=r.status;throw err}return data}finally{clearTimeout(t)}}
-function dexPaidTypeLabel(type){return ({tokenProfile:'Token profile',communityTakeover:'Community takeover',tokenAd:'Token ad',trendingBarAd:'Trending bar ad'})[type]||String(type||'Paid service')}
+function dexPaidTypeLabel(type){return ({tokenProfile:'Token profile',communityTakeover:'Community takeover',tokenAd:'Token ad',trendingBarAd:'Trending bar ad',boost:'Active boost'})[type]||String(type||'Paid service')}
+function sameDexToken(row,chainId,tokenAddress){return String(row?.chainId||'').toLowerCase()===String(chainId).toLowerCase()&&String(row?.tokenAddress||'').toLowerCase()===String(tokenAddress).toLowerCase()}
 async function dexPaidIntel(chainId,tokenAddress){
-  try{
-    const j=await fetchJson(`https://api.dexscreener.com/orders/v1/${encodeURIComponent(chainId)}/${encodeURIComponent(tokenAddress)}`,{headers:{accept:'application/json'}},7000);
-    const rows=Array.isArray(j)?j:[];
-    if(!rows.length)return metric('No paid order found','unknown','DEX Screener returned no paid orders for this token. This is informational only and is not a safety failure.','DEX Screener');
-    const paid=rows.filter(x=>x&&x.paymentTimestamp!=null);
-    const active=rows.filter(x=>['approved','processing','on-hold'].includes(String(x?.status||'').toLowerCase()));
-    const chosen=active.length?active:(paid.length?paid:rows);
-    const labels=[...new Set(chosen.map(x=>dexPaidTypeLabel(x?.type)))];
-    const statuses=[...new Set(chosen.map(x=>String(x?.status||'').trim()).filter(Boolean))];
-    const value=`Yes — ${labels.join(' + ')}`;
-    const detail=`DEX Screener returned ${rows.length} paid order${rows.length===1?'':'s'} for this token${statuses.length?` (${statuses.join(', ')})`:''}. Paid DEX services can indicate project promotion/identity effort, but they do not prove a token is safe.`;
-    const hasActive=active.length>0;
-    return metric(value,hasActive?'good':'warn',detail,'DEX Screener Paid Orders');
-  }catch(e){
-    console.warn('DEX Screener paid orders:',e.message);
-    return metric('Could not verify','unknown','Salt could not reach DEX Screener paid-order data for this scan.','DEX Screener');
+  const base='https://api.dexscreener.com';
+  const get=async(path,timeout=7000)=>{try{return await fetchJson(base+path,{headers:{accept:'application/json'}},timeout)}catch(e){console.warn('DEX Screener '+path+':',e.message);return null}};
+  const [orders,pairs,profiles,ads,ctos,boostLatest,boostTop]=await Promise.all([
+    get(`/orders/v1/${encodeURIComponent(chainId)}/${encodeURIComponent(tokenAddress)}`),
+    get(`/token-pairs/v1/${encodeURIComponent(chainId)}/${encodeURIComponent(tokenAddress)}`,8000),
+    get('/token-profiles/latest/v1'),
+    get('/ads/latest/v1'),
+    get('/community-takeovers/latest/v1'),
+    get('/token-boosts/latest/v1'),
+    get('/token-boosts/top/v1')
+  ]);
+  const evidence=[];
+  const rows=Array.isArray(orders)?orders:[];
+  for(const row of rows){
+    if(!row)continue;
+    const status=String(row.status||'').toLowerCase();
+    const paid=row.paymentTimestamp!=null||['approved','processing','on-hold'].includes(status);
+    if(paid)evidence.push({type:row.type||'paidOrder',label:dexPaidTypeLabel(row.type),status:row.status||null,source:'Paid Orders'});
   }
+  const pairRows=Array.isArray(pairs)?pairs:[];
+  const activeBoosts=pairRows.reduce((max,p)=>Math.max(max,Number(p?.boosts?.active)||0),0);
+  if(activeBoosts>0)evidence.push({type:'boost',label:`Active boosts (${activeBoosts})`,status:'active',source:'Token Pairs'});
+  const firstMatch=(arr)=>Array.isArray(arr)?arr.find(x=>sameDexToken(x,chainId,tokenAddress)):null;
+  if(firstMatch(profiles))evidence.push({type:'tokenProfile',label:'Token profile',status:'listed',source:'Latest Profiles'});
+  if(firstMatch(ads))evidence.push({type:'tokenAd',label:'Token ad',status:'active/recent',source:'Latest Ads'});
+  if(firstMatch(ctos))evidence.push({type:'communityTakeover',label:'Community takeover',status:'active/recent',source:'Latest CTO'});
+  const boostHit=firstMatch(boostTop)||firstMatch(boostLatest);
+  if(boostHit&&!evidence.some(x=>x.type==='boost')){
+    const amount=Number(boostHit.amount)||Number(boostHit.totalAmount)||0;
+    evidence.push({type:'boost',label:amount>0?`DEX boost (${amount})`:'DEX boost',status:'active/recent',source:'Boosts'});
+  }
+  const unique=[];const seen=new Set();
+  for(const e of evidence){const k=`${e.type}:${e.label}`;if(!seen.has(k)){seen.add(k);unique.push(e)}}
+  if(unique.length){
+    const labels=unique.map(x=>x.label);
+    const detail=`DEX Screener shows paid-service evidence for this token: ${labels.join(', ')}. Salt checks paid orders plus active boosts, recent profiles, ads, and community takeovers. Paid promotion/identity work is useful context, not proof of safety.`;
+    return metric(`Yes — ${labels.join(' + ')}`,'good',detail,`DEX Screener (${[...new Set(unique.map(x=>x.source))].join(' + ')})`);
+  }
+  const anyResponse=[orders,pairs,profiles,ads,ctos,boostLatest,boostTop].some(x=>x!=null);
+  if(!anyResponse)return metric('Could not verify','unknown','DEX Screener data sources were unavailable for this scan. Salt will not guess whether DEX services were paid.','DEX Screener');
+  return metric('No paid evidence found','unknown','Salt checked DEX Screener paid orders, active boosts, recent token profiles, ads, and community takeovers and found no paid-service evidence in the currently available API data. This is not treated as proof that a project never paid DEX Screener.','DEX Screener multi-source');
 }
-
 async function rpc(url,method,params){const j=await fetchJson(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params})});if(j.error)throw new Error(j.error.message||'RPC error');return j.result}
 async function rpcBatch(url,calls){const arr=await fetchJson(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(calls)});if(!Array.isArray(arr))throw new Error('RPC did not return a batch response.');const by=Object.fromEntries(arr.map(x=>[x.id,x]));for(const x of arr)if(x.error&&x.id!==4)throw new Error(x.error.message||'RPC error');return by}
 const BIRDEYE_CACHE=new Map();
