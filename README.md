@@ -1,4 +1,4 @@
-# Salt Swap V1.5.1 — Helius + Birdeye
+# Salt Swap V1.5.2 — Helius + Birdeye
 
 This release moves data-provider secrets behind a Vercel serverless backend.
 
@@ -35,4 +35,6 @@ After deployment open `/api/health`. It returns only booleans showing whether ea
 ## Important
 Birdeye is optional in this build. Solana scans require Helius. If Birdeye is missing, Salt still performs Helius on-chain checks and marks market/indexer fields Unknown instead of guessing.
 
-V1.5.1 fixes the frontend initialization issue by embedding the Salt scanner JavaScript directly in index.html. The page no longer depends on /app.js loading separately. Helius and Birdeye remain server-side through /api/scan and Vercel Environment Variables.
+V1.5.2 fixes the frontend initialization issue by embedding the Salt scanner JavaScript directly in index.html. The page no longer depends on /app.js loading separately. Helius and Birdeye remain server-side through /api/scan and Vercel Environment Variables.
+
+V1.5.2 fixes structured API error rendering so provider/Vercel errors are always readable and never display as [object Object].
