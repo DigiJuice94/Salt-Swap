@@ -1,24 +1,36 @@
-# Salt Swap V1.4.1 — No-Backend Scanner
+# Salt Swap V1.5.0 — Helius + Birdeye
 
-This release removes the Vercel serverless API requirement for the first working scanner. Salt Check runs directly in the browser using public/no-key data sources.
+This release moves data-provider secrets behind a Vercel serverless backend.
 
-Upload only these files to the repository root:
-- index.html
-- styles.css
-- app.js
-- README.md
+## Required structure
 
-No /api folder, package.json, Vite files, or vercel.json are needed for this release.
+```
+api/
+  health.js
+  scan.js
+app.js
+index.html
+styles.css
+.env.example
+README.md
+```
 
-Current live data paths:
-- Solana: public Solana JSON-RPC for mint existence, supply, mint/freeze authorities, and largest token accounts; GoPlus public token-security data when available.
-- Ethereum and BNB Chain: public JSON-RPC for contract detection; GoPlus public token-security data when available.
+## Vercel environment variables
 
-No API key is required for this release. Missing provider data remains Unknown rather than being guessed.
+Required for reliable Solana scans:
+- `HELIUS_API_KEY`
 
-V1.4.1 Solana RPC reliability update:
-- Tries PublicNode before the official Solana public RPC.
-- Falls back across multiple no-key RPC endpoints.
-- Batches the three core Solana reads into one JSON-RPC request per provider.
-- Retries once with a short backoff on HTTP 429.
-- Shows a clean temporary-provider-busy message instead of exposing raw 429 errors.
+Recommended for deeper market/security data on Solana, Ethereum and BNB Chain:
+- `BIRDEYE_API_KEY`
+
+Add them in Vercel Project Settings -> Environment Variables, select Production (and Preview if you use preview deploys), save, then redeploy. Never place real keys in app.js, index.html, GitHub, README, or .env.example.
+
+## Provider roles
+- Helius: dedicated Solana RPC for mint existence, supply, mint/freeze authority and largest token accounts.
+- Birdeye: token overview + token security for liquidity, holder count, token identity and indexed risk fields when available.
+
+## Health check
+After deployment open `/api/health`. It returns only booleans showing whether each environment variable is configured; it never returns the keys themselves.
+
+## Important
+Birdeye is optional in this build. Solana scans require Helius. If Birdeye is missing, Salt still performs Helius on-chain checks and marks market/indexer fields Unknown instead of guessing.

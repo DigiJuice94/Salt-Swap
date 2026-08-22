@@ -1,4 +1,1 @@
-module.exports = async function handler(req,res){
-  res.setHeader('Cache-Control','no-store');
-  return res.status(200).json({ok:true,service:'Salt Swap scanner',version:'1.3.6',time:new Date().toISOString()});
-};
+module.exports=async function handler(req,res){res.setHeader('Cache-Control','no-store');return res.status(200).json({ok:true,service:'Salt Swap scanner',version:'1.5.0',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY)}})};
