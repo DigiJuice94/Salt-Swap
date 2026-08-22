@@ -1,7 +1,9 @@
 const HELIUS_BASE='https://mainnet.helius-rpc.com/';
 const BIRDEYE_BASE='https://public-api.birdeye.so';
 const ETH_RPC='https://ethereum-rpc.publicnode.com';
-const BNB_RPC='https://bsc-dataseed.binance.org';
+const BNB_RPC='https://bsc-rpc.publicnode.com';
+const ETH_RPCS=['https://ethereum-rpc.publicnode.com','https://eth.llamarpc.com','https://rpc.ankr.com/eth'];
+const BNB_RPCS=['https://bsc-rpc.publicnode.com','https://bsc-dataseed.binance.org','https://rpc.ankr.com/bsc'];
 const JUPITER_BASE='https://api.jup.ag/swap/v2';
 const JUPITER_TOKENS_BASE='https://api.jup.ag/tokens/v2';
 const ZEROX_BASE='https://api.0x.org/swap/allowance-holder';
@@ -64,6 +66,13 @@ async function dexPaidIntel(chainId,tokenAddress){
   return metric('No paid evidence found','unknown','Salt checked DEX Screener paid orders, active boosts, recent token profiles, ads, and community takeovers and found no paid-service evidence in the currently available API data. This is not treated as proof that a project never paid DEX Screener.','DEX Screener multi-source');
 }
 async function rpc(url,method,params){const j=await fetchJson(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params})});if(j.error)throw new Error(j.error.message||'RPC error');return j.result}
+
+async function evmRpcTry(chain,method,params){const urls=chain==='bnb'?BNB_RPCS:ETH_RPCS;let last;for(const url of urls){try{return await rpc(url,method,params)}catch(e){last=e;console.warn(`EVM RPC ${chain} ${url}:`,e.message)}}throw last||new Error(`${chain} RPC unavailable`)}
+async function goPlusTokenSecurity(address,chain){const chainId=chain==='bnb'?'56':'1';try{const j=await fetchJson(`https://api.gopluslabs.io/api/v1/token_security/${chainId}?contract_addresses=${encodeURIComponent(address)}`,{headers:{accept:'application/json'}},9000);const result=j?.result||{};return result[String(address).toLowerCase()]||result[address]||Object.values(result)[0]||null}catch(e){console.warn('GoPlus EVM:',e.message);return null}}
+async function dexEvmOverview(address,chain){const dsChain=chain==='bnb'?'bsc':'ethereum';try{const rows=await fetchJson(`https://api.dexscreener.com/token-pairs/v1/${dsChain}/${encodeURIComponent(address)}`,{headers:{accept:'application/json'}},9000);const pairs=Array.isArray(rows)?rows:[];if(!pairs.length)return null;const match=pairs.filter(x=>String(x?.chainId||'')===dsChain).sort((a,b)=>(Number(b?.liquidity?.usd)||0)-(Number(a?.liquidity?.usd)||0))[0]||pairs[0];const addr=String(address).toLowerCase(),base=match?.baseToken,quote=match?.quoteToken,token=String(base?.address||'').toLowerCase()===addr?base:String(quote?.address||'').toLowerCase()===addr?quote:base;return{name:token?.name||null,symbol:token?.symbol||null,priceUsd:number(match?.priceUsd),marketCapUsd:number(match?.marketCap??match?.fdv),fdv:number(match?.fdv),liquidityUsd:number(match?.liquidity?.usd),pairAddress:match?.pairAddress||null,dexId:match?.dexId||null,imageUrl:match?.info?.imageUrl||null,volume24h:number(match?.volume?.h24)}}catch(e){console.warn('DexScreener EVM overview:',e.message);return null}}
+function gpBool(o,...keys){return bool(field(o,...keys))}
+function gpPct(v){const n=number(v);if(n==null)return null;return n>0&&n<=1?n*100:n}
+function gpTop10(sec){const holders=Array.isArray(sec?.holders)?sec.holders:[];if(!holders.length)return null;const vals=holders.map(x=>gpPct(field(x,'percent','percentage','rate'))).filter(x=>x!=null);return vals.slice(0,10).reduce((a,b)=>a+b,0)}
 async function rpcBatch(url,calls){const arr=await fetchJson(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(calls)});if(!Array.isArray(arr))throw new Error('RPC did not return a batch response.');const by=Object.fromEntries(arr.map(x=>[x.id,x]));for(const x of arr)if(x.error&&x.id!==4)throw new Error(x.error.message||'RPC error');return by}
 const BIRDEYE_CACHE=new Map();
 async function birdeye(path,chain){const key=process.env.BIRDEYE_API_KEY;if(!key)return null;const ck=`${chain}:${path}`,now=Date.now(),hit=BIRDEYE_CACHE.get(ck);if(hit&&now-hit.time<60000)return hit.data;try{const j=await fetchJson(`${BIRDEYE_BASE}${path}`,{headers:{accept:'application/json','X-API-KEY':key,'x-chain':chain}});const data=j?.data??j;BIRDEYE_CACHE.set(ck,{time:now,data});return data}catch(e){console.warn('Birdeye:',e.message);return null}}
@@ -239,34 +248,59 @@ async function scanSolana(mint){
 
 async function detectEvm(address,pref){
   if(pref==='ethereum'||pref==='bnb')return pref;
-  const [eth,bnb]=await Promise.allSettled([rpc(ETH_RPC,'eth_getCode',[address,'latest']),rpc(BNB_RPC,'eth_getCode',[address,'latest'])]);
+  const [eth,bnb]=await Promise.allSettled([evmRpcTry('ethereum','eth_getCode',[address,'latest']),evmRpcTry('bnb','eth_getCode',[address,'latest'])]);
   if(eth.status==='fulfilled'&&eth.value&&eth.value!=='0x')return 'ethereum';
   if(bnb.status==='fulfilled'&&bnb.value&&bnb.value!=='0x')return 'bnb';
   throw Object.assign(new Error('No contract was found at that 0x address on Ethereum or BNB Chain.'),{status:404});
 }
 async function scanEvm(address,pref){
-  const chain=await detectEvm(address,pref), beChain=chain==='bnb'?'bsc':'ethereum', chainLabel=chain==='bnb'?'BNB Chain':'Ethereum';
-  const rpcUrl=chain==='bnb'?BNB_RPC:ETH_RPC;
-  const [code,overview,security]=await Promise.all([rpc(rpcUrl,'eth_getCode',[address,'latest']),birdeye(`/defi/token_overview?address=${encodeURIComponent(address)}&frames=5m,1h,24h`,beChain),birdeye(`/defi/token_security?address=${encodeURIComponent(address)}`,beChain)]);
+  const chain=await detectEvm(address,pref),beChain=chain==='bnb'?'bsc':'ethereum',chainLabel=chain==='bnb'?'BNB Chain':'Ethereum';
+  const [codeR,overviewR,securityR,gpR,dexR]=await Promise.allSettled([
+    evmRpcTry(chain,'eth_getCode',[address,'latest']),
+    birdeye(`/defi/token_overview?address=${encodeURIComponent(address)}&frames=5m,1h,24h`,beChain),
+    birdeye(`/defi/token_security?address=${encodeURIComponent(address)}`,beChain),
+    goPlusTokenSecurity(address,chain),
+    dexEvmOverview(address,chain)
+  ]);
+  const code=codeR.status==='fulfilled'?codeR.value:null;
   if(!code||code==='0x')throw Object.assign(new Error(`No contract found on ${chainLabel}.`),{status:404});
-  const liq=number(field(overview,'liquidity','liquidityUsd','liquidity_usd'));const holders=number(field(overview,'holder','holderCount','holder_count','holders'));
-  const priceUsd=number(field(overview,'price','priceUsd','price_usd','value'));
-  const marketCapUsd=number(field(overview,'mc','marketCap','market_cap','marketcap','marketCapUsd','market_cap_usd','fdv'));
-  const honeypot=securityBool(security,'is_honeypot','honeypot');const mintable=securityBool(security,'is_mintable','mintable');const proxy=securityBool(security,'is_proxy','proxy');const blacklist=securityBool(security,'is_blacklisted','blacklist');
-  const buyTax=number(field(security,'buy_tax','buyTax')),sellTax=number(field(security,'sell_tax','sellTax'));const maxTax=Math.max(buyTax??0,sellTax??0);
-  const checks=[{known:true,weight:15,risk:0},{known:honeypot!=null,weight:20,risk:honeypot?100:0},{known:buyTax!=null||sellTax!=null,weight:15,risk:maxTax>=20?80:maxTax>=10?50:maxTax>=5?20:0},{known:mintable!=null,weight:10,risk:mintable?55:0},{known:proxy!=null,weight:10,risk:proxy?35:0},{known:blacklist!=null,weight:10,risk:blacklist?70:0},{known:liq!=null,weight:10,risk:liq<5000?100:liq<20000?75:liq<50000?45:10},{known:holders!=null,weight:10,risk:0}];
-  const baseScore=finalize(checks);const s=applyHardRiskOverrides(baseScore,{sellabilityBad:honeypot===true,mintable});const name=field(overview,'name')||`${chainLabel} token`,symbol=field(overview,'symbol')||'TOKEN',decimals=number(field(overview,'decimals','decimal'))??18;
+  const overview=overviewR.status==='fulfilled'?overviewR.value:null,security=securityR.status==='fulfilled'?securityR.value:null,gp=gpR.status==='fulfilled'?gpR.value:null,dex=dexR.status==='fulfilled'?dexR.value:null;
+  const liq=number(field(overview,'liquidity','liquidityUsd','liquidity_usd'))??number(dex?.liquidityUsd);
+  const holders=number(field(overview,'holder','holderCount','holder_count','holders'))??number(field(gp,'holder_count','holderCount'));
+  const priceUsd=number(field(overview,'price','priceUsd','price_usd','value'))??number(dex?.priceUsd);
+  const marketCapUsd=number(field(overview,'mc','marketCap','market_cap','marketcap','marketCapUsd','market_cap_usd','fdv'))??number(dex?.marketCapUsd)??number(dex?.fdv);
+  const honeypot=securityBool(security,'is_honeypot','honeypot')??gpBool(gp,'is_honeypot');
+  const mintable=securityBool(security,'is_mintable','mintable')??gpBool(gp,'is_mintable');
+  const proxy=securityBool(security,'is_proxy','proxy')??gpBool(gp,'is_proxy');
+  const blacklist=securityBool(security,'is_blacklisted','blacklist')??gpBool(gp,'is_blacklisted');
+  const buyTax=number(field(security,'buy_tax','buyTax'))??number(field(gp,'buy_tax','buyTax'));
+  const sellTax=number(field(security,'sell_tax','sellTax'))??number(field(gp,'sell_tax','sellTax'));
+  const maxTax=Math.max(buyTax??0,sellTax??0);
+  const top10=gpTop10(gp);
+  const ownerPct=gpPct(field(gp,'owner_percent','ownerPercent'));
+  const cannotSell=gpBool(gp,'cannot_sell_all','cannot_sell')===true;
+  const sellabilityBad=honeypot===true||cannotSell;
+  const checks=[{known:true,weight:15,risk:0},{known:honeypot!=null||cannotSell,weight:20,risk:sellabilityBad?100:0},{known:buyTax!=null||sellTax!=null,weight:15,risk:maxTax>=20?80:maxTax>=10?50:maxTax>=5?20:0},{known:mintable!=null,weight:10,risk:mintable?55:0},{known:proxy!=null,weight:10,risk:proxy?35:0},{known:blacklist!=null,weight:10,risk:blacklist?70:0},{known:liq!=null,weight:10,risk:liq<5000?100:liq<20000?75:liq<50000?45:10},{known:holders!=null,weight:10,risk:0}];
+  const baseScore=finalize(checks);const sc=applyHardRiskOverrides(baseScore,{sellabilityBad,mintable,top10,devPct:ownerPct});
+  const name=field(overview,'name')||field(gp,'token_name','tokenName')||dex?.name||`${chainLabel} token`,symbol=field(overview,'symbol')||field(gp,'token_symbol','tokenSymbol')||dex?.symbol||'TOKEN',decimals=number(field(overview,'decimals','decimal'))??number(field(gp,'decimals'))??18;
   const dexPaid=await dexPaidIntel(chain==='bnb'?'bsc':'ethereum',address);
-  return {mint:address,chain,name,symbol,decimals,verified:false,priceUsd,marketCapUsd,...s,summary:s.hardRiskOverride?`HIGH RISK override triggered: ${s.hardRiskReasons.join('; ')}. Salt confirmed the contract on ${chainLabel}. The numerical Salt Score is still shown, but positive checks cannot cancel these severe safety risks.`:`Salt confirmed the contract on ${chainLabel} and completed ${s.checksCompleted}/${s.checksTotal} core checks${process.env.BIRDEYE_API_KEY?' using Birdeye market/security data.':'. Add BIRDEYE_API_KEY for deeper EVM market/security intelligence.'}`,
-    authenticity:metric('Contract confirmed','good',`Deployed bytecode exists on ${chainLabel}.`,'RPC'),
-    sellable:metric(honeypot==null?'Not simulated':honeypot?'Possible block':'No honeypot flag',honeypot==null?'unknown':honeypot?'bad':'good','Birdeye token-security result when available.',honeypot==null?'Salt':'Birdeye'),
-    honeypot:metric(honeypot==null?'Unknown':honeypot?'Detected':'Not detected',honeypot==null?'unknown':honeypot?'bad':'good','Current indexed honeypot flag.',honeypot==null?'Salt':'Birdeye'),
-    taxes:metric(buyTax!=null||sellTax!=null?`${buyTax??'?'}% buy / ${sellTax??'?'}% sell`:'Unknown',buyTax==null&&sellTax==null?'unknown':maxTax>=20?'bad':maxTax>=8?'warn':'good','Current indexed token taxes.','Birdeye'),
-    mintAuthority:metric(mintable==null?'Unknown':mintable?'Mintable':'Not mintable',mintable==null?'unknown':mintable?'warn':'good',mintable?'Mint capability is active. This is a dilution warning, but does not force HIGH RISK by itself.':'No indexed mint capability was detected.','Birdeye'),
-    ownerControl:metric(blacklist==null?'Unknown':blacklist?'Blacklist control':'No blacklist flag',blacklist==null?'unknown':blacklist?'warn':'good','Owner/control risk flag when indexed.','Birdeye'),
-    proxyRisk:metric(proxy==null?'Unknown':proxy?'Upgradeable / proxy':'No proxy flag',proxy==null?'unknown':proxy?'warn':'good','Proxy/upgradeability flag when indexed.','Birdeye'),
-    top10:metric('Needs holder graph','unknown','Wallet-level concentration will be added from Birdeye holder distribution.','Salt'),owner:metric('Needs wallet graph','unknown','Creator-linked holdings require attribution.','Salt'),bundled:metric('Needs wallet graph','unknown','Linked-wallet analysis is a later Salt layer.','Salt'),snipers:metric('Needs launch history','unknown','Launch-history analysis is a later Salt layer.','Salt'),
-    liquidity:metric(liq==null?'Unknown':money(liq),liq==null?'unknown':liq>=100000?'good':liq>=20000?'warn':'bad',liq==null?'Add/verify BIRDEYE_API_KEY for liquidity intelligence.':`Current indexed liquidity is about ${money(liq)}.`,'Birdeye'),holders:metric(holders==null?'Unknown':count(holders),holders==null?'unknown':'good','Current indexed holder count.','Birdeye'),dexPaid,duplicates:metric('Needs identity graph','unknown','Official contract matching is a later Salt layer.','Salt'),creatorHistory:metric('Needs history','unknown','Deployer history is a later Salt layer.','Salt')};
+  const marketSource=overview?'Birdeye':dex?'DEX Screener':'Salt';
+  const securitySource=security?'Birdeye':gp?'GoPlus':'Salt';
+  const logoUri=dex?.imageUrl||field(overview,'logoURI','logo_uri','logo');
+  return {mint:address,chain,name,symbol,decimals,logoUri,logoUris:[logoUri].filter(Boolean),verified:false,priceUsd,marketCapUsd,...sc,summary:sc.hardRiskOverride?`HIGH RISK override triggered: ${sc.hardRiskReasons.join('; ')}. Salt confirmed the contract on ${chainLabel}. The numerical Salt Score is still shown, but positive checks cannot cancel these severe safety risks.`:`Salt confirmed the contract on ${chainLabel} and completed ${sc.checksCompleted}/${sc.checksTotal} core checks. Market data can fall back to DEX Screener and contract security can fall back to GoPlus when Birdeye is unavailable.`,
+    authenticity:metric('Contract confirmed','good',`Deployed bytecode exists on ${chainLabel}.`,'EVM RPC'),
+    sellable:metric(honeypot==null&&!cannotSell?'Could not verify':sellabilityBad?'Possible sell restriction':'No sell block detected',honeypot==null&&!cannotSell?'unknown':sellabilityBad?'bad':'good',cannotSell?'GoPlus reports a sell restriction.':honeypot===true?'A honeypot flag was returned.':'No current sell-block/honeypot signal was returned by the available security providers.',securitySource),
+    honeypot:metric(honeypot==null?'Could not verify':honeypot?'Detected':'Not detected',honeypot==null?'unknown':honeypot?'bad':'good','Current token-security honeypot signal.',securitySource),
+    taxes:metric(buyTax!=null||sellTax!=null?`${buyTax??'?'}% buy / ${sellTax??'?'}% sell`:'Could not verify',buyTax==null&&sellTax==null?'unknown':maxTax>=20?'bad':maxTax>=8?'warn':'good','Current token tax data from the available security provider.',securitySource),
+    mintAuthority:metric(mintable==null?'Could not verify':mintable?'Mintable':'Not mintable',mintable==null?'unknown':mintable?'warn':'good',mintable?'Mint capability is active. This is a dilution warning, but does not force HIGH RISK by itself.':'No mint capability was detected by the available security provider.',securitySource),
+    ownerControl:metric(blacklist==null?'Could not verify':blacklist?'Blacklist control':'No blacklist flag',blacklist==null?'unknown':blacklist?'warn':'good','Owner/control blacklist risk signal.',securitySource),
+    proxyRisk:metric(proxy==null?'Could not verify':proxy?'Upgradeable / proxy':'No proxy flag',proxy==null?'unknown':proxy?'warn':'good','Proxy/upgradeability signal.',securitySource),
+    top10:metric(top10==null?'Could not verify':`${top10.toFixed(1)}%`,top10==null?'unknown':statusPct(top10),top10==null?'Holder concentration was not available from the current providers.':`Top 10 indexed holders account for about ${top10.toFixed(1)}% of supply.`,'GoPlus'),
+    owner:metric(ownerPct==null?'Could not verify':`${ownerPct.toFixed(1)}%`,ownerPct==null?'unknown':ownerPct<5?'good':ownerPct<15?'warn':'bad',ownerPct==null?'Owner share was not returned.':`Indexed contract owner/deployer share is about ${ownerPct.toFixed(1)}%.`,'GoPlus'),
+    bundled:metric('Could not verify','unknown','EVM linked-wallet bundle analysis is not yet implemented.','Salt'),snipers:metric('Could not verify','unknown','EVM launch-sniper analysis is not yet implemented.','Salt'),
+    liquidity:metric(liq==null?'Could not verify':money(liq),liq==null?'unknown':liq>=100000?'good':liq>=20000?'warn':'bad',liq==null?'No current liquidity figure was returned by Birdeye or DEX Screener.':`Current indexed liquidity is about ${money(liq)}.` ,marketSource),
+    holders:metric(holders==null?'Could not verify':count(holders),holders==null?'unknown':'good','Current indexed holder count.',holders==null?'Salt':overview?'Birdeye':'GoPlus'),dexPaid,
+    duplicates:metric('Needs identity graph','unknown','Official contract matching is a later Salt layer.','Salt'),creatorHistory:metric('Needs history','unknown','Deployer history is a later Salt layer.','Salt')};
 }
 
 async function scanHandler(req,res){
@@ -356,7 +390,7 @@ async function evmTokensHandler(req,res){res.setHeader('Cache-Control','public, 
 
 async function healthHandler(req,res){
   res.setHeader('Cache-Control','no-store');
-  return res.status(200).json({ok:true,service:'Salt Swap scanner',version:'1.7.7',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY),zerox:Boolean(process.env.ZEROX_API_KEY)}});
+  return res.status(200).json({ok:true,service:'Salt Swap scanner',version:'1.8.2',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY),zerox:Boolean(process.env.ZEROX_API_KEY)}});
 }
 
 export default async function handler(req,res){
