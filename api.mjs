@@ -18,6 +18,27 @@ function errorText(v){if(v==null)return 'Request failed.';if(typeof v==='string'
 function finalize(checks,critical=false){const known=checks.filter(x=>x.known),tw=checks.reduce((s,x)=>s+x.weight,0)||1,kw=known.reduce((s,x)=>s+x.weight,0),risk=known.reduce((s,x)=>s+x.weight*Math.max(0,Math.min(100,x.risk))/100,0);let score=kw?Math.round(100-(risk/kw)*100):null;if(critical&&score!=null)score=Math.min(score,20);const confidence=Math.round(kw/tw*100);let tone='unknown',label='PRELIMINARY';if(score!=null&&confidence>=45){tone=score>=80?'good':score>=55?'warn':'bad';label=score>=80?'LOOKS HEALTHY':score>=55?'BE CAREFUL':'HIGH RISK'}return{score,confidence,checksCompleted:known.length,checksTotal:checks.length,label,tone}}
 function applyHardRiskOverrides(summary,ctx={}){const reasons=[];if(ctx.authenticityBad===true)reasons.push('contract authenticity failed');if(ctx.sellabilityBad===true)reasons.push('sellability failed');if(ctx.freezable===true)reasons.push('freeze capability is active');const top10=number(ctx.top10),bundle=number(ctx.bundlePct),dev=number(ctx.devPct);if(top10!=null&&top10>80)reasons.push(`top 10 wallets hold ${top10.toFixed(1)}% of supply`);if(bundle!=null&&bundle>25)reasons.push(`bundled wallets hold ${bundle.toFixed(1)}% of supply`);if(top10!=null&&bundle!=null&&top10>70&&bundle>15&&!(top10>80)&&!(bundle>25))reasons.push(`top 10 concentration (${top10.toFixed(1)}%) and bundled supply (${bundle.toFixed(1)}%) are both severe`);if(ctx.mintable===true){if(top10!=null&&top10>70&&top10<=80)reasons.push(`mint capability is active alongside high top 10 concentration (${top10.toFixed(1)}%)`);if(bundle!=null&&bundle>15&&bundle<=25)reasons.push(`mint capability is active alongside elevated bundled supply (${bundle.toFixed(1)}%)`);if(dev!=null&&dev>=10)reasons.push(`mint capability is active while the creator/dev cohort still holds ${dev.toFixed(1)}% of supply`)}if(!reasons.length)return{...summary,hardRiskOverride:false,hardRiskReasons:[]};return{...summary,label:'HIGH RISK',tone:'bad',hardRiskOverride:true,hardRiskReasons:reasons}}
 async function fetchJson(url,options={},timeout=12000){const c=new AbortController();const t=setTimeout(()=>c.abort(),timeout);try{const r=await fetch(url,{...options,signal:c.signal});const text=await r.text();let data;try{data=text?JSON.parse(text):{}}catch{data={message:text}}if(!r.ok){const err=new Error(errorText(data?.message??data?.error??data) || `HTTP ${r.status}`);err.status=r.status;throw err}return data}finally{clearTimeout(t)}}
+function dexPaidTypeLabel(type){return ({tokenProfile:'Token profile',communityTakeover:'Community takeover',tokenAd:'Token ad',trendingBarAd:'Trending bar ad'})[type]||String(type||'Paid service')}
+async function dexPaidIntel(chainId,tokenAddress){
+  try{
+    const j=await fetchJson(`https://api.dexscreener.com/orders/v1/${encodeURIComponent(chainId)}/${encodeURIComponent(tokenAddress)}`,{headers:{accept:'application/json'}},7000);
+    const rows=Array.isArray(j)?j:[];
+    if(!rows.length)return metric('No paid order found','unknown','DEX Screener returned no paid orders for this token. This is informational only and is not a safety failure.','DEX Screener');
+    const paid=rows.filter(x=>x&&x.paymentTimestamp!=null);
+    const active=rows.filter(x=>['approved','processing','on-hold'].includes(String(x?.status||'').toLowerCase()));
+    const chosen=active.length?active:(paid.length?paid:rows);
+    const labels=[...new Set(chosen.map(x=>dexPaidTypeLabel(x?.type)))];
+    const statuses=[...new Set(chosen.map(x=>String(x?.status||'').trim()).filter(Boolean))];
+    const value=`Yes — ${labels.join(' + ')}`;
+    const detail=`DEX Screener returned ${rows.length} paid order${rows.length===1?'':'s'} for this token${statuses.length?` (${statuses.join(', ')})`:''}. Paid DEX services can indicate project promotion/identity effort, but they do not prove a token is safe.`;
+    const hasActive=active.length>0;
+    return metric(value,hasActive?'good':'warn',detail,'DEX Screener Paid Orders');
+  }catch(e){
+    console.warn('DEX Screener paid orders:',e.message);
+    return metric('Could not verify','unknown','Salt could not reach DEX Screener paid-order data for this scan.','DEX Screener');
+  }
+}
+
 async function rpc(url,method,params){const j=await fetchJson(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params})});if(j.error)throw new Error(j.error.message||'RPC error');return j.result}
 async function rpcBatch(url,calls){const arr=await fetchJson(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(calls)});if(!Array.isArray(arr))throw new Error('RPC did not return a batch response.');const by=Object.fromEntries(arr.map(x=>[x.id,x]));for(const x of arr)if(x.error&&x.id!==4)throw new Error(x.error.message||'RPC error');return by}
 const BIRDEYE_CACHE=new Map();
@@ -144,6 +165,7 @@ async function scanSolana(mint){
   const priceUsd=number(field(overview,'price','priceUsd','price_usd','value'));
   const indexedMarketCap=number(field(overview,'mc','marketCap','market_cap','marketcap','marketCapUsd','market_cap_usd'));
   const marketCapUsd=indexedMarketCap??(priceUsd!=null&&supplyUi!=null?priceUsd*supplyUi:null);
+  const dexPaid=await dexPaidIntel('solana',mint);
   const identity=await resolveSolanaIdentity(asset,overview,security,mint);
   const {name,symbol,logoUri,logoUris,identitySource}=identity;
   const verified=Boolean(field(overview,'logoURI','logo_uri'));
@@ -185,6 +207,7 @@ async function scanSolana(mint){
     smartTraders:cohortMetric(smartTag,'Smart trader',[101,102],'Salt checks Birdeye Holder Profile first, then tagged Top Traders for profitable-wallet participation.'),
     liquidity:metric(liq==null?'Unknown':money(liq),liq==null?'unknown':liq>=100000?'good':liq>=20000?'warn':'bad',liq==null?(process.env.BIRDEYE_API_KEY?'Birdeye did not return liquidity for this token.':'Add BIRDEYE_API_KEY for market/liquidity intelligence.'):`Current indexed liquidity is about ${money(liq)}.`,liq==null?'Salt':'Birdeye'),
     holders:metric(holders==null?'Unknown':count(holders),holders==null?'unknown':'good',holders==null?(process.env.BIRDEYE_API_KEY?'Birdeye did not return a holder count.':'Add BIRDEYE_API_KEY for indexed holder data.'):'Current indexed holder count.','Birdeye'),
+    dexPaid,
     duplicates:duplicateCheck||metric('Could not verify','unknown','Salt could not complete the secondary DEX identity search for this token.','Salt'),
     creatorHistory
   };
@@ -209,6 +232,7 @@ async function scanEvm(address,pref){
   const buyTax=number(field(security,'buy_tax','buyTax')),sellTax=number(field(security,'sell_tax','sellTax'));const maxTax=Math.max(buyTax??0,sellTax??0);
   const checks=[{known:true,weight:15,risk:0},{known:honeypot!=null,weight:20,risk:honeypot?100:0},{known:buyTax!=null||sellTax!=null,weight:15,risk:maxTax>=20?80:maxTax>=10?50:maxTax>=5?20:0},{known:mintable!=null,weight:10,risk:mintable?55:0},{known:proxy!=null,weight:10,risk:proxy?35:0},{known:blacklist!=null,weight:10,risk:blacklist?70:0},{known:liq!=null,weight:10,risk:liq<5000?100:liq<20000?75:liq<50000?45:10},{known:holders!=null,weight:10,risk:0}];
   const baseScore=finalize(checks);const s=applyHardRiskOverrides(baseScore,{sellabilityBad:honeypot===true,mintable});const name=field(overview,'name')||`${chainLabel} token`,symbol=field(overview,'symbol')||'TOKEN',decimals=number(field(overview,'decimals','decimal'))??18;
+  const dexPaid=await dexPaidIntel(chain==='bnb'?'bsc':'ethereum',address);
   return {mint:address,chain,name,symbol,decimals,verified:false,priceUsd,marketCapUsd,...s,summary:s.hardRiskOverride?`HIGH RISK override triggered: ${s.hardRiskReasons.join('; ')}. Salt confirmed the contract on ${chainLabel}. The numerical Salt Score is still shown, but positive checks cannot cancel these severe safety risks.`:`Salt confirmed the contract on ${chainLabel} and completed ${s.checksCompleted}/${s.checksTotal} core checks${process.env.BIRDEYE_API_KEY?' using Birdeye market/security data.':'. Add BIRDEYE_API_KEY for deeper EVM market/security intelligence.'}`,
     authenticity:metric('Contract confirmed','good',`Deployed bytecode exists on ${chainLabel}.`,'RPC'),
     sellable:metric(honeypot==null?'Not simulated':honeypot?'Possible block':'No honeypot flag',honeypot==null?'unknown':honeypot?'bad':'good','Birdeye token-security result when available.',honeypot==null?'Salt':'Birdeye'),
@@ -218,7 +242,7 @@ async function scanEvm(address,pref){
     ownerControl:metric(blacklist==null?'Unknown':blacklist?'Blacklist control':'No blacklist flag',blacklist==null?'unknown':blacklist?'warn':'good','Owner/control risk flag when indexed.','Birdeye'),
     proxyRisk:metric(proxy==null?'Unknown':proxy?'Upgradeable / proxy':'No proxy flag',proxy==null?'unknown':proxy?'warn':'good','Proxy/upgradeability flag when indexed.','Birdeye'),
     top10:metric('Needs holder graph','unknown','Wallet-level concentration will be added from Birdeye holder distribution.','Salt'),owner:metric('Needs wallet graph','unknown','Creator-linked holdings require attribution.','Salt'),bundled:metric('Needs wallet graph','unknown','Linked-wallet analysis is a later Salt layer.','Salt'),snipers:metric('Needs launch history','unknown','Launch-history analysis is a later Salt layer.','Salt'),
-    liquidity:metric(liq==null?'Unknown':money(liq),liq==null?'unknown':liq>=100000?'good':liq>=20000?'warn':'bad',liq==null?'Add/verify BIRDEYE_API_KEY for liquidity intelligence.':`Current indexed liquidity is about ${money(liq)}.`,'Birdeye'),holders:metric(holders==null?'Unknown':count(holders),holders==null?'unknown':'good','Current indexed holder count.','Birdeye'),duplicates:metric('Needs identity graph','unknown','Official contract matching is a later Salt layer.','Salt'),creatorHistory:metric('Needs history','unknown','Deployer history is a later Salt layer.','Salt')};
+    liquidity:metric(liq==null?'Unknown':money(liq),liq==null?'unknown':liq>=100000?'good':liq>=20000?'warn':'bad',liq==null?'Add/verify BIRDEYE_API_KEY for liquidity intelligence.':`Current indexed liquidity is about ${money(liq)}.`,'Birdeye'),holders:metric(holders==null?'Unknown':count(holders),holders==null?'unknown':'good','Current indexed holder count.','Birdeye'),dexPaid,duplicates:metric('Needs identity graph','unknown','Official contract matching is a later Salt layer.','Salt'),creatorHistory:metric('Needs history','unknown','Deployer history is a later Salt layer.','Salt')};
 }
 
 async function scanHandler(req,res){
