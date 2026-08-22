@@ -1,40 +1,20 @@
-# Salt Swap V1.5.2 — Helius + Birdeye
+# Salt Swap V1.6.0 — Root Backend Verified
 
-This release moves data-provider secrets behind a Vercel serverless backend.
+This build is designed for simple GitHub web uploads without folders being flattened.
 
-## Required structure
+Root files only:
+- index.html
+- styles.css
+- api.js
+- vercel.json
+- .env.example
 
-```
-api/
-  health.js
-  scan.js
-app.js
-index.html
-styles.css
-.env.example
-README.md
-```
+Vercel routes:
+- /api/health -> api.js
+- /api/scan -> api.js
 
-## Vercel environment variables
+Environment variables in Vercel:
+- HELIUS_API_KEY (required for Solana)
+- BIRDEYE_API_KEY (recommended for market/security enrichment)
 
-Required for reliable Solana scans:
-- `HELIUS_API_KEY`
-
-Recommended for deeper market/security data on Solana, Ethereum and BNB Chain:
-- `BIRDEYE_API_KEY`
-
-Add them in Vercel Project Settings -> Environment Variables, select Production (and Preview if you use preview deploys), save, then redeploy. Never place real keys in app.js, index.html, GitHub, README, or .env.example.
-
-## Provider roles
-- Helius: dedicated Solana RPC for mint existence, supply, mint/freeze authority and largest token accounts.
-- Birdeye: token overview + token security for liquidity, holder count, token identity and indexed risk fields when available.
-
-## Health check
-After deployment open `/api/health`. It returns only booleans showing whether each environment variable is configured; it never returns the keys themselves.
-
-## Important
-Birdeye is optional in this build. Solana scans require Helius. If Birdeye is missing, Salt still performs Helius on-chain checks and marks market/indexer fields Unknown instead of guessing.
-
-V1.5.2 fixes the frontend initialization issue by embedding the Salt scanner JavaScript directly in index.html. The page no longer depends on /app.js loading separately. Helius and Birdeye remain server-side through /api/scan and Vercel Environment Variables.
-
-V1.5.2 fixes structured API error rendering so provider/Vercel errors are always readable and never display as [object Object].
+The scanner frontend is embedded directly in index.html, so there is no external app.js dependency.
