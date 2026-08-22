@@ -1,4 +1,4 @@
-# Salt Swap V1.7.5 — Root Backend Verified
+# Salt Swap V1.7.6 — Root Backend Verified
 
 This build is designed for simple GitHub web uploads without folders being flattened.
 
@@ -19,12 +19,12 @@ Environment variables in Vercel:
 
 The scanner frontend is embedded directly in index.html, so there is no external app.js dependency.
 
-V1.7.5: backend changed to api.mjs with a Vercel-compatible default ES module export. /api/health and /api/scan route explicitly through route query parameters so the function does not depend on rewritten request path behavior.
+V1.7.6: backend changed to api.mjs with a Vercel-compatible default ES module export. /api/health and /api/scan route explicitly through route query parameters so the function does not depend on rewritten request path behavior.
 
-V1.7.5 Token Identity Resolution: Solana scans now request Helius getAsset metadata in the same backend batch and prefer Helius metadata for name/symbol/image, then Birdeye as fallback, then Unknown token. This improves identity for newly launched meme coins before third-party indexers catch up.
+V1.7.6 Token Identity Resolution: Solana scans now request Helius getAsset metadata in the same backend batch and prefer Helius metadata for name/symbol/image, then Birdeye as fallback, then Unknown token. This improves identity for newly launched meme coins before third-party indexers catch up.
 
 
-V1.7.5 — Holder Intelligence
+V1.7.6 — Holder Intelligence
 - Adds Birdeye Token Holder Profile to Solana scans.
 - Populates live current-supply share for bundler, sniper, insider, dev, and smart-trader cohorts when indexed.
 - Uses include_zero_balance=false so the percentages focus on wallets still holding the token.
@@ -33,12 +33,12 @@ V1.7.5 — Holder Intelligence
 - Birdeye holder-profile costs provider compute credits per request; usage limits can temporarily make these fields unavailable.
 
 
-V1.7.5 coverage update: holder-profile fallbacks through Birdeye Top Traders, Helius creator-wallet tracing and creator supply share, Helius creator activity context, and DexScreener duplicate-name/symbol identity screening. Unknown now means Could not verify rather than implying 0%.
+V1.7.6 coverage update: holder-profile fallbacks through Birdeye Top Traders, Helius creator-wallet tracing and creator supply share, Helius creator activity context, and DexScreener duplicate-name/symbol identity screening. Unknown now means Could not verify rather than implying 0%.
 
-V1.7.5 adds deeper new-token image resolution and Salt launch-bundle fallback analysis.
+V1.7.6 adds deeper new-token image resolution and Salt launch-bundle fallback analysis.
 
 
-V1.7.5 Hard Risk Override Engine
+V1.7.6 Hard Risk Override Engine
 - Keeps the normal weighted Salt Score visible.
 - Forces the final verdict to HIGH RISK if a verified core safety check fails: authenticity, sellability, active mint capability, or active freeze capability.
 - Forces HIGH RISK when Top 10 concentration is >80%, bundled supply is >25%, or Top 10 is >70% AND bundled supply is >15%.
@@ -46,7 +46,7 @@ V1.7.5 Hard Risk Override Engine
 - Returns hardRiskOverride and hardRiskReasons so the UI explains exactly why the verdict was forced.
 
 
-## V1.7.5 — Live Solana Swap
+## V1.7.6 — Live Solana Swap
 - Live SOL -> scanned-token quotes from Jupiter Swap API V2 `/order`.
 - Quote-only mode works before wallet connection; quotes refresh every 10 seconds while an amount is entered.
 - Connects injected Solana wallets such as Phantom/Solflare.
@@ -61,7 +61,7 @@ V1.7.5 Hard Risk Override Engine
 `JUPITER_API_KEY` — create a free API key in the Jupiter developer portal and add it to Production and Preview environments.
 
 
-V1.7.5 token selector:
+V1.7.6 token selector:
 - Jupiter Tokens V2-backed search by name, ticker, or mint.
 - Popular Solana tokens, recent selections, and live 1h trending tokens.
 - Arbitrary Solana input assets are supported, with exact token-decimal conversion before Jupiter quotes.
@@ -69,10 +69,10 @@ V1.7.5 token selector:
 - Popular sets include stablecoins and common base assets such as SOL, USDC, USDT, BTC/ETH wrappers, and JitoSOL where Jupiter returns them.
 
 
-V1.7.5 adds live Ethereum and BNB Chain quoting/execution through 0x Swap API V2 (AllowanceHolder), compact swap-token buttons, clickable EVM popular assets, EVM token search for receive assets, and DexScreener image fallback for Solana trending/popular tokens. Add ZEROX_API_KEY in Vercel for ETH/BNB swaps.
+V1.7.6 adds live Ethereum and BNB Chain quoting/execution through 0x Swap API V2 (AllowanceHolder), compact swap-token buttons, clickable EVM popular assets, EVM token search for receive assets, and DexScreener image fallback for Solana trending/popular tokens. Add ZEROX_API_KEY in Vercel for ETH/BNB swaps.
 
 
-## V1.7.5 token image + picker reliability
+## V1.7.6 token image + picker reliability
 - Native SOL now always has an embedded Solana logo in the swap bar.
 - Solana token artwork resolver now tries Jupiter, Helius DAS metadata, DexScreener, then Pump.fun metadata before falling back to initials.
 - IPFS/Arweave metadata image URIs are normalized for browser display.
@@ -80,6 +80,8 @@ V1.7.5 adds live Ethereum and BNB Chain quoting/execution through 0x Swap API V2
 - Picker scroll position resets every time it opens and search focus uses preventScroll.
 - Page scrolling is locked while the token picker is open.
 
-V1.7.5 fixes selected-token artwork persistence: the resolved image from the token picker is preserved through the risk rescan and reused by the swap selector if the scanner response lacks an image.
+V1.7.6 fixes selected-token artwork persistence: the resolved image from the token picker is preserved through the risk rescan and reused by the swap selector if the scanner response lacks an image.
 
-V1.7.5 fixes selected-token artwork priority: a working picker/trending image is preserved ahead of scan-returned artwork, and the compact swap token icon now cycles through fallback image URLs before falling back to initials.
+V1.7.6 fixes selected-token artwork priority: a working picker/trending image is preserved ahead of scan-returned artwork, and the compact swap token icon now cycles through fallback image URLs before falling back to initials.
+
+V1.7.6: CA-scan auto-selection now performs an exact-address token lookup and applies resolved artwork to both the token header and swap receive button.
