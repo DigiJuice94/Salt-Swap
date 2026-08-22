@@ -2,8 +2,10 @@ const HELIUS_BASE='https://mainnet.helius-rpc.com/';
 const BIRDEYE_BASE='https://public-api.birdeye.so';
 const ETH_RPC='https://ethereum-rpc.publicnode.com';
 const BNB_RPC='https://bsc-rpc.publicnode.com';
+const BASE_RPC='https://base-rpc.publicnode.com';
 const ETH_RPCS=['https://ethereum-rpc.publicnode.com','https://eth.llamarpc.com','https://rpc.ankr.com/eth'];
 const BNB_RPCS=['https://bsc-rpc.publicnode.com','https://bsc-dataseed.binance.org','https://rpc.ankr.com/bsc'];
+const BASE_RPCS=['https://base-rpc.publicnode.com','https://mainnet.base.org','https://base.llamarpc.com'];
 const JUPITER_BASE='https://api.jup.ag/swap/v2';
 const JUPITER_TOKENS_BASE='https://api.jup.ag/tokens/v2';
 const ZEROX_BASE='https://api.0x.org/swap/allowance-holder';
@@ -67,9 +69,9 @@ async function dexPaidIntel(chainId,tokenAddress){
 }
 async function rpc(url,method,params){const j=await fetchJson(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params})});if(j.error)throw new Error(j.error.message||'RPC error');return j.result}
 
-async function evmRpcTry(chain,method,params){const urls=chain==='bnb'?BNB_RPCS:ETH_RPCS;let last;for(const url of urls){try{return await rpc(url,method,params)}catch(e){last=e;console.warn(`EVM RPC ${chain} ${url}:`,e.message)}}throw last||new Error(`${chain} RPC unavailable`)}
-async function goPlusTokenSecurity(address,chain){const chainId=chain==='bnb'?'56':'1';try{const j=await fetchJson(`https://api.gopluslabs.io/api/v1/token_security/${chainId}?contract_addresses=${encodeURIComponent(address)}`,{headers:{accept:'application/json'}},9000);const result=j?.result||{};return result[String(address).toLowerCase()]||result[address]||Object.values(result)[0]||null}catch(e){console.warn('GoPlus EVM:',e.message);return null}}
-async function dexEvmOverview(address,chain){const dsChain=chain==='bnb'?'bsc':'ethereum';try{const rows=await fetchJson(`https://api.dexscreener.com/token-pairs/v1/${dsChain}/${encodeURIComponent(address)}`,{headers:{accept:'application/json'}},9000);const pairs=Array.isArray(rows)?rows:[];if(!pairs.length)return null;const match=pairs.filter(x=>String(x?.chainId||'')===dsChain).sort((a,b)=>(Number(b?.liquidity?.usd)||0)-(Number(a?.liquidity?.usd)||0))[0]||pairs[0];const addr=String(address).toLowerCase(),base=match?.baseToken,quote=match?.quoteToken,token=String(base?.address||'').toLowerCase()===addr?base:String(quote?.address||'').toLowerCase()===addr?quote:base;return{name:token?.name||null,symbol:token?.symbol||null,priceUsd:number(match?.priceUsd),marketCapUsd:number(match?.marketCap??match?.fdv),fdv:number(match?.fdv),liquidityUsd:number(match?.liquidity?.usd),pairAddress:match?.pairAddress||null,dexId:match?.dexId||null,imageUrl:match?.info?.imageUrl||null,volume24h:number(match?.volume?.h24)}}catch(e){console.warn('DexScreener EVM overview:',e.message);return null}}
+async function evmRpcTry(chain,method,params){const urls=chain==='bnb'?BNB_RPCS:chain==='base'?BASE_RPCS:ETH_RPCS;let last;for(const url of urls){try{return await rpc(url,method,params)}catch(e){last=e;console.warn(`EVM RPC ${chain} ${url}:`,e.message)}}throw last||new Error(`${chain} RPC unavailable`)}
+async function goPlusTokenSecurity(address,chain){const chainId=chain==='bnb'?'56':chain==='base'?'8453':'1';try{const j=await fetchJson(`https://api.gopluslabs.io/api/v1/token_security/${chainId}?contract_addresses=${encodeURIComponent(address)}`,{headers:{accept:'application/json'}},9000);const result=j?.result||{};return result[String(address).toLowerCase()]||result[address]||Object.values(result)[0]||null}catch(e){console.warn('GoPlus EVM:',e.message);return null}}
+async function dexEvmOverview(address,chain){const dsChain=chain==='bnb'?'bsc':chain==='base'?'base':'ethereum';try{const rows=await fetchJson(`https://api.dexscreener.com/token-pairs/v1/${dsChain}/${encodeURIComponent(address)}`,{headers:{accept:'application/json'}},9000);const pairs=Array.isArray(rows)?rows:[];if(!pairs.length)return null;const match=pairs.filter(x=>String(x?.chainId||'')===dsChain).sort((a,b)=>(Number(b?.liquidity?.usd)||0)-(Number(a?.liquidity?.usd)||0))[0]||pairs[0];const addr=String(address).toLowerCase(),base=match?.baseToken,quote=match?.quoteToken,token=String(base?.address||'').toLowerCase()===addr?base:String(quote?.address||'').toLowerCase()===addr?quote:base;return{name:token?.name||null,symbol:token?.symbol||null,priceUsd:number(match?.priceUsd),marketCapUsd:number(match?.marketCap??match?.fdv),fdv:number(match?.fdv),liquidityUsd:number(match?.liquidity?.usd),pairAddress:match?.pairAddress||null,dexId:match?.dexId||null,imageUrl:match?.info?.imageUrl||null,volume24h:number(match?.volume?.h24)}}catch(e){console.warn('DexScreener EVM overview:',e.message);return null}}
 function gpBool(o,...keys){return bool(field(o,...keys))}
 function gpPct(v){const n=number(v);if(n==null)return null;return n>0&&n<=1?n*100:n}
 function gpTop10(sec){const holders=Array.isArray(sec?.holders)?sec.holders:[];if(!holders.length)return null;const vals=holders.map(x=>gpPct(field(x,'percent','percentage','rate'))).filter(x=>x!=null);return vals.slice(0,10).reduce((a,b)=>a+b,0)}
@@ -247,14 +249,19 @@ async function scanSolana(mint){
 }
 
 async function detectEvm(address,pref){
-  if(pref==='ethereum'||pref==='bnb')return pref;
-  const [eth,bnb]=await Promise.allSettled([evmRpcTry('ethereum','eth_getCode',[address,'latest']),evmRpcTry('bnb','eth_getCode',[address,'latest'])]);
+  if(['ethereum','base','bnb'].includes(pref))return pref;
+  const [eth,base,bnb]=await Promise.allSettled([
+    evmRpcTry('ethereum','eth_getCode',[address,'latest']),
+    evmRpcTry('base','eth_getCode',[address,'latest']),
+    evmRpcTry('bnb','eth_getCode',[address,'latest'])
+  ]);
   if(eth.status==='fulfilled'&&eth.value&&eth.value!=='0x')return 'ethereum';
+  if(base.status==='fulfilled'&&base.value&&base.value!=='0x')return 'base';
   if(bnb.status==='fulfilled'&&bnb.value&&bnb.value!=='0x')return 'bnb';
-  throw Object.assign(new Error('No contract was found at that 0x address on Ethereum or BNB Chain.'),{status:404});
+  throw Object.assign(new Error('No contract was found at that 0x address on Ethereum, Base, or BNB Chain.'),{status:404});
 }
 async function scanEvm(address,pref){
-  const chain=await detectEvm(address,pref),beChain=chain==='bnb'?'bsc':'ethereum',chainLabel=chain==='bnb'?'BNB Chain':'Ethereum';
+  const chain=await detectEvm(address,pref),beChain=chain==='bnb'?'bsc':chain==='base'?'base':'ethereum',chainLabel=chain==='bnb'?'BNB Chain':chain==='base'?'Base':'Ethereum';
   const [codeR,overviewR,securityR,gpR,dexR]=await Promise.allSettled([
     evmRpcTry(chain,'eth_getCode',[address,'latest']),
     birdeye(`/defi/token_overview?address=${encodeURIComponent(address)}&frames=5m,1h,24h`,beChain),
@@ -283,7 +290,7 @@ async function scanEvm(address,pref){
   const checks=[{known:true,weight:15,risk:0},{known:honeypot!=null||cannotSell,weight:20,risk:sellabilityBad?100:0},{known:buyTax!=null||sellTax!=null,weight:15,risk:maxTax>=20?80:maxTax>=10?50:maxTax>=5?20:0},{known:mintable!=null,weight:10,risk:mintable?55:0},{known:proxy!=null,weight:10,risk:proxy?35:0},{known:blacklist!=null,weight:10,risk:blacklist?70:0},{known:liq!=null,weight:10,risk:liq<5000?100:liq<20000?75:liq<50000?45:10},{known:holders!=null,weight:10,risk:0}];
   const baseScore=finalize(checks);const sc=applyHardRiskOverrides(baseScore,{sellabilityBad,mintable,top10,devPct:ownerPct});
   const name=field(overview,'name')||field(gp,'token_name','tokenName')||dex?.name||`${chainLabel} token`,symbol=field(overview,'symbol')||field(gp,'token_symbol','tokenSymbol')||dex?.symbol||'TOKEN',decimals=number(field(overview,'decimals','decimal'))??number(field(gp,'decimals'))??18;
-  const dexPaid=await dexPaidIntel(chain==='bnb'?'bsc':'ethereum',address);
+  const dexPaid=await dexPaidIntel(chain==='bnb'?'bsc':chain==='base'?'base':'ethereum',address);
   const marketSource=overview?'Birdeye':dex?'DEX Screener':'Salt';
   const securitySource=security?'Birdeye':gp?'GoPlus':'Salt';
   const logoUri=dex?.imageUrl||field(overview,'logoURI','logo_uri','logo');
@@ -313,7 +320,7 @@ async function scanHandler(req,res){
     let result;
     if(pref==='solana'||(pref==='auto'&&isSol)){if(!isSol)throw Object.assign(new Error('That does not look like a Solana mint address.'),{status:400});result=await scanSolana(mint)}
     else if(isEvm)result=await scanEvm(mint.toLowerCase(),pref);
-    else throw Object.assign(new Error('Paste a valid Solana mint or 0x Ethereum / BNB Chain contract address.'),{status:400});
+    else throw Object.assign(new Error('Paste a valid Solana mint or 0x Ethereum / Base / BNB Chain contract address.'),{status:400});
     return res.status(200).json(result);
   }catch(e){console.error('Salt scan error',e);const message=errorText(e?.message??e);return res.status(Number(e?.status)||500).json({error:message||'Salt scanner failed.'});}
 };
@@ -381,16 +388,16 @@ async function tokensHandler(req,res){
 }
 
 
-function zeroXKey(){const key=process.env.ZEROX_API_KEY;if(!key){const e=new Error('Ethereum/BNB swaps are not configured yet. Add ZEROX_API_KEY in Vercel Environment Variables, then redeploy.');e.status=503;throw e}return key}
-const EVM_CHAINS={ethereum:1,bnb:56};
+function zeroXKey(){const key=process.env.ZEROX_API_KEY;if(!key){const e=new Error('Ethereum/Base/BNB swaps are not configured yet. Add ZEROX_API_KEY in Vercel Environment Variables, then redeploy.');e.status=503;throw e}return key}
+const EVM_CHAINS={ethereum:1,base:8453,bnb:56};
 function validEvmAddress(v){return /^0x[a-fA-F0-9]{40}$/.test(String(v||''))}
 async function getZeroXQuote({chain,sellToken,buyToken,sellAmount,taker,firm=false}){const chainId=EVM_CHAINS[chain];if(!chainId)throw Object.assign(new Error('Unsupported EVM chain.'),{status:400});if(!validEvmAddress(sellToken)||!validEvmAddress(buyToken))throw Object.assign(new Error('Invalid EVM token address.'),{status:400});if(sellToken.toLowerCase()===buyToken.toLowerCase())throw Object.assign(new Error('Choose two different tokens.'),{status:400});if(!validPositiveInteger(sellAmount))throw Object.assign(new Error('Swap amount must be positive.'),{status:400});if(taker&&!validEvmAddress(taker))throw Object.assign(new Error('Invalid EVM wallet address.'),{status:400});const q=new URLSearchParams({chainId:String(chainId),sellToken,buyToken,sellAmount,slippageBps:'100'});if(taker)q.set('taker',taker);const kind=firm&&taker?'quote':'price';const z=await fetchJson(`${ZEROX_BASE}/${kind}?${q}`,{headers:{accept:'application/json','0x-api-key':zeroXKey(),'0x-version':'v2'}},15000);if(!z?.buyAmount||String(z.buyAmount)==='0')throw Object.assign(new Error(z?.reason||z?.validationErrors?.[0]?.reason||'0x could not find a live route for this pair.'),{status:422});const allowance=z?.issues?.allowance||null;return{chain,chainId,sellToken,buyToken,sellAmount:String(z.sellAmount||sellAmount),buyAmount:String(z.buyAmount),minBuyAmount:z.minBuyAmount?String(z.minBuyAmount):null,route:'0x',liquidityAvailable:z.liquidityAvailable!==false,allowanceSpender:allowance?.spender||z.allowanceTarget||null,allowanceActual:allowance?.actual!=null?String(allowance.actual):null,transaction:firm?(z.transaction||null):null,fees:z.fees||null,totalNetworkFee:z.totalNetworkFee||null,quotedAt:Date.now()}}
 async function evmQuoteHandler(req,res){res.setHeader('Cache-Control','no-store');if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});try{const chain=String(req.query.chain||'').toLowerCase(),sellToken=String(req.query.sellToken||'').toLowerCase(),buyToken=String(req.query.buyToken||'').toLowerCase(),sellAmount=String(req.query.sellAmount||''),taker=String(req.query.taker||'').toLowerCase()||null,firm=String(req.query.firm||'')==='1';return res.status(200).json(await getZeroXQuote({chain,sellToken,buyToken,sellAmount,taker,firm}))}catch(e){console.error('Salt 0x quote error',e);return res.status(Number(e?.status)||500).json({error:errorText(e)})}}
-async function evmTokensHandler(req,res){res.setHeader('Cache-Control','public, max-age=30, s-maxage=60');if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});try{const chain=String(req.query.chain||'').toLowerCase(),q=String(req.query.q||'').trim();if(!['ethereum','bnb'].includes(chain)||!q)return res.status(200).json([]);const dsChain=chain==='ethereum'?'ethereum':'bsc',j=await fetchJson(`https://api.dexscreener.com/latest/dex/search?q=${encodeURIComponent(q)}`,{headers:{accept:'application/json'}},9000),seen=new Set(),rows=[];for(const pair of (j?.pairs||[])){if(String(pair?.chainId)!==dsChain)continue;for(const t of [pair?.baseToken,pair?.quoteToken]){const id=String(t?.address||'').toLowerCase();if(!validEvmAddress(id)||seen.has(id))continue;seen.add(id);rows.push({id,name:String(t?.name||'Unknown token'),symbol:String(t?.symbol||'TOKEN'),icon:pair?.info?.imageUrl||null,decimals:null,chain,liquidityUsd:number(pair?.liquidity?.usd)})}}rows.sort((a,b)=>(b.liquidityUsd||0)-(a.liquidityUsd||0));return res.status(200).json(rows.slice(0,20))}catch(e){return res.status(500).json({error:errorText(e)})}}
+async function evmTokensHandler(req,res){res.setHeader('Cache-Control','public, max-age=30, s-maxage=60');if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});try{const chain=String(req.query.chain||'').toLowerCase(),q=String(req.query.q||'').trim();if(!['ethereum','base','bnb'].includes(chain)||!q)return res.status(200).json([]);const dsChain=chain==='ethereum'?'ethereum':chain==='base'?'base':'bsc',j=await fetchJson(`https://api.dexscreener.com/latest/dex/search?q=${encodeURIComponent(q)}`,{headers:{accept:'application/json'}},9000),seen=new Set(),rows=[];for(const pair of (j?.pairs||[])){if(String(pair?.chainId)!==dsChain)continue;for(const t of [pair?.baseToken,pair?.quoteToken]){const id=String(t?.address||'').toLowerCase();if(!validEvmAddress(id)||seen.has(id))continue;seen.add(id);rows.push({id,name:String(t?.name||'Unknown token'),symbol:String(t?.symbol||'TOKEN'),icon:pair?.info?.imageUrl||null,decimals:null,chain,liquidityUsd:number(pair?.liquidity?.usd)})}}rows.sort((a,b)=>(b.liquidityUsd||0)-(a.liquidityUsd||0));return res.status(200).json(rows.slice(0,20))}catch(e){return res.status(500).json({error:errorText(e)})}}
 
 async function healthHandler(req,res){
   res.setHeader('Cache-Control','no-store');
-  return res.status(200).json({ok:true,service:'Salt Swap scanner',version:'1.8.2',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY),zerox:Boolean(process.env.ZEROX_API_KEY)}});
+  return res.status(200).json({ok:true,service:'Salt Swap scanner',version:'1.8.3',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY),zerox:Boolean(process.env.ZEROX_API_KEY)}});
 }
 
 export default async function handler(req,res){
