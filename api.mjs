@@ -13,7 +13,7 @@ function errorText(v){if(v==null)return 'Request failed.';if(typeof v==='string'
 function finalize(checks,critical=false){const known=checks.filter(x=>x.known),tw=checks.reduce((s,x)=>s+x.weight,0)||1,kw=known.reduce((s,x)=>s+x.weight,0),risk=known.reduce((s,x)=>s+x.weight*Math.max(0,Math.min(100,x.risk))/100,0);let score=kw?Math.round(100-(risk/kw)*100):null;if(critical&&score!=null)score=Math.min(score,20);const confidence=Math.round(kw/tw*100);let tone='unknown',label='PRELIMINARY';if(score!=null&&confidence>=45){tone=score>=80?'good':score>=55?'warn':'bad';label=score>=80?'LOOKS HEALTHY':score>=55?'BE CAREFUL':'HIGH RISK'}return{score,confidence,checksCompleted:known.length,checksTotal:checks.length,label,tone}}
 async function fetchJson(url,options={},timeout=12000){const c=new AbortController();const t=setTimeout(()=>c.abort(),timeout);try{const r=await fetch(url,{...options,signal:c.signal});const text=await r.text();let data;try{data=text?JSON.parse(text):{}}catch{data={message:text}}if(!r.ok){const err=new Error(errorText(data?.message??data?.error??data) || `HTTP ${r.status}`);err.status=r.status;throw err}return data}finally{clearTimeout(t)}}
 async function rpc(url,method,params){const j=await fetchJson(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params})});if(j.error)throw new Error(j.error.message||'RPC error');return j.result}
-async function rpcBatch(url,calls){const arr=await fetchJson(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(calls)});if(!Array.isArray(arr))throw new Error('RPC did not return a batch response.');const by=Object.fromEntries(arr.map(x=>[x.id,x]));for(const x of arr)if(x.error)throw new Error(x.error.message||'RPC error');return by}
+async function rpcBatch(url,calls){const arr=await fetchJson(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(calls)});if(!Array.isArray(arr))throw new Error('RPC did not return a batch response.');const by=Object.fromEntries(arr.map(x=>[x.id,x]));for(const x of arr)if(x.error&&x.id!==4)throw new Error(x.error.message||'RPC error');return by}
 async function birdeye(path,chain){const key=process.env.BIRDEYE_API_KEY;if(!key)return null;try{const j=await fetchJson(`${BIRDEYE_BASE}${path}`,{headers:{accept:'application/json','X-API-KEY':key,'x-chain':chain}});return j?.data??j}catch(e){console.warn('Birdeye:',e.message);return null}}
 function field(o,...keys){for(const k of keys)if(o&&o[k]!=null)return o[k];return null}
 function securityBool(sec,...keys){return bool(field(sec,...keys))}
@@ -26,22 +26,28 @@ async function scanSolana(mint){
   const calls=[
     {jsonrpc:'2.0',id:1,method:'getAccountInfo',params:[mint,{encoding:'jsonParsed',commitment:'confirmed'}]},
     {jsonrpc:'2.0',id:2,method:'getTokenSupply',params:[mint,{commitment:'confirmed'}]},
-    {jsonrpc:'2.0',id:3,method:'getTokenLargestAccounts',params:[mint,{commitment:'confirmed'}]}
+    {jsonrpc:'2.0',id:3,method:'getTokenLargestAccounts',params:[mint,{commitment:'confirmed'}]},
+    {jsonrpc:'2.0',id:4,method:'getAsset',params:{id:mint,displayOptions:{showFungible:true}}}
   ];
   const [batch,overview,security]=await Promise.all([
     rpcBatch(url,calls),
     birdeye(`/defi/token_overview?address=${encodeURIComponent(mint)}&frames=5m,1h,24h`,'solana'),
     birdeye(`/defi/token_security?address=${encodeURIComponent(mint)}`,'solana')
   ]);
-  const info=batch[1]?.result, supply=batch[2]?.result, largest=batch[3]?.result;
+  const info=batch[1]?.result, supply=batch[2]?.result, largest=batch[3]?.result, asset=batch[4]?.result;
   const parsed=info?.value?.data?.parsed?.info;if(!parsed)throw Object.assign(new Error('No standard Solana token mint was found at that address.'),{status:404});
   const top10=top10FromRpc(largest,supply);
   const mintActive=parsed.mintAuthority!=null;
   const freezeActive=parsed.freezeAuthority!=null;
   const liq=number(field(overview,'liquidity','liquidityUsd','liquidity_usd'));
   const holders=number(field(overview,'holder','holderCount','holder_count','holders'));
-  const name=field(overview,'name')||field(security,'name')||'Solana token';
-  const symbol=field(overview,'symbol')||field(security,'symbol')||'TOKEN';
+  const assetMeta=asset?.content?.metadata||{};
+  const assetLinks=asset?.content?.links||{};
+  const assetFile=Array.isArray(asset?.content?.files)?asset.content.files.find(f=>f?.uri)||asset.content.files[0]:null;
+  const name=field(assetMeta,'name')||field(asset?.token_info,'name')||field(overview,'name')||field(security,'name')||'Unknown token';
+  const symbol=field(assetMeta,'symbol')||field(asset?.token_info,'symbol')||field(overview,'symbol')||field(security,'symbol')||'TOKEN';
+  const logoUri=field(assetLinks,'image')||field(assetFile,'uri')||field(overview,'logoURI','logo_uri')||null;
+  const identitySource=field(assetMeta,'name')||field(asset?.token_info,'symbol')?'Helius metadata':(field(overview,'name')||field(overview,'symbol')?'Birdeye':'On-chain mint');
   const verified=Boolean(field(overview,'logoURI','logo_uri'));
   const securityMint=securityBool(security,'is_mintable','mintable');
   const securityFreeze=securityBool(security,'freezeable','freezable','is_freezable');
@@ -55,7 +61,7 @@ async function scanSolana(mint){
     {known:holders!=null,weight:10,risk:0},{known:security!=null,weight:15,risk:0}
   ];
   const s=finalize(checks);
-  return {mint,chain:'solana',name,symbol,verified,...s,
+  return {mint,chain:'solana',name,symbol,logoUri,identitySource,verified,...s,
     summary:risks.length?`Salt completed ${s.checksCompleted}/${s.checksTotal} core checks and found ${risks.join(', ')}.`:`Salt completed ${s.checksCompleted}/${s.checksTotal} core checks. No major warning was found in the data currently available.`,
     authenticity:metric('Mint confirmed','good','Helius confirmed a valid Solana token mint on-chain.','Helius'),
     sellable:metric(liq!=null?'Market found':'Not simulated',liq!=null?'good':'unknown',liq!=null?'Birdeye returned live market/liquidity data.':'A real swap-route simulation is a later Salt layer.',liq!=null?'Birdeye':'Salt'),
@@ -119,7 +125,7 @@ async function scanHandler(req,res){
 
 async function healthHandler(req,res){
   res.setHeader('Cache-Control','no-store');
-  return res.status(200).json({ok:true,service:'Salt Swap scanner',version:'1.6.1',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY)}});
+  return res.status(200).json({ok:true,service:'Salt Swap scanner',version:'1.6.2',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY)}});
 }
 
 export default async function handler(req,res){
