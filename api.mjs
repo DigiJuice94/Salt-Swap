@@ -4,6 +4,8 @@ const ETH_RPC='https://ethereum-rpc.publicnode.com';
 const BNB_RPC='https://bsc-dataseed.binance.org';
 const JUPITER_BASE='https://api.jup.ag/swap/v2';
 const JUPITER_TOKENS_BASE='https://api.jup.ag/tokens/v2';
+const ZEROX_BASE='https://api.0x.org/swap/allowance-holder';
+const NATIVE_EVM='0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
 const SOL_MINT='So11111111111111111111111111111111111111112';
 
 const metric=(value,status,detail,source='Salt')=>({value,status,detail,source});
@@ -273,21 +275,30 @@ async function executeHandler(req,res){
 
 
 function tokenShape(t){return{id:String(t?.id||''),name:String(t?.name||'Unknown token'),symbol:String(t?.symbol||'TOKEN'),icon:t?.icon||null,decimals:number(t?.decimals)??0,isVerified:Boolean(t?.isVerified),organicScore:number(t?.organicScore),usdPrice:number(t?.usdPrice),holderCount:number(t?.holderCount),mcap:number(t?.mcap)}}
+async function enrichSolIcons(rows){const list=(rows||[]).filter(x=>x?.id);if(!list.length)return rows;try{const ds=await fetchJson(`https://api.dexscreener.com/tokens/v1/solana/${list.slice(0,30).map(x=>encodeURIComponent(x.id)).join(',')}`,{headers:{accept:'application/json'}},8000);for(const row of list){if(row.icon)continue;const pairs=(Array.isArray(ds)?ds:[]).filter(x=>String(x?.baseToken?.address||'')===row.id||String(x?.quoteToken?.address||'')===row.id).sort((a,b)=>(Number(b?.liquidity?.usd)||0)-(Number(a?.liquidity?.usd)||0));const img=pairs.find(x=>x?.info?.imageUrl)?.info?.imageUrl;if(img)row.icon=img}}catch(e){console.warn('DexScreener icon fallback:',errorText(e))}return rows}
 async function jupiterTokens(path){const key=jupiterKey();return fetchJson(`${JUPITER_TOKENS_BASE}${path}`,{headers:{accept:'application/json','x-api-key':key}},10000)}
 async function tokensHandler(req,res){
   res.setHeader('Cache-Control','public, max-age=30, s-maxage=60');
   if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});
   try{
     const mode=String(req.query.mode||'search').toLowerCase();
-    if(mode==='trending'){const arr=await jupiterTokens('/toptrending/1h?limit=12');return res.status(200).json((Array.isArray(arr)?arr:[]).map(tokenShape));}
-    if(mode==='popular'){const arr=await jupiterTokens('/search?query='+encodeURIComponent('SOL,USDC,USDT,WBTC,WETH,JitoSOL'));const rows=(Array.isArray(arr)?arr:[]).map(tokenShape),wanted=['SOL','USDC','USDT','WBTC','WETH','JITOSOL'],picked=[];for(const sym of wanted){const candidates=rows.filter(x=>x.symbol.toUpperCase()===sym).sort((a,b)=>(Number(b.isVerified)-Number(a.isVerified))+(Number(b.organicScore||0)-Number(a.organicScore||0))/100);if(candidates[0]&&!picked.some(x=>x.id===candidates[0].id))picked.push(candidates[0]);}return res.status(200).json(picked);}
-    const q=String(req.query.q||'').trim();if(!q)return res.status(200).json([]);const arr=await jupiterTokens('/search?query='+encodeURIComponent(q));return res.status(200).json((Array.isArray(arr)?arr:[]).slice(0,20).map(tokenShape));
+    if(mode==='trending'){const arr=await jupiterTokens('/toptrending/1h?limit=12');const rows=(Array.isArray(arr)?arr:[]).map(tokenShape);await enrichSolIcons(rows);return res.status(200).json(rows);}
+    if(mode==='popular'){const arr=await jupiterTokens('/search?query='+encodeURIComponent('SOL,USDC,USDT,WBTC,WETH,JitoSOL'));const rows=(Array.isArray(arr)?arr:[]).map(tokenShape),wanted=['SOL','USDC','USDT','WBTC','WETH','JITOSOL'],picked=[];for(const sym of wanted){const candidates=rows.filter(x=>x.symbol.toUpperCase()===sym).sort((a,b)=>(Number(b.isVerified)-Number(a.isVerified))+(Number(b.organicScore||0)-Number(a.organicScore||0))/100);if(candidates[0]&&!picked.some(x=>x.id===candidates[0].id))picked.push(candidates[0]);}await enrichSolIcons(picked);return res.status(200).json(picked);}
+    const q=String(req.query.q||'').trim();if(!q)return res.status(200).json([]);const arr=await jupiterTokens('/search?query='+encodeURIComponent(q));const rows=(Array.isArray(arr)?arr:[]).slice(0,20).map(tokenShape);await enrichSolIcons(rows);return res.status(200).json(rows);
   }catch(e){console.error('Salt token search error',e);return res.status(Number(e?.status)||500).json({error:errorText(e)})}
 }
 
+
+function zeroXKey(){const key=process.env.ZEROX_API_KEY;if(!key){const e=new Error('Ethereum/BNB swaps are not configured yet. Add ZEROX_API_KEY in Vercel Environment Variables, then redeploy.');e.status=503;throw e}return key}
+const EVM_CHAINS={ethereum:1,bnb:56};
+function validEvmAddress(v){return /^0x[a-fA-F0-9]{40}$/.test(String(v||''))}
+async function getZeroXQuote({chain,sellToken,buyToken,sellAmount,taker,firm=false}){const chainId=EVM_CHAINS[chain];if(!chainId)throw Object.assign(new Error('Unsupported EVM chain.'),{status:400});if(!validEvmAddress(sellToken)||!validEvmAddress(buyToken))throw Object.assign(new Error('Invalid EVM token address.'),{status:400});if(sellToken.toLowerCase()===buyToken.toLowerCase())throw Object.assign(new Error('Choose two different tokens.'),{status:400});if(!validPositiveInteger(sellAmount))throw Object.assign(new Error('Swap amount must be positive.'),{status:400});if(taker&&!validEvmAddress(taker))throw Object.assign(new Error('Invalid EVM wallet address.'),{status:400});const q=new URLSearchParams({chainId:String(chainId),sellToken,buyToken,sellAmount,slippageBps:'100'});if(taker)q.set('taker',taker);const kind=firm&&taker?'quote':'price';const z=await fetchJson(`${ZEROX_BASE}/${kind}?${q}`,{headers:{accept:'application/json','0x-api-key':zeroXKey(),'0x-version':'v2'}},15000);if(!z?.buyAmount||String(z.buyAmount)==='0')throw Object.assign(new Error(z?.reason||z?.validationErrors?.[0]?.reason||'0x could not find a live route for this pair.'),{status:422});const allowance=z?.issues?.allowance||null;return{chain,chainId,sellToken,buyToken,sellAmount:String(z.sellAmount||sellAmount),buyAmount:String(z.buyAmount),minBuyAmount:z.minBuyAmount?String(z.minBuyAmount):null,route:'0x',liquidityAvailable:z.liquidityAvailable!==false,allowanceSpender:allowance?.spender||z.allowanceTarget||null,allowanceActual:allowance?.actual!=null?String(allowance.actual):null,transaction:firm?(z.transaction||null):null,fees:z.fees||null,totalNetworkFee:z.totalNetworkFee||null,quotedAt:Date.now()}}
+async function evmQuoteHandler(req,res){res.setHeader('Cache-Control','no-store');if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});try{const chain=String(req.query.chain||'').toLowerCase(),sellToken=String(req.query.sellToken||'').toLowerCase(),buyToken=String(req.query.buyToken||'').toLowerCase(),sellAmount=String(req.query.sellAmount||''),taker=String(req.query.taker||'').toLowerCase()||null,firm=String(req.query.firm||'')==='1';return res.status(200).json(await getZeroXQuote({chain,sellToken,buyToken,sellAmount,taker,firm}))}catch(e){console.error('Salt 0x quote error',e);return res.status(Number(e?.status)||500).json({error:errorText(e)})}}
+async function evmTokensHandler(req,res){res.setHeader('Cache-Control','public, max-age=30, s-maxage=60');if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});try{const chain=String(req.query.chain||'').toLowerCase(),q=String(req.query.q||'').trim();if(!['ethereum','bnb'].includes(chain)||!q)return res.status(200).json([]);const dsChain=chain==='ethereum'?'ethereum':'bsc',j=await fetchJson(`https://api.dexscreener.com/latest/dex/search?q=${encodeURIComponent(q)}`,{headers:{accept:'application/json'}},9000),seen=new Set(),rows=[];for(const pair of (j?.pairs||[])){if(String(pair?.chainId)!==dsChain)continue;for(const t of [pair?.baseToken,pair?.quoteToken]){const id=String(t?.address||'').toLowerCase();if(!validEvmAddress(id)||seen.has(id))continue;seen.add(id);rows.push({id,name:String(t?.name||'Unknown token'),symbol:String(t?.symbol||'TOKEN'),icon:pair?.info?.imageUrl||null,decimals:null,chain,liquidityUsd:number(pair?.liquidity?.usd)})}}rows.sort((a,b)=>(b.liquidityUsd||0)-(a.liquidityUsd||0));return res.status(200).json(rows.slice(0,20))}catch(e){return res.status(500).json({error:errorText(e)})}}
+
 async function healthHandler(req,res){
   res.setHeader('Cache-Control','no-store');
-  return res.status(200).json({ok:true,service:'Salt Swap scanner',version:'1.7.1',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY)}});
+  return res.status(200).json({ok:true,service:'Salt Swap scanner',version:'1.7.2',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY),zerox:Boolean(process.env.ZEROX_API_KEY)}});
 }
 
 export default async function handler(req,res){
@@ -298,6 +309,8 @@ export default async function handler(req,res){
     if(route==='quote')return quoteHandler(req,res);
     if(route==='execute')return executeHandler(req,res);
     if(route==='tokens')return tokensHandler(req,res);
+    if(route==='evm-quote')return evmQuoteHandler(req,res);
+    if(route==='evm-tokens')return evmTokensHandler(req,res);
     return res.status(404).json({error:'Salt API route not found.'});
   }catch(e){
     console.error('Salt API router error',e);

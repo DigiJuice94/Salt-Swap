@@ -37,6 +37,14 @@
       "dest": "/api.mjs?route=tokens"
     },
     {
+      "src": "/api/evm-quote",
+      "dest": "/api.mjs?route=evm-quote"
+    },
+    {
+      "src": "/api/evm-tokens",
+      "dest": "/api.mjs?route=evm-tokens"
+    },
+    {
       "src": "/styles.css",
       "dest": "/styles.css"
     },
