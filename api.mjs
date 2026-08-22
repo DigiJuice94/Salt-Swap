@@ -3,6 +3,7 @@ const BIRDEYE_BASE='https://public-api.birdeye.so';
 const ETH_RPC='https://ethereum-rpc.publicnode.com';
 const BNB_RPC='https://bsc-dataseed.binance.org';
 const JUPITER_BASE='https://api.jup.ag/swap/v2';
+const JUPITER_TOKENS_BASE='https://api.jup.ag/tokens/v2';
 const SOL_MINT='So11111111111111111111111111111111111111112';
 
 const metric=(value,status,detail,source='Salt')=>({value,status,detail,source});
@@ -234,16 +235,18 @@ function jupiterKey(){const key=process.env.JUPITER_API_KEY;if(!key){const e=new
 function validSolAddress(v){return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(String(v||''))}
 function validPositiveInteger(v){return /^\d+$/.test(String(v||''))&&BigInt(String(v))>0n}
 function normalizePriceImpact(order){const direct=number(field(order,'priceImpact'));if(direct!=null)return direct;const pct=number(field(order,'priceImpactPct'));if(pct==null)return null;return Math.abs(pct)<=1?pct*100:pct}
-async function getJupiterOrder({outputMint,amount,taker}){
+async function getJupiterOrder({inputMint=SOL_MINT,outputMint,amount,taker}){
   const key=jupiterKey();
+  if(!validSolAddress(inputMint))throw Object.assign(new Error('Invalid Solana input mint.'),{status:400});
   if(!validSolAddress(outputMint))throw Object.assign(new Error('Invalid Solana output mint.'),{status:400});
+  if(String(inputMint)===String(outputMint))throw Object.assign(new Error('Choose two different tokens to swap.'),{status:400});
   if(!validPositiveInteger(amount))throw Object.assign(new Error('Swap amount must be a positive integer in lamports.'),{status:400});
   if(taker&&!validSolAddress(taker))throw Object.assign(new Error('Invalid Solana wallet address.'),{status:400});
-  const params=new URLSearchParams({inputMint:SOL_MINT,outputMint:String(outputMint),amount:String(amount)});if(taker)params.set('taker',String(taker));
+  const params=new URLSearchParams({inputMint:String(inputMint),outputMint:String(outputMint),amount:String(amount)});if(taker)params.set('taker',String(taker));
   const order=await fetchJson(`${JUPITER_BASE}/order?${params.toString()}`,{headers:{accept:'application/json','x-api-key':key}},12000);
   if(!order?.outAmount||String(order.outAmount)==='0')throw Object.assign(new Error(order?.errorMessage||'Jupiter could not find a live route for this amount.'),{status:422});
   return {
-    inputMint:field(order,'inputMint')||SOL_MINT,outputMint:field(order,'outputMint')||String(outputMint),
+    inputMint:field(order,'inputMint')||String(inputMint),outputMint:field(order,'outputMint')||String(outputMint),
     inAmount:String(field(order,'inAmount')||amount),outAmount:String(order.outAmount),
     transaction:taker?(order.transaction??null):null,requestId:order.requestId||null,
     router:order.router||'Jupiter',mode:order.mode||'ultra',feeBps:number(order.feeBps),feeMint:order.feeMint||null,
@@ -255,7 +258,7 @@ async function getJupiterOrder({outputMint,amount,taker}){
 async function quoteHandler(req,res){
   res.setHeader('Cache-Control','no-store');
   if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});
-  try{const outputMint=String(req.query.outputMint||'').trim(),amount=String(req.query.amount||'').trim(),taker=String(req.query.taker||'').trim()||null;const order=await getJupiterOrder({outputMint,amount,taker});return res.status(200).json(order)}catch(e){console.error('Salt quote error',e);return res.status(Number(e?.status)||500).json({error:errorText(e)})}
+  try{const inputMint=String(req.query.inputMint||SOL_MINT).trim(),outputMint=String(req.query.outputMint||'').trim(),amount=String(req.query.amount||'').trim(),taker=String(req.query.taker||'').trim()||null;const order=await getJupiterOrder({inputMint,outputMint,amount,taker});return res.status(200).json(order)}catch(e){console.error('Salt quote error',e);return res.status(Number(e?.status)||500).json({error:errorText(e)})}
 }
 async function executeHandler(req,res){
   res.setHeader('Cache-Control','no-store');
@@ -268,9 +271,23 @@ async function executeHandler(req,res){
   }catch(e){console.error('Salt execute error',e);return res.status(Number(e?.status)||500).json({error:errorText(e)})}
 }
 
+
+function tokenShape(t){return{id:String(t?.id||''),name:String(t?.name||'Unknown token'),symbol:String(t?.symbol||'TOKEN'),icon:t?.icon||null,decimals:number(t?.decimals)??0,isVerified:Boolean(t?.isVerified),organicScore:number(t?.organicScore),usdPrice:number(t?.usdPrice),holderCount:number(t?.holderCount),mcap:number(t?.mcap)}}
+async function jupiterTokens(path){const key=jupiterKey();return fetchJson(`${JUPITER_TOKENS_BASE}${path}`,{headers:{accept:'application/json','x-api-key':key}},10000)}
+async function tokensHandler(req,res){
+  res.setHeader('Cache-Control','public, max-age=30, s-maxage=60');
+  if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});
+  try{
+    const mode=String(req.query.mode||'search').toLowerCase();
+    if(mode==='trending'){const arr=await jupiterTokens('/toptrending/1h?limit=12');return res.status(200).json((Array.isArray(arr)?arr:[]).map(tokenShape));}
+    if(mode==='popular'){const arr=await jupiterTokens('/search?query='+encodeURIComponent('SOL,USDC,USDT,WBTC,WETH,JitoSOL'));const rows=(Array.isArray(arr)?arr:[]).map(tokenShape),wanted=['SOL','USDC','USDT','WBTC','WETH','JITOSOL'],picked=[];for(const sym of wanted){const candidates=rows.filter(x=>x.symbol.toUpperCase()===sym).sort((a,b)=>(Number(b.isVerified)-Number(a.isVerified))+(Number(b.organicScore||0)-Number(a.organicScore||0))/100);if(candidates[0]&&!picked.some(x=>x.id===candidates[0].id))picked.push(candidates[0]);}return res.status(200).json(picked);}
+    const q=String(req.query.q||'').trim();if(!q)return res.status(200).json([]);const arr=await jupiterTokens('/search?query='+encodeURIComponent(q));return res.status(200).json((Array.isArray(arr)?arr:[]).slice(0,20).map(tokenShape));
+  }catch(e){console.error('Salt token search error',e);return res.status(Number(e?.status)||500).json({error:errorText(e)})}
+}
+
 async function healthHandler(req,res){
   res.setHeader('Cache-Control','no-store');
-  return res.status(200).json({ok:true,service:'Salt Swap scanner',version:'1.7.0',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY)}});
+  return res.status(200).json({ok:true,service:'Salt Swap scanner',version:'1.7.1',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY)}});
 }
 
 export default async function handler(req,res){
@@ -280,6 +297,7 @@ export default async function handler(req,res){
     if(route==='scan')return scanHandler(req,res);
     if(route==='quote')return quoteHandler(req,res);
     if(route==='execute')return executeHandler(req,res);
+    if(route==='tokens')return tokensHandler(req,res);
     return res.status(404).json({error:'Salt API route not found.'});
   }catch(e){
     console.error('Salt API router error',e);

@@ -33,6 +33,10 @@
       "dest": "/api.mjs?route=execute"
     },
     {
+      "src": "/api/tokens",
+      "dest": "/api.mjs?route=tokens"
+    },
+    {
       "src": "/styles.css",
       "dest": "/styles.css"
     },
