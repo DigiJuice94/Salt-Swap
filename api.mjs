@@ -14,10 +14,39 @@ function finalize(checks,critical=false){const known=checks.filter(x=>x.known),t
 async function fetchJson(url,options={},timeout=12000){const c=new AbortController();const t=setTimeout(()=>c.abort(),timeout);try{const r=await fetch(url,{...options,signal:c.signal});const text=await r.text();let data;try{data=text?JSON.parse(text):{}}catch{data={message:text}}if(!r.ok){const err=new Error(errorText(data?.message??data?.error??data) || `HTTP ${r.status}`);err.status=r.status;throw err}return data}finally{clearTimeout(t)}}
 async function rpc(url,method,params){const j=await fetchJson(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params})});if(j.error)throw new Error(j.error.message||'RPC error');return j.result}
 async function rpcBatch(url,calls){const arr=await fetchJson(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(calls)});if(!Array.isArray(arr))throw new Error('RPC did not return a batch response.');const by=Object.fromEntries(arr.map(x=>[x.id,x]));for(const x of arr)if(x.error&&x.id!==4)throw new Error(x.error.message||'RPC error');return by}
-async function birdeye(path,chain){const key=process.env.BIRDEYE_API_KEY;if(!key)return null;try{const j=await fetchJson(`${BIRDEYE_BASE}${path}`,{headers:{accept:'application/json','X-API-KEY':key,'x-chain':chain}});return j?.data??j}catch(e){console.warn('Birdeye:',e.message);return null}}
+const BIRDEYE_CACHE=new Map();
+async function birdeye(path,chain){const key=process.env.BIRDEYE_API_KEY;if(!key)return null;const ck=`${chain}:${path}`,now=Date.now(),hit=BIRDEYE_CACHE.get(ck);if(hit&&now-hit.time<60000)return hit.data;try{const j=await fetchJson(`${BIRDEYE_BASE}${path}`,{headers:{accept:'application/json','X-API-KEY':key,'x-chain':chain}});const data=j?.data??j;BIRDEYE_CACHE.set(ck,{time:now,data});return data}catch(e){console.warn('Birdeye:',e.message);return null}}
 function field(o,...keys){for(const k of keys)if(o&&o[k]!=null)return o[k];return null}
 function securityBool(sec,...keys){return bool(field(sec,...keys))}
 function top10FromRpc(largest,supply){const total=Number(supply?.value?.uiAmountString??supply?.value?.uiAmount??0);if(!total)return null;const vals=(largest?.value||[]).map(x=>Number(x.uiAmountString??x.uiAmount??0)).filter(Number.isFinite);return vals.slice(0,10).reduce((a,b)=>a+b,0)/total*100}
+
+function holderTag(profile,name){
+  if(!profile)return null;
+  const tags=profile.tags??profile.holder_tags??profile.holderTags??profile.tag_summary??profile.tagSummary;
+  const wanted=String(name).toLowerCase().replace(/[- ]/g,'_');
+  if(Array.isArray(tags)){
+    return tags.find(x=>String(field(x,'tag','label','name','type','holder_tag')??'').toLowerCase().replace(/[- ]/g,'_')===wanted)||null;
+  }
+  if(tags&&typeof tags==='object'){
+    for(const [k,v] of Object.entries(tags))if(String(k).toLowerCase().replace(/[- ]/g,'_')===wanted)return v;
+  }
+  return null;
+}
+function holderPct(entry){
+  const n=number(field(entry,'percent_of_supply','percentOfSupply','supply_percent','supplyPercent','percentage','percent'));
+  if(n==null)return null;
+  return n>=0&&n<=1?n*100:n;
+}
+function holderCount(entry){return number(field(entry,'holder_count','holderCount','count','wallet_count','walletCount'))}
+function cohortMetric(entry,label,thresholds,description){
+  if(!entry)return metric('Unavailable','unknown',`${label} classification was not returned for this token. Birdeye holder labels depend on indexing coverage and plan/usage availability.`,'Birdeye Holder Profile');
+  const pct=holderPct(entry), wallets=holderCount(entry);
+  if(pct==null)return metric('Indexed · % unavailable','unknown',`${label} wallets were indexed, but Birdeye did not return a current supply percentage.`,'Birdeye Holder Profile');
+  const [goodMax,warnMax]=thresholds;
+  const status=pct<goodMax?'good':pct<warnMax?'warn':'bad';
+  const countText=wallets==null?'':` across ${Math.round(wallets).toLocaleString('en-US')} wallet${Math.round(wallets)===1?'':'s'}`;
+  return metric(`${pct.toFixed(1)}%`,status,`${description} Currently holding about ${pct.toFixed(1)}% of supply${countText}.`,'Birdeye Holder Profile');
+}
 
 async function scanSolana(mint){
   const key=process.env.HELIUS_API_KEY;
@@ -29,10 +58,11 @@ async function scanSolana(mint){
     {jsonrpc:'2.0',id:3,method:'getTokenLargestAccounts',params:[mint,{commitment:'confirmed'}]},
     {jsonrpc:'2.0',id:4,method:'getAsset',params:{id:mint,displayOptions:{showFungible:true}}}
   ];
-  const [batch,overview,security]=await Promise.all([
+  const [batch,overview,security,holderProfile]=await Promise.all([
     rpcBatch(url,calls),
     birdeye(`/defi/token_overview?address=${encodeURIComponent(mint)}&frames=5m,1h,24h`,'solana'),
-    birdeye(`/defi/token_security?address=${encodeURIComponent(mint)}`,'solana')
+    birdeye(`/defi/token_security?address=${encodeURIComponent(mint)}`,'solana'),
+    birdeye(`/token/v1/holder-profile?token_address=${encodeURIComponent(mint)}&interval=1h&include_zero_balance=false`,'solana')
   ]);
   const info=batch[1]?.result, supply=batch[2]?.result, largest=batch[3]?.result, asset=batch[4]?.result;
   const parsed=info?.value?.data?.parsed?.info;if(!parsed)throw Object.assign(new Error('No standard Solana token mint was found at that address.'),{status:404});
@@ -53,12 +83,18 @@ async function scanSolana(mint){
   const securityFreeze=securityBool(security,'freezeable','freezable','is_freezable');
   const mintable=securityMint==null?mintActive:securityMint;
   const freezable=securityFreeze==null?freezeActive:securityFreeze;
-  const risks=[];if(mintable)risks.push('mint authority/capability is active');if(freezable)risks.push('freeze authority/capability is active');if(top10!=null&&top10>=40)risks.push('supply is concentrated');if(liq!=null&&liq<20000)risks.push('liquidity is thin');
+  const bundlerTag=holderTag(holderProfile,'bundler'), sniperTag=holderTag(holderProfile,'sniper'), insiderTag=holderTag(holderProfile,'insider'), devTag=holderTag(holderProfile,'dev'), smartTag=holderTag(holderProfile,'smart_trader');
+  const bundlePct=holderPct(bundlerTag), sniperPct=holderPct(sniperTag), insiderPct=holderPct(insiderTag), devPct=holderPct(devTag);
+  const risks=[];if(mintable)risks.push('mint authority/capability is active');if(freezable)risks.push('freeze authority/capability is active');if(top10!=null&&top10>=40)risks.push('supply is concentrated');if(liq!=null&&liq<20000)risks.push('liquidity is thin');if(bundlePct!=null&&bundlePct>=15)risks.push(`${bundlePct.toFixed(1)}% of supply is held by tagged bundler wallets`);if(sniperPct!=null&&sniperPct>=15)risks.push(`${sniperPct.toFixed(1)}% of supply is held by tagged sniper wallets`);if(insiderPct!=null&&insiderPct>=8)risks.push(`${insiderPct.toFixed(1)}% of supply is held by tagged insider wallets`);if(devPct!=null&&devPct>=10)risks.push(`${devPct.toFixed(1)}% of supply is held by the tagged dev wallet cohort`);
   const checks=[
-    {known:true,weight:10,risk:0},{known:true,weight:15,risk:mintable?80:0},{known:true,weight:15,risk:freezable?75:0},
-    {known:top10!=null,weight:20,risk:top10>=70?100:top10>=50?80:top10>=35?55:top10>=20?25:5},
-    {known:liq!=null,weight:15,risk:liq<5000?100:liq<20000?75:liq<50000?45:liq<150000?20:5},
-    {known:holders!=null,weight:10,risk:0},{known:security!=null,weight:15,risk:0}
+    {known:true,weight:10,risk:0},{known:true,weight:12,risk:mintable?80:0},{known:true,weight:12,risk:freezable?75:0},
+    {known:top10!=null,weight:16,risk:top10>=70?100:top10>=50?80:top10>=35?55:top10>=20?25:5},
+    {known:liq!=null,weight:12,risk:liq<5000?100:liq<20000?75:liq<50000?45:liq<150000?20:5},
+    {known:holders!=null,weight:6,risk:0},{known:security!=null,weight:8,risk:0},
+    {known:bundlePct!=null,weight:10,risk:bundlePct>=30?100:bundlePct>=15?70:bundlePct>=5?35:5},
+    {known:sniperPct!=null,weight:6,risk:sniperPct>=30?95:sniperPct>=15?65:sniperPct>=5?30:5},
+    {known:insiderPct!=null,weight:4,risk:insiderPct>=15?100:insiderPct>=8?70:insiderPct>=2?35:5},
+    {known:devPct!=null,weight:4,risk:devPct>=20?100:devPct>=10?70:devPct>=3?30:5}
   ];
   const s=finalize(checks);
   return {mint,chain:'solana',name,symbol,logoUri,identitySource,verified,...s,
@@ -68,9 +104,11 @@ async function scanSolana(mint){
     mintAuthority:metric(mintable?'Active':'Revoked',mintable?'bad':'good',mintable?'More supply may be mintable.':'No active mint capability was detected.',security?'Helius + Birdeye':'Helius'),
     freezeAuthority:metric(freezable?'Active':'Revoked',freezable?'bad':'good',freezable?'Token accounts may be freezeable.':'No active freeze capability was detected.',security?'Helius + Birdeye':'Helius'),
     top10:metric(top10==null?'Unknown':`${top10.toFixed(1)}%`,statusPct(top10),top10==null?'Holder concentration was unavailable.':`Top 10 token accounts hold about ${top10.toFixed(1)}% of current supply.`,'Helius'),
-    owner:metric('Needs wallet graph','unknown','Creator-linked holdings require wallet attribution.','Salt'),
-    bundled:metric('Needs wallet graph','unknown','Bundle analysis requires linked-wallet and funding analysis.','Salt'),
-    snipers:metric('Needs launch history','unknown','Sniper analysis requires launch transaction history.','Salt'),
+    owner:cohortMetric(devTag,'Dev wallet',[3,10],'Birdeye tags the mint creator/developer cohort and measures its current exposure.'),
+    bundled:cohortMetric(bundlerTag,'Bundler',[5,15],'Birdeye detected wallets associated with coordinated same-slot or adjacent-slot buying.'),
+    snipers:cohortMetric(sniperTag,'Sniper',[5,15],'Birdeye tags wallets that bought within the first 5 Solana blocks after the token’s first swap.'),
+    insiders:cohortMetric(insiderTag,'Insider',[2,8],'Birdeye tags wallets that received tokens directly from the creator/chef wallet rather than through a swap.'),
+    smartTraders:smartTag?cohortMetric(smartTag,'Smart trader',[101,102],'Birdeye tags non-bot wallets ranked among high realized-PnL traders.') : metric('Unavailable','unknown','Birdeye did not return a smart-trader cohort for this token.','Birdeye Holder Profile'),
     liquidity:metric(liq==null?'Unknown':money(liq),liq==null?'unknown':liq>=100000?'good':liq>=20000?'warn':'bad',liq==null?(process.env.BIRDEYE_API_KEY?'Birdeye did not return liquidity for this token.':'Add BIRDEYE_API_KEY for market/liquidity intelligence.'):`Current indexed liquidity is about ${money(liq)}.`,liq==null?'Salt':'Birdeye'),
     holders:metric(holders==null?'Unknown':count(holders),holders==null?'unknown':'good',holders==null?(process.env.BIRDEYE_API_KEY?'Birdeye did not return a holder count.':'Add BIRDEYE_API_KEY for indexed holder data.'):'Current indexed holder count.','Birdeye'),
     duplicates:metric('Needs identity graph','unknown','Official social/website contract matching is still a deeper Salt layer.','Salt'),
@@ -125,7 +163,7 @@ async function scanHandler(req,res){
 
 async function healthHandler(req,res){
   res.setHeader('Cache-Control','no-store');
-  return res.status(200).json({ok:true,service:'Salt Swap scanner',version:'1.6.2',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY)}});
+  return res.status(200).json({ok:true,service:'Salt Swap scanner',version:'1.6.3',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY)}});
 }
 
 export default async function handler(req,res){
