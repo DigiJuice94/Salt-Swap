@@ -20,6 +20,17 @@ function field(o,...keys){for(const k of keys)if(o&&o[k]!=null)return o[k];retur
 function securityBool(sec,...keys){return bool(field(sec,...keys))}
 function top10FromRpc(largest,supply){const total=Number(supply?.value?.uiAmountString??supply?.value?.uiAmount??0);if(!total)return null;const vals=(largest?.value||[]).map(x=>Number(x.uiAmountString??x.uiAmount??0)).filter(Number.isFinite);return vals.slice(0,10).reduce((a,b)=>a+b,0)/total*100}
 
+function normalizeMediaUri(uri){if(!uri||typeof uri!=='string')return null;const u=uri.trim();if(u.startsWith('ipfs://'))return `https://ipfs.io/ipfs/${u.slice(7).replace(/^ipfs\//,'')}`;if(u.startsWith('ar://'))return `https://arweave.net/${u.slice(5)}`;return /^https?:\/\//i.test(u)?u:null}
+function mediaCandidates(uri){const n=normalizeMediaUri(uri);if(!n)return [];const out=[n],m=n.match(/^https:\/\/ipfs\.io\/ipfs\/(.+)$/i);if(m)out.push(`https://dweb.link/ipfs/${m[1]}`);return [...new Set(out)]}
+function looksLikeImage(uri,mime=''){return /^image\//i.test(String(mime))||/\.(png|jpe?g|webp|gif|svg)(\?|#|$)/i.test(String(uri||''))}
+async function resolveSolanaIdentity(asset,overview,security,mint){const meta=asset?.content?.metadata||{},links=asset?.content?.links||{},files=Array.isArray(asset?.content?.files)?asset.content.files:[];let name=field(meta,'name')||field(asset?.token_info,'name')||field(overview,'name')||field(security,'name')||null,symbol=field(meta,'symbol')||field(asset?.token_info,'symbol')||field(overview,'symbol')||field(security,'symbol')||null;const logos=[],add=u=>{for(const x of mediaCandidates(u))if(!logos.includes(x))logos.push(x)};add(field(links,'image'));{const f=files.find(x=>looksLikeImage(x?.uri,x?.mime||x?.mimeType));add(f?.uri)}let source=(field(meta,'name')||field(asset?.token_info,'symbol'))?'Helius metadata':((field(overview,'name')||field(overview,'symbol'))?'Birdeye':'On-chain mint');const jsonUri=normalizeMediaUri(field(asset?.content,'json_uri','jsonUri')||field(meta,'uri'));if((!logos.length||!name||!symbol)&&jsonUri){try{const j=await fetchJson(jsonUri,{headers:{accept:'application/json'}},7000);name=name||field(j,'name');symbol=symbol||field(j,'symbol');add(field(j,'image','image_uri','imageUrl','image_url'));if(Array.isArray(j?.properties?.files)){const f=j.properties.files.find(x=>looksLikeImage(x?.uri,x?.type));add(f?.uri)}}catch(e){console.warn('Metadata URI:',e.message)}}if((!logos.length||!name||!symbol)&&String(mint).toLowerCase().endsWith('pump')){try{const j=await fetchJson(`https://frontend-api-v3.pump.fun/coins-v2/${encodeURIComponent(mint)}`,{headers:{accept:'application/json'}},7000),d=j?.data??j;name=name||field(d,'name');symbol=symbol||field(d,'symbol');add(field(d,'image_uri','imageUri','image'));if(field(d,'name')||field(d,'image_uri'))source='Pump.fun metadata'}catch(e){console.warn('Pump metadata:',e.message)}}if(!logos.length)add(field(overview,'logoURI','logo_uri'));if(!logos.length){try{const j=await fetchJson(`https://api.dexscreener.com/latest/dex/search?q=${encodeURIComponent(mint)}`,{headers:{accept:'application/json'}},6500),pair=(j?.pairs||[]).find(x=>String(x?.baseToken?.address||'')===mint||String(x?.quoteToken?.address||'')===mint);add(pair?.info?.imageUrl)}catch{}}return{name:name||'Unknown token',symbol:symbol||'TOKEN',logoUri:logos[0]||null,logoUris:logos,identitySource:source}}
+const BUNDLE_ANALYSIS_CACHE=new Map();
+function tradeTokenAddr(side){return field(side,'address','token_address','tokenAddress','mint')}
+function tradeHash(r){return field(r,'txHash','tx_hash','signature','txid')}
+function tradeOwner(r){return field(r,'owner','wallet','trader','walletAddress','wallet_address')}
+function isBuyTrade(r,mint){const ta=tradeTokenAddr(field(r,'to')),fa=tradeTokenAddr(field(r,'from'));if(ta===mint)return true;if(fa===mint)return false;return String(field(r,'side','type','txType','tx_type')||'').toLowerCase()==='buy'}
+async function saltLaunchBundleAnalysis(mint,rpcUrl,supplyUi){const hit=BUNDLE_ANALYSIS_CACHE.get(mint);if(hit&&Date.now()-hit.time<300000)return hit.data;try{const trades=await birdeye(`/defi/txs/token?address=${encodeURIComponent(mint)}&offset=0&limit=50&tx_type=swap&sort_type=asc&ui_amount_mode=scaled`,'solana'),buys=rowsFrom(trades).filter(r=>isBuyTrade(r,mint)&&tradeHash(r)&&tradeOwner(r)).slice(0,40);if(buys.length<4)return null;const calls=buys.map((r,i)=>({jsonrpc:'2.0',id:1000+i,method:'getTransaction',params:[tradeHash(r),{encoding:'jsonParsed',maxSupportedTransactionVersion:0,commitment:'confirmed'}]})),txs=await fetchJson(rpcUrl,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(calls)},15000),slots=new Map();for(const x of Array.isArray(txs)?txs:[]){const r=buys[Number(x.id)-1000],slot=number(x?.result?.slot);if(!r||slot==null)continue;if(!slots.has(slot))slots.set(slot,[]);slots.get(slot).push(r)}const bundled=new Set(),ordered=[...slots.keys()].sort((a,b)=>a-b);for(const slot of ordered){const rs=slots.get(slot)||[];if(rs.length>=4)rs.forEach(r=>bundled.add(tradeOwner(r)))}for(let i=0;i<ordered.length-1;i++){if(ordered[i+1]-ordered[i]>1)continue;const ws=new Set([...(slots.get(ordered[i])||[]),...(slots.get(ordered[i+1])||[])].map(tradeOwner).filter(Boolean));if(ws.size>=3)ws.forEach(w=>bundled.add(w))}if(!bundled.size)return{percent_of_supply:0,holder_count:0,_percentUnits:'percent',_source:'Salt launch bundle analysis'};const wallets=[...bundled].slice(0,30),bcalls=wallets.map((w,i)=>({jsonrpc:'2.0',id:2000+i,method:'getTokenAccountsByOwner',params:[w,{mint},{encoding:'jsonParsed',commitment:'confirmed'}]})),bal=await fetchJson(rpcUrl,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(bcalls)},15000);let held=0;for(const x of Array.isArray(bal)?bal:[])for(const a of x?.result?.value||[])held+=Number(a?.account?.data?.parsed?.info?.tokenAmount?.uiAmountString||a?.account?.data?.parsed?.info?.tokenAmount?.uiAmount||0);const data={percent_of_supply:supplyUi?held/supplyUi*100:null,holder_count:wallets.length,_percentUnits:'percent',_source:'Salt launch bundle analysis'};BUNDLE_ANALYSIS_CACHE.set(mint,{time:Date.now(),data});return data}catch(e){console.warn('Salt bundle analysis:',e.message);return null}}
+
 function holderTag(profile,name){
   if(!profile)return null;
   const tags=profile.tags??profile.holder_tags??profile.holderTags??profile.tag_summary??profile.tagSummary;
@@ -48,6 +59,8 @@ function cohortMetric(entry,label,thresholds,description){
   const status=pct<goodMax?'good':pct<warnMax?'warn':'bad';
   const countText=wallets==null?'':` across ${Math.round(wallets).toLocaleString('en-US')} wallet${Math.round(wallets)===1?'':'s'}`;
   if(entry._partial)return metric(`≥${pct.toFixed(1)}%`,status,`${description} The fallback only exposes the top tagged wallets, so Salt can verify at least ${pct.toFixed(1)}% of supply${countText}; the full cohort may be larger.`,source);
+  if(pct===0&&source==='Birdeye Holder Profile')return metric('No Birdeye-tagged wallets','unknown',`${description} Birdeye returned zero tagged ${label.toLowerCase()} wallets, but Salt does not treat an indexer zero as proof that none exist.`,source);
+  if(pct===0&&source==='Salt launch bundle analysis')return metric('No launch bundle detected','good',`${description} Salt checked the sampled earliest swaps for same-slot/adjacent-slot coordinated buying and found no qualifying launch bundle in that sample.`,source);
   return metric(`${pct.toFixed(1)}%`,status,`${description} Currently holding about ${pct.toFixed(1)}% of supply${countText}.`,source);
 }
 
@@ -121,11 +134,8 @@ async function scanSolana(mint){
   const supplyUi=Number(supply?.value?.uiAmountString??supply?.value?.uiAmount??0)||null;
   const top10=top10FromRpc(largest,supply), mintActive=parsed.mintAuthority!=null, freezeActive=parsed.freezeAuthority!=null;
   const liq=number(field(overview,'liquidity','liquidityUsd','liquidity_usd')), holders=number(field(overview,'holder','holderCount','holder_count','holders'));
-  const assetMeta=asset?.content?.metadata||{}, assetLinks=asset?.content?.links||{}, assetFile=Array.isArray(asset?.content?.files)?asset.content.files.find(f=>f?.uri)||asset.content.files[0]:null;
-  const name=field(assetMeta,'name')||field(asset?.token_info,'name')||field(overview,'name')||field(security,'name')||'Unknown token';
-  const symbol=field(assetMeta,'symbol')||field(asset?.token_info,'symbol')||field(overview,'symbol')||field(security,'symbol')||'TOKEN';
-  const logoUri=field(assetLinks,'image')||field(assetFile,'uri')||field(overview,'logoURI','logo_uri')||null;
-  const identitySource=field(assetMeta,'name')||field(asset?.token_info,'symbol')?'Helius metadata':(field(overview,'name')||field(overview,'symbol')?'Birdeye':'On-chain mint');
+  const identity=await resolveSolanaIdentity(asset,overview,security,mint);
+  const {name,symbol,logoUri,logoUris,identitySource}=identity;
   const verified=Boolean(field(overview,'logoURI','logo_uri'));
   const securityMint=securityBool(security,'is_mintable','mintable'), securityFreeze=securityBool(security,'freezeable','freezable','is_freezable');
   const mintable=securityMint==null?mintActive:securityMint, freezable=securityFreeze==null?freezeActive:securityFreeze;
@@ -135,6 +145,7 @@ async function scanSolana(mint){
     const fb=await fallbackTaggedCohorts(mint,supplyUi);
     for(const k of Object.keys(tags))if(!tags[k]&&fb[k])tags[k]=fb[k];
   }
+  const bp=holderPct(tags.bundler),bc=holderCount(tags.bundler);if(!tags.bundler||bp==null||bp===0||bc===0){const sb=await saltLaunchBundleAnalysis(mint,url,supplyUi);if(sb&&holderPct(sb)>0)tags.bundler=sb;else if(!tags.bundler&&sb)tags.bundler=sb;}
   const creator=await creatorIntel(url,mint,supplyUi);
   if(!tags.dev&&creator?.pct!=null)tags.dev={percent_of_supply:creator.pct,holder_count:1,_percentUnits:'percent',_source:'Helius creator wallet'};
   const duplicateCheck=await duplicateIntel(mint,name,symbol);
@@ -149,7 +160,7 @@ async function scanSolana(mint){
   ];
   const s=finalize(checks);
   const creatorHistory=creator?metric(creator.mintLike?`${creator.mintLike} recent mint/create event${creator.mintLike===1?'':'s'}`:'Creator identified',creator.mintLike>=3?'warn':'good',`Salt traced a likely launch signer ${creator.address.slice(0,6)}…${creator.address.slice(-4)}. Helius returned ${creator.recentCount} recent parsed transactions${creator.createdAt?` and the earliest sampled mint activity was ${new Date(creator.createdAt*1000).toLocaleDateString('en-US')}`:''}. This is creator-wallet context, not proof of every prior deployment.`,'Helius launch history'):metric('Could not verify','unknown','Salt could not reliably trace a creator wallet from the mint history for this scan.','Salt');
-  return {mint,chain:'solana',name,symbol,logoUri,identitySource,verified,...s,
+  return {mint,chain:'solana',name,symbol,logoUri,logoUris,identitySource,verified,...s,
     summary:risks.length?`Salt completed ${s.checksCompleted}/${s.checksTotal} core checks and found ${risks.join(', ')}.`:`Salt completed ${s.checksCompleted}/${s.checksTotal} core checks. No major warning was found in the data currently available.`,
     authenticity:metric('Mint confirmed','good','Helius confirmed a valid Solana token mint on-chain.','Helius'),
     sellable:metric(liq!=null?'Market found':'Not simulated',liq!=null?'good':'unknown',liq!=null?'Birdeye returned live market/liquidity data.':'A real swap-route simulation is a later Salt layer.',liq!=null?'Birdeye':'Salt'),
@@ -157,7 +168,7 @@ async function scanSolana(mint){
     freezeAuthority:metric(freezable?'Active':'Revoked',freezable?'bad':'good',freezable?'Token accounts may be freezeable.':'No active freeze capability was detected.',security?'Helius + Birdeye':'Helius'),
     top10:metric(top10==null?'Unknown':`${top10.toFixed(1)}%`,statusPct(top10),top10==null?'Holder concentration was unavailable.':`Top 10 token accounts hold about ${top10.toFixed(1)}% of current supply.`,'Helius'),
     owner:cohortMetric(devTag,'Creator / dev',[3,10],'Salt checks Birdeye dev labels first, then falls back to the creator wallet traced from Solana launch history.'),
-    bundled:cohortMetric(bundlerTag,'Bundler',[5,15],'Salt checks Birdeye Holder Profile first, then falls back to tagged Top Traders when available.'),
+    bundled:cohortMetric(bundlerTag,'Bundler',[5,15],'Salt checks Birdeye labels first, then independently checks early trade slots when coverage is missing or reports zero.'),
     snipers:cohortMetric(sniperTag,'Sniper',[5,15],'Salt checks Birdeye Holder Profile first, then falls back to tagged Top Traders when available.'),
     insiders:cohortMetric(insiderTag,'Insider',[2,8],'Salt checks Birdeye Holder Profile first, then falls back to tagged Top Traders when available.'),
     smartTraders:cohortMetric(smartTag,'Smart trader',[101,102],'Salt checks Birdeye Holder Profile first, then tagged Top Traders for profitable-wallet participation.'),
@@ -215,7 +226,7 @@ async function scanHandler(req,res){
 
 async function healthHandler(req,res){
   res.setHeader('Cache-Control','no-store');
-  return res.status(200).json({ok:true,service:'Salt Swap scanner',version:'1.6.4',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY)}});
+  return res.status(200).json({ok:true,service:'Salt Swap scanner',version:'1.6.5',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY)}});
 }
 
 export default async function handler(req,res){
