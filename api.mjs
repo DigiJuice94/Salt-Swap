@@ -141,6 +141,9 @@ async function scanSolana(mint){
   const decimals=number(supply?.value?.decimals)??number(parsed?.decimals)??0;
   const top10=top10FromRpc(largest,supply), mintActive=parsed.mintAuthority!=null, freezeActive=parsed.freezeAuthority!=null;
   const liq=number(field(overview,'liquidity','liquidityUsd','liquidity_usd')), holders=number(field(overview,'holder','holderCount','holder_count','holders'));
+  const priceUsd=number(field(overview,'price','priceUsd','price_usd','value'));
+  const indexedMarketCap=number(field(overview,'mc','marketCap','market_cap','marketcap','marketCapUsd','market_cap_usd'));
+  const marketCapUsd=indexedMarketCap??(priceUsd!=null&&supplyUi!=null?priceUsd*supplyUi:null);
   const identity=await resolveSolanaIdentity(asset,overview,security,mint);
   const {name,symbol,logoUri,logoUris,identitySource}=identity;
   const verified=Boolean(field(overview,'logoURI','logo_uri'));
@@ -168,7 +171,7 @@ async function scanSolana(mint){
   const baseScore=finalize(checks);
   const s=applyHardRiskOverrides(baseScore,{mintable,freezable,top10,bundlePct,devPct});
   const creatorHistory=creator?metric(creator.mintLike?`${creator.mintLike} recent mint/create event${creator.mintLike===1?'':'s'}`:'Creator identified',creator.mintLike>=3?'warn':'good',`Salt traced a likely launch signer ${creator.address.slice(0,6)}…${creator.address.slice(-4)}. Helius returned ${creator.recentCount} recent parsed transactions${creator.createdAt?` and the earliest sampled mint activity was ${new Date(creator.createdAt*1000).toLocaleDateString('en-US')}`:''}. This is creator-wallet context, not proof of every prior deployment.`,'Helius launch history'):metric('Could not verify','unknown','Salt could not reliably trace a creator wallet from the mint history for this scan.','Salt');
-  return {mint,chain:'solana',name,symbol,decimals,logoUri,logoUris,identitySource,verified,...s,
+  return {mint,chain:'solana',name,symbol,decimals,logoUri,logoUris,identitySource,verified,priceUsd,marketCapUsd,...s,
     summary:s.hardRiskOverride?`HIGH RISK override triggered: ${s.hardRiskReasons.join('; ')}. Salt completed ${s.checksCompleted}/${s.checksTotal} core checks. The numerical Salt Score is still shown, but positive checks cannot cancel these severe structural risks.`:risks.length?`Salt completed ${s.checksCompleted}/${s.checksTotal} core checks and found ${risks.join(', ')}.`:`Salt completed ${s.checksCompleted}/${s.checksTotal} core checks. No major warning was found in the data currently available.`,
     authenticity:metric('Mint confirmed','good','Helius confirmed a valid Solana token mint on-chain.','Helius'),
     sellable:metric(liq!=null?'Market found':'Not simulated',liq!=null?'good':'unknown',liq!=null?'Birdeye returned live market/liquidity data.':'A real swap-route simulation is a later Salt layer.',liq!=null?'Birdeye':'Salt'),
@@ -200,11 +203,13 @@ async function scanEvm(address,pref){
   const [code,overview,security]=await Promise.all([rpc(rpcUrl,'eth_getCode',[address,'latest']),birdeye(`/defi/token_overview?address=${encodeURIComponent(address)}&frames=5m,1h,24h`,beChain),birdeye(`/defi/token_security?address=${encodeURIComponent(address)}`,beChain)]);
   if(!code||code==='0x')throw Object.assign(new Error(`No contract found on ${chainLabel}.`),{status:404});
   const liq=number(field(overview,'liquidity','liquidityUsd','liquidity_usd'));const holders=number(field(overview,'holder','holderCount','holder_count','holders'));
+  const priceUsd=number(field(overview,'price','priceUsd','price_usd','value'));
+  const marketCapUsd=number(field(overview,'mc','marketCap','market_cap','marketcap','marketCapUsd','market_cap_usd','fdv'));
   const honeypot=securityBool(security,'is_honeypot','honeypot');const mintable=securityBool(security,'is_mintable','mintable');const proxy=securityBool(security,'is_proxy','proxy');const blacklist=securityBool(security,'is_blacklisted','blacklist');
   const buyTax=number(field(security,'buy_tax','buyTax')),sellTax=number(field(security,'sell_tax','sellTax'));const maxTax=Math.max(buyTax??0,sellTax??0);
   const checks=[{known:true,weight:15,risk:0},{known:honeypot!=null,weight:20,risk:honeypot?100:0},{known:buyTax!=null||sellTax!=null,weight:15,risk:maxTax>=20?80:maxTax>=10?50:maxTax>=5?20:0},{known:mintable!=null,weight:10,risk:mintable?55:0},{known:proxy!=null,weight:10,risk:proxy?35:0},{known:blacklist!=null,weight:10,risk:blacklist?70:0},{known:liq!=null,weight:10,risk:liq<5000?100:liq<20000?75:liq<50000?45:10},{known:holders!=null,weight:10,risk:0}];
   const baseScore=finalize(checks);const s=applyHardRiskOverrides(baseScore,{sellabilityBad:honeypot===true,mintable});const name=field(overview,'name')||`${chainLabel} token`,symbol=field(overview,'symbol')||'TOKEN',decimals=number(field(overview,'decimals','decimal'))??18;
-  return {mint:address,chain,name,symbol,decimals,verified:false,...s,summary:s.hardRiskOverride?`HIGH RISK override triggered: ${s.hardRiskReasons.join('; ')}. Salt confirmed the contract on ${chainLabel}. The numerical Salt Score is still shown, but positive checks cannot cancel these severe safety risks.`:`Salt confirmed the contract on ${chainLabel} and completed ${s.checksCompleted}/${s.checksTotal} core checks${process.env.BIRDEYE_API_KEY?' using Birdeye market/security data.':'. Add BIRDEYE_API_KEY for deeper EVM market/security intelligence.'}`,
+  return {mint:address,chain,name,symbol,decimals,verified:false,priceUsd,marketCapUsd,...s,summary:s.hardRiskOverride?`HIGH RISK override triggered: ${s.hardRiskReasons.join('; ')}. Salt confirmed the contract on ${chainLabel}. The numerical Salt Score is still shown, but positive checks cannot cancel these severe safety risks.`:`Salt confirmed the contract on ${chainLabel} and completed ${s.checksCompleted}/${s.checksTotal} core checks${process.env.BIRDEYE_API_KEY?' using Birdeye market/security data.':'. Add BIRDEYE_API_KEY for deeper EVM market/security intelligence.'}`,
     authenticity:metric('Contract confirmed','good',`Deployed bytecode exists on ${chainLabel}.`,'RPC'),
     sellable:metric(honeypot==null?'Not simulated':honeypot?'Possible block':'No honeypot flag',honeypot==null?'unknown':honeypot?'bad':'good','Birdeye token-security result when available.',honeypot==null?'Salt':'Birdeye'),
     honeypot:metric(honeypot==null?'Unknown':honeypot?'Detected':'Not detected',honeypot==null?'unknown':honeypot?'bad':'good','Current indexed honeypot flag.',honeypot==null?'Salt':'Birdeye'),
