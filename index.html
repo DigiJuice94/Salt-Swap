@@ -33,7 +33,7 @@
     </a>
 
     <nav class="nav" aria-label="Primary navigation">
-      <button class="active" type="button">Swap</button>
+      <button id="swapNavBtn" class="active" type="button">Swap</button>
       <button id="socialNavBtn" type="button">Social</button>
       <button data-coming="Portfolio" type="button">Portfolio</button>
       <button data-coming="Trending" type="button">Trending</button>
@@ -62,6 +62,46 @@
         </div>
       </div>
       <div id="error" class="error hidden"></div>
+    </section>
+
+    <section id="saltSocial" class="saltSocialPage hidden" aria-label="Salt Social">
+      <div class="socialPageTop">
+        <div>
+          <small class="socialEyebrow">SALT SOCIAL</small>
+          <h1>See what traders are saying.</h1>
+          <p>Real community opinions beside Salt's independent risk checks.</p>
+        </div>
+        <button id="shareTokenBtn" class="socialShareBtn" type="button">＋ Share a Token</button>
+      </div>
+
+      <div class="socialSearch"><span>⌕</span><input id="socialSearchInput" placeholder="Search people or paste a token contract" autocomplete="off" /></div>
+      <div class="socialFilters" role="tablist"><button class="active" type="button">For You</button><button type="button">Following</button><button type="button">Trending</button></div>
+
+      <div class="socialWelcomeCard">
+        <div class="socialWelcomeIcon">🧂</div>
+        <div><b>Salt opinions. Safety stays independent.</b><span>Rate tokens from 0–10, share your thesis, and link the posts that support your call. Community hype can never change a Salt Risk Score.</span></div>
+      </div>
+
+      <div id="socialSetup" class="socialSetup socialProfileSetup">
+        <div><b>Create your Salt profile</b><span>Connect a Solana wallet and choose a username. One signature verifies the profile belongs to your wallet.</span></div>
+        <button id="createProfileBtn" class="secondaryBtn" type="button">Create profile</button>
+      </div>
+
+      <div class="socialSectionTitle"><div><small>YOUR TOKEN REVIEW</small><h2 id="socialTokenTitle">Scan a token to join its conversation</h2></div><div class="communityScore"><strong id="communityScore">—</strong><span>/10</span><small id="communityCount">No ratings yet</small></div></div>
+
+      <form id="reviewForm" class="reviewForm socialComposer hidden">
+        <div class="reviewIdentity"><div id="profileAvatar" class="profileAvatar">S</div><div><b id="profileName">Salt user</b><small id="profileWallet">—</small></div></div>
+        <label>Your rating <strong id="ratingValue">8/10</strong></label>
+        <input id="ratingInput" type="range" min="0" max="10" step="1" value="8" />
+        <textarea id="reviewText" maxlength="600" placeholder="What do you like? What worries you? What should other traders know?"></textarea>
+        <input id="reviewLink" type="url" maxlength="300" placeholder="Optional link — X post, website, chart…" />
+        <div class="reviewActions"><small>One current review per profile/token</small><button id="submitReviewBtn" class="primaryFull" type="submit">Post Review</button></div>
+      </form>
+
+      <div class="socialFeedCard">
+        <div class="reviewListHead"><div><small>COMMUNITY</small><b>Latest reviews</b></div><button id="refreshReviewsBtn" type="button">Refresh</button></div>
+        <div id="reviewList" class="reviewList"><div class="emptyReviews"><b>No token selected yet.</b><span>Paste a contract above or scan a coin to see what the Salt community thinks.</span></div></div>
+      </div>
     </section>
 
     <section id="results" class="results hidden" aria-live="polite">
@@ -138,26 +178,7 @@
       </div>
 
 
-      <section id="saltSocial" class="socialCard">
-        <div class="socialHead">
-          <div><small>SALT SOCIAL</small><h3>What does the community think?</h3><p>Community opinions never change the Salt Risk Score.</p></div>
-          <div class="communityScore"><strong id="communityScore">—</strong><span>/10</span><small id="communityCount">No ratings yet</small></div>
-        </div>
-        <div id="socialSetup" class="socialSetup">
-          <div><b>Create your Salt profile</b><span>Connect a Solana wallet, choose a username, then sign once to verify the profile belongs to you.</span></div>
-          <button id="createProfileBtn" class="secondaryBtn" type="button">Create profile</button>
-        </div>
-        <form id="reviewForm" class="reviewForm hidden">
-          <div class="reviewIdentity"><div id="profileAvatar" class="profileAvatar">S</div><div><b id="profileName">Salt user</b><small id="profileWallet">—</small></div></div>
-          <label>Your rating <strong id="ratingValue">8/10</strong></label>
-          <input id="ratingInput" type="range" min="0" max="10" step="1" value="8" />
-          <textarea id="reviewText" maxlength="600" placeholder="Share your thesis, what you like, what worries you, or what other traders should check…"></textarea>
-          <input id="reviewLink" type="url" maxlength="300" placeholder="Optional supporting link — X post, website, chart…" />
-          <div class="reviewActions"><small>Max 600 characters · one current review per profile/token</small><button id="submitReviewBtn" class="primaryFull" type="submit">Post Salt Review</button></div>
-        </form>
-        <div class="reviewListHead"><b>Community reviews</b><button id="refreshReviewsBtn" type="button">Refresh</button></div>
-        <div id="reviewList" class="reviewList"><div class="emptyReviews">Scan a token to load its Salt community.</div></div>
-      </section>
+
 
 
   <div id="tokenModal" class="tokenModal hidden" role="dialog" aria-modal="true" aria-labelledby="tokenModalTitle">
@@ -335,7 +356,9 @@ async function loadReviews(){if(!currentMint){$('reviewList').innerHTML='<div cl
 async function submitSaltReview(e){e.preventDefault();try{if(!saltProfile)throw new Error('Create your Salt profile first.');if(!currentMint)throw new Error('Scan a token first.');const rating=Number($('ratingInput').value),text=$('reviewText').value.trim(),link=$('reviewLink').value.trim();if(text.length<5)throw new Error('Write at least a few words about the token.');const message=`Salt Swap review\nWallet: ${walletAddress}\nChain: ${currentChain}\nToken: ${currentMint}\nRating: ${rating}\nText: ${text}\nLink: ${link}`;const signature=await signSaltMessage(message);const b=$('submitReviewBtn');b.disabled=true;b.textContent='Posting…';await socialApi('/api/social-reviews',{method:'POST',body:JSON.stringify({wallet:walletAddress,chain:currentChain,token:currentMint,rating,text,link,message,signature})});await loadReviews();b.textContent='Review posted ✓';setTimeout(()=>{b.disabled=false;b.textContent='Update Salt Review'},1200)}catch(err){const b=$('submitReviewBtn');if(b){b.disabled=false;b.textContent='Post Salt Review'}alert(readableError(err))}}
 function initSalt(){
   ensureTokenModalRoot();
-   $('socialNavBtn')?.addEventListener('click',()=>document.querySelector('#saltSocial')?.scrollIntoView({behavior:'smooth',block:'center'}));
+   const showMainPage=(page)=>{const social=$('saltSocial'),home=$('home'),results=$('results'),swapBtn=$('swapNavBtn'),socialBtn=$('socialNavBtn');if(page==='social'){social?.classList.remove('hidden');home?.classList.add('hidden');results?.classList.add('hidden');swapBtn?.classList.remove('active');socialBtn?.classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}else{social?.classList.add('hidden');home?.classList.remove('hidden');if(currentMint)results?.classList.remove('hidden');swapBtn?.classList.add('active');socialBtn?.classList.remove('active');window.scrollTo({top:0,behavior:'smooth'});}};
+  $('socialNavBtn')?.addEventListener('click',()=>showMainPage('social'));$('swapNavBtn')?.addEventListener('click',()=>showMainPage('swap'));
+  $('shareTokenBtn')?.addEventListener('click',()=>{$('socialSearchInput')?.focus()});$('socialSearchInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const q=e.target.value.trim();if(q){$('mintInput').value=q;showMainPage('swap');scan();}}});
    $('createProfileBtn')?.addEventListener('click',createSaltProfile);$('reviewForm')?.addEventListener('submit',submitSaltReview);$('refreshReviewsBtn')?.addEventListener('click',loadReviews);$('ratingInput')?.addEventListener('input',e=>$('ratingValue').textContent=`${e.target.value}/10`);
   const b=$('scanBtn');if(!b)return;b.type='button';b.addEventListener('click',scan);
   $('mintInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();scan();}});
