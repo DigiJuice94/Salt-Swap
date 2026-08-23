@@ -1,4 +1,4 @@
-# Salt Swap V1.10.21 — Crypto News Feed
+# Salt Swap V1.10.22 — Crypto News Feed
 
 Adds a live crypto-only news front page to Social → Feed, directly below the market ticker. One lead story is centered with four smaller supporting stories, sourced server-side from crypto RSS feeds. Headlines link to the original publisher. News is cached and deduplicated so failures do not break the social feed.
 
