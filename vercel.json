@@ -49,6 +49,14 @@
       "dest": "/api.mjs?route=social-profile"
     },
     {
+      "src": "/api/social-community-feed",
+      "dest": "/api.mjs?route=social-community-feed"
+    },
+    {
+      "src": "/api/social-market",
+      "dest": "/api.mjs?route=social-market"
+    },
+    {
       "src": "/api/social-reviews",
       "dest": "/api.mjs?route=social-reviews"
     },
