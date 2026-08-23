@@ -1,3 +1,11 @@
+# Salt Swap V1.10.13
+
+- Removed duplicate Followers and Following rows from Profile Stats.
+- Banner images now persist to the Salt profile backend (Redis/KV), rather than only browser storage.
+- Banner restores automatically when the same wallet profile is loaded again.
+- Banner selection remains a simple image picker with no wallet-signature popup.
+- Preserves V1.10.12 Social profile layout and functionality.
+
 # Salt Swap V1.10.11 — Social Reconnect Profile Fix
 
 Fixes existing-profile wallet reconnect so Social always restores the full Profile layout instead of falling back to the legacy token-review screen. Also fixes the Social tab renderer scope bug and defaults reconnects to Profile. Preserves V1.10.10 banner persistence and all prior features.

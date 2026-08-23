@@ -139,7 +139,7 @@
               <div class="featuredNftOwned">✓ Wallet Owned NFT</div>
             </div>
             <div class="saltAsideCard topCallsCard"><div class="saltAsideTitle"><b>Top Calls <em>(All Time)</em></b><span>Your best-performing theses</span></div><div id="saltTopCalls" class="saltTopCalls"><div class="saltEmptyMini">Top calls appear as your thesis history grows.</div></div></div>
-            <div class="saltAsideCard profileStatsCard"><div class="saltAsideTitle"><b>Profile stats</b><span>Your Salt Social activity</span></div><div id="saltProfileStats" class="saltProfileStats"><div class="profileStatRow"><span>Total theses</span><strong>0</strong></div><div class="profileStatRow"><span>Avg. rating</span><strong>—</strong></div><div class="profileStatRow"><span>Followers</span><strong>0</strong></div><div class="profileStatRow"><span>Following</span><strong>0</strong></div></div></div>
+            <div class="saltAsideCard profileStatsCard"><div class="saltAsideTitle"><b>Profile stats</b><span>Your Salt Social activity</span></div><div id="saltProfileStats" class="saltProfileStats"><div class="profileStatRow"><span>Total theses</span><strong>0</strong></div><div class="profileStatRow"><span>Avg. rating</span><strong>—</strong></div></div></div>
           </aside>
         </div>
       </section>
@@ -492,10 +492,11 @@ function initSalt(){
       const banner=await prepareBanner(f);
       if(bannerEl){bannerEl.style.backgroundImage=`url(${banner})`;bannerEl.classList.add('hasImage')}
       bannerBtn&&(bannerBtn.textContent='Saving…',bannerBtn.disabled=true);
-      // Banner changes are intentionally local/profile-cache updates only.
-      // Do NOT invoke wallet signing here: changing a cosmetic banner must never open Phantom/Solflare.
-      saltProfile={...(saltProfile||{}),banner,updatedAt:new Date().toISOString()};
-      await saveLocalAppearance(walletAddress||saltProfile.wallet,{banner,favorites:saltProfile.favorites||[]});
+      // Persist banner to the Salt profile backend so it survives logout, refresh, and redeploys.
+      // This banner-only endpoint never requests a wallet signature and cannot move funds or change wallet ownership.
+      const saved=await socialApi('/api/social-profile',{method:'POST',body:JSON.stringify({action:'banner',wallet:walletAddress||saltProfile.wallet,banner})});
+      saltProfile={...(saltProfile||{}),...saved,banner:saved.banner||banner,updatedAt:new Date().toISOString()};
+      await saveLocalAppearance(walletAddress||saltProfile.wallet,{banner:saltProfile.banner,favorites:saltProfile.favorites||[]});
       cacheProfile(saltProfile);
       renderProfile();
       bannerBtn&&(bannerBtn.textContent='Change banner');
