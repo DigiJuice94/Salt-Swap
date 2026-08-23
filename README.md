@@ -1,3 +1,7 @@
+# Salt Swap V1.10.11 — Social Reconnect Profile Fix
+
+Fixes existing-profile wallet reconnect so Social always restores the full Profile layout instead of falling back to the legacy token-review screen. Also fixes the Social tab renderer scope bug and defaults reconnects to Profile. Preserves V1.10.10 banner persistence and all prior features.
+
 # Salt Swap V1.9.7 — Salt Social UI
 
 Clean, beginner-friendly standalone Social page. Keeps V1.9.1 functionality and social backend intact.
