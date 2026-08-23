@@ -189,3 +189,16 @@ body.salt-social-active #saltSocial .featuredNftFrame>small{
   z-index:3!important;
 }
 @media(max-width:560px){body.salt-social-active #saltSocial .featuredNftFrame{padding:10px 10px 50px!important}body.salt-social-active #saltSocial .featuredNftFrame:before{inset:10px 10px 50px!important}body.salt-social-active #saltSocial .featuredNftFrame img{inset:12px 12px 52px!important;width:calc(100% - 24px)!important;height:calc(100% - 64px)!important}body.salt-social-active #saltSocial .featuredNftFrame>small{bottom:17px!important}}
+
+
+/* V1.10.6 — Selected NFT collection + live listing price */
+body.salt-social-active #saltSocial .featuredNftFrame.hasNft{}
+body.salt-social-active #saltSocial .featuredNftMeta{position:absolute;left:16px;right:16px;bottom:45px;z-index:4;text-align:left;color:#18374c;background:#fff;padding:8px 0 4px;border-top:1px solid #eef3f6}
+body.salt-social-active #saltSocial .featuredNftMeta b{display:block;font-size:13px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:7px}
+body.salt-social-active #saltSocial .featuredNftMeta div{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10px}
+body.salt-social-active #saltSocial .featuredNftMeta span{color:#6f8798;font-weight:700}
+body.salt-social-active #saltSocial .featuredNftMeta strong{color:#17384e;font-size:11px;font-weight:950;white-space:nowrap}
+body.salt-social-active #saltSocial .featuredNftFrame:has(.featuredNftMeta){padding-bottom:104px!important}
+body.salt-social-active #saltSocial .featuredNftFrame:has(.featuredNftMeta):before{bottom:104px!important}
+body.salt-social-active #saltSocial .featuredNftFrame:has(.featuredNftMeta) img{bottom:106px!important;height:calc(100% - 122px)!important}
+body.salt-social-active #saltSocial .featuredNftFrame:has(.featuredNftMeta)>small{bottom:15px!important}

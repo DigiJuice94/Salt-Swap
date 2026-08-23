@@ -57,6 +57,10 @@
       "dest": "/api.mjs?route=social-nfts"
     },
     {
+      "src": "/api/social-nft-detail",
+      "dest": "/api.mjs?route=social-nft-detail"
+    },
+    {
       "src": "/api/social-holdings",
       "dest": "/api.mjs?route=social-holdings"
     },
