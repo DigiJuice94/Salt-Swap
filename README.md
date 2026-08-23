@@ -1,4 +1,4 @@
-# Salt Swap V1.9.4 — Salt Social UI
+# Salt Swap V1.9.5 — Salt Social UI
 
 Clean, beginner-friendly standalone Social page. Keeps V1.9.1 functionality and social backend intact.
 
@@ -139,7 +139,7 @@ V1.8.6 Robinhood Stock Token market identity update:
 - Official Robinhood Stock Tokens now show three prominent header stats: Price, Market Cap (on-chain token value), and Company Market Cap (or Underlying AUM when applicable).
 - Normal crypto tokens retain the standard Price + Market Cap layout.
 
-## V1.9.4 — Salt Social Beta
+## V1.9.5 — Salt Social Beta
 - Adds wallet-connected Salt profiles with Solana message-signature verification.
 - Adds 0–10 Community Score per token, written reviews/theses, and optional supporting links (including X posts).
 - One current review per verified profile/token; posting again updates that profile's review.
@@ -154,3 +154,11 @@ Create a free Upstash Redis database and add:
 - `UPSTASH_REDIS_REST_TOKEN`
 
 If these are not configured, scanning/swapping still works; Salt Social will show a storage configuration message.
+
+
+## V1.9.5 session persistence
+- Remembers the last connected Solana wallet locally.
+- Silently reconnects trusted Phantom/Solflare sessions on return without forcing a wallet popup.
+- Reloads the Salt profile from Redis by wallet address, so an existing user is not asked to recreate a profile.
+- Falls back to the wallet-scoped local profile cache if the social API is temporarily unavailable.
+- Handles wallet account changes and disconnects.
