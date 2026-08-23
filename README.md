@@ -169,30 +169,36 @@ If these are not configured, scanning/swapping still works; Salt Social will sho
 - Usernames are globally unique (case-insensitive) and reserved server-side in Redis to prevent duplicates.
 - Username availability is checked while typing and re-validated atomically when the profile is created.
 
-V1.10.9 fixes: real full-width white Social canvas; hides floating background art on Social; removes global main width cap while Social is active; adds missing Vercel routes for social NFTs, holdings, and profile feed.
+V1.10.10 fixes: real full-width white Social canvas; hides floating background art on Social; removes global main width cap while Social is active; adds missing Vercel routes for social NFTs, holdings, and profile feed.
 
 
-## V1.10.9
+## V1.10.10
 - Featured NFTs now display collection name and current SOL listing price when available.
 - Current price is fetched server-side from Magic Eden when the NFT is selected; unlisted NFTs show `Not listed`.
-- Existing V1.10.9 layout and profile behavior are preserved.
+- Existing V1.10.10 layout and profile behavior are preserved.
 
 
-## V1.10.9
+## V1.10.10
 - Fixed Change banner UX: the button now opens the native image picker directly, immediately previews the selected image, crops it to the banner ratio, and saves it to the verified Salt profile.
 - No banner modal or secondary image-selection screen.
 - Existing profile, NFT, SOL send/receive, holdings, thesis, and social layout behavior preserved.
 
 
-## V1.10.9 banner hotfix
+## V1.10.10 banner hotfix
 - Change Banner opens only the native image picker.
 - Banner selection no longer requests a wallet signature or opens Phantom/Solflare.
 - Selected banner is immediately cached for the verified wallet in this browser and restored on reload.
 - Closing a wallet extension window can no longer roll back the banner because banner editing does not invoke the wallet.
 
 
-## V1.10.9 — Social navigation
+## V1.10.10 — Social navigation
 - Adds Profile / Feed / Following directly below the main navigation when Social is open for a verified profile.
 - Profile preserves the existing NFT, wallet, banner, SOL actions, calls, stats, and thesis layout.
 - Feed and Following have dedicated clean timeline views.
 - Salt remembers the last Social tab selected on that browser.
+
+
+## V1.10.10
+- Fixed banner persistence after reconnect/login.
+- Banner appearance now uses IndexedDB with localStorage fallback and is merged into the loaded Salt profile instead of being overwritten.
+- Banner changes still do not trigger a wallet signature popup.
