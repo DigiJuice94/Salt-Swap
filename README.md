@@ -219,3 +219,10 @@ V1.10.10 fixes: real full-width white Social canvas; hides floating background a
 - Removed the legacy Community / Latest reviews / No token selected panel from the Social Profile tab.
 - Added both JS visibility enforcement and a CSS fallback so reconnects/rerenders cannot make the old panel appear under the profile.
 - Preserves the V1.10.11 profile reconnect behavior and all prior Social profile features.
+
+## V1.10.15 — Auto-Scrolling Checker Ticker
+- Market ticker now scrolls automatically in a seamless loop.
+- Hover/focus pauses movement for easy interaction.
+- Ticker cards expand to fit symbol, full current price, and 24h change without clipping.
+- Clicking any ticker resolves its supported contract and opens it directly in Salt Checker.
+- Custom + Add Ticker coins use the same click-to-check behavior.
