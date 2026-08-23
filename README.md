@@ -1,4 +1,4 @@
-# Salt Swap V1.9.3 — Salt Social UI
+# Salt Swap V1.9.4 — Salt Social UI
 
 Clean, beginner-friendly standalone Social page. Keeps V1.9.1 functionality and social backend intact.
 
@@ -139,7 +139,7 @@ V1.8.6 Robinhood Stock Token market identity update:
 - Official Robinhood Stock Tokens now show three prominent header stats: Price, Market Cap (on-chain token value), and Company Market Cap (or Underlying AUM when applicable).
 - Normal crypto tokens retain the standard Price + Market Cap layout.
 
-## V1.9.3 — Salt Social Beta
+## V1.9.4 — Salt Social Beta
 - Adds wallet-connected Salt profiles with Solana message-signature verification.
 - Adds 0–10 Community Score per token, written reviews/theses, and optional supporting links (including X posts).
 - One current review per verified profile/token; posting again updates that profile's review.
