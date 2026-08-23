@@ -169,4 +169,4 @@ If these are not configured, scanning/swapping still works; Salt Social will sho
 - Usernames are globally unique (case-insensitive) and reserved server-side in Redis to prevent duplicates.
 - Username availability is checked while typing and re-validated atomically when the profile is created.
 
-V1.10.4 fixes: real full-width white Social canvas; hides floating background art on Social; removes global main width cap while Social is active; adds missing Vercel routes for social NFTs, holdings, and profile feed.
+V1.10.5 fixes: real full-width white Social canvas; hides floating background art on Social; removes global main width cap while Social is active; adds missing Vercel routes for social NFTs, holdings, and profile feed.
