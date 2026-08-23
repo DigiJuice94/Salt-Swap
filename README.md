@@ -134,3 +134,19 @@ V1.8.6 Robinhood Stock Token market-cap fix:
 V1.8.6 Robinhood Stock Token market identity update:
 - Official Robinhood Stock Tokens now show three prominent header stats: Price, Market Cap (on-chain token value), and Company Market Cap (or Underlying AUM when applicable).
 - Normal crypto tokens retain the standard Price + Market Cap layout.
+
+## V1.9.0 — Salt Social Beta
+- Adds wallet-connected Salt profiles with Solana message-signature verification.
+- Adds 0–10 Community Score per token, written reviews/theses, and optional supporting links (including X posts).
+- One current review per verified profile/token; posting again updates that profile's review.
+- Community Score is visually and logically separate from the machine-generated Salt Risk Score and can never override safety checks.
+- Reviews persist across users/devices through Upstash Redis REST.
+- Adds a Social navigation shortcut and community section directly on every scanned token page.
+- First release uses Solana wallets for social identity verification even when reviewing tokens on other supported chains.
+
+### Required Vercel variables for Salt Social
+Create a free Upstash Redis database and add:
+- `UPSTASH_REDIS_REST_URL`
+- `UPSTASH_REDIS_REST_TOKEN`
+
+If these are not configured, scanning/swapping still works; Salt Social will show a storage configuration message.

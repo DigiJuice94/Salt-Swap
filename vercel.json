@@ -45,6 +45,14 @@
       "dest": "/api.mjs?route=evm-tokens"
     },
     {
+      "src": "/api/social-profile",
+      "dest": "/api.mjs?route=social-profile"
+    },
+    {
+      "src": "/api/social-reviews",
+      "dest": "/api.mjs?route=social-reviews"
+    },
+    {
       "src": "/styles.css",
       "dest": "/styles.css"
     },
