@@ -107,6 +107,39 @@
         </div>
       </div>
 
+
+      <section id="socialProfilePage" class="saltProfilePage hidden" aria-label="Your Salt profile">
+        <div class="saltProfileHero">
+          <div id="saltProfileBanner" class="saltProfileBanner"><button id="editBannerBtn" type="button">Change banner</button><input id="bannerInput" type="file" accept="image/jpeg,image/png,image/webp" hidden /></div>
+          <div class="saltProfileIdentityRow">
+            <div id="saltProfileAvatar" class="saltProfileAvatar">S</div>
+            <button id="editSaltProfileBtn" class="secondaryBtn" type="button">Edit profile</button>
+          </div>
+          <div class="saltProfileBio">
+            <h2 id="saltProfileDisplayName">Salt user</h2>
+            <div id="saltProfileHandle">@saltuser</div>
+            <p>Salt trader · Wallet-verified profile</p>
+            <div class="saltProfileMeta"><span id="saltProfileWallet">—</span><span>🧂 Salt Social</span></div>
+            <div class="saltProfileCounts"><b>0</b> Following <b>0</b> Followers</div>
+          </div>
+          <div class="saltProfileTabs"><button class="active" type="button">Theses</button><button type="button">Replies</button><button type="button">Activity</button></div>
+        </div>
+        <div class="saltProfileColumns">
+          <main class="saltThesisColumn">
+            <div class="saltColumnHead"><b>Latest theses</b><span>Your token opinions and calls</span></div>
+            <div id="saltProfileTheses" class="saltProfileTheses"><div class="emptyReviews">Your posted token theses will appear here.</div></div>
+          </main>
+          <aside class="saltProfileAside">
+            <div class="saltAsideCard"><div class="saltAsideTitle"><b>Favorite NFTs</b><span>From your connected wallet</span></div><div class="favoriteNftGrid"><button class="favoriteNftSlot" data-nft-slot="0" type="button"><span>＋</span><small>Choose NFT</small></button><button class="favoriteNftSlot" data-nft-slot="1" type="button"><span>＋</span><small>Choose NFT</small></button></div><small class="walletOwnedNote">✓ Only wallet-owned NFTs can be selected</small></div>
+            <div class="saltAsideCard"><div class="saltAsideTitle"><b>Best calls</b><span>Coming as your track record grows</span></div><div class="saltEmptyMini">Your strongest calls will show here.</div></div>
+          </aside>
+        </div>
+      </section>
+
+      <div id="nftPickerModal" class="profileModal hidden" role="dialog" aria-modal="true">
+        <div class="profileModalBackdrop" data-close-nft-modal></div><div class="profileModalCard nftPickerCard"><button id="closeNftModal" class="profileModalClose" type="button">×</button><small>SALT PROFILE</small><h2>Choose a favorite NFT</h2><p>Salt only shows NFTs detected in your connected Solana wallet.</p><div id="nftPickerGrid" class="nftPickerGrid"><div class="emptyReviews">Loading your NFTs…</div></div></div>
+      </div>
+
       <div class="socialSectionTitle"><div><small>YOUR TOKEN REVIEW</small><h2 id="socialTokenTitle">Scan a token to join its conversation</h2></div><div class="communityScore"><strong id="communityScore">—</strong><span>/10</span><small id="communityCount">No ratings yet</small></div></div>
 
       <form id="reviewForm" class="reviewForm socialComposer hidden">
@@ -370,7 +403,7 @@ function rememberSocialWallet(){try{if(walletAddress&&walletKind==='solana')loca
 function clearSocialSession(){saltProfile=null;walletAddress='';walletProvider=null;walletKind='';try{localStorage.removeItem('salt:lastSolanaWallet')}catch{};$('walletBtn').textContent='Connect Wallet';renderProfile();updateSwapButton()}
 async function restoreSaltSocialSession(){const p=findSolWallet();if(!p)return false;let remembered='';try{remembered=localStorage.getItem('salt:lastSolanaWallet')||''}catch{};if(!remembered)return false;try{const r=await p.connect({onlyIfTrusted:true});const addr=String(r?.publicKey||p.publicKey||'');if(!addr)return false;walletProvider=p;walletKind='solana';walletAddress=addr;$('walletBtn').textContent=shortWallet(addr);$('swapWalletBtn')?.classList.add('connected');rememberSocialWallet();const cached=getCachedProfile();if(cached&&cached.wallet===addr)cacheProfile(cached);await loadSaltProfile();updateSwapButton();return true}catch(e){console.info('Salt silent wallet restore skipped:',e?.message||e);return false}}
 function setAvatarEl(el,p){if(!el)return;const initial=String(p?.username||'S').slice(0,1).toUpperCase();if(p?.avatar){el.innerHTML=`<img src="${socialEsc(p.avatar)}" alt="" />`}else el.textContent=initial}
-function renderProfile(){const form=$('reviewForm'),setup=$('socialSetup');if(!form||!setup)return;const p=saltProfile||getCachedProfile();saltProfile=p;if(!p){form.classList.add('hidden');setup.classList.remove('hidden');return}setup.classList.add('hidden');form.classList.remove('hidden');$('profileName').textContent=p.username||'Salt user';$('profileWallet').textContent=shortWallet(p.wallet||walletAddress);setAvatarEl($('profileAvatar'),p)}
+function renderProfile(){const form=$('reviewForm'),setup=$('socialSetup');if(!form||!setup)return;const p=saltProfile||getCachedProfile();saltProfile=p;if(!p){form.classList.add('hidden');setup.classList.remove('hidden');$('socialProfilePage')?.classList.add('hidden');return}setup.classList.add('hidden');form.classList.remove('hidden');$('profileName').textContent=p.username||'Salt user';$('profileWallet').textContent=shortWallet(p.wallet||walletAddress);setAvatarEl($('profileAvatar'),p);$('saltProfileDisplayName').textContent=p.username||'Salt user';$('saltProfileHandle').textContent='@'+(p.username||'saltuser');$('saltProfileWallet').textContent=shortWallet(p.wallet||walletAddress);setAvatarEl($('saltProfileAvatar'),p);const banner=$('saltProfileBanner');if(banner){banner.style.backgroundImage=p.banner?`url(${p.banner})`:'';banner.classList.toggle('hasImage',Boolean(p.banner))}renderFavoriteNfts(p.favorites||[]);$('socialProfilePage')?.classList.remove('hidden');document.querySelector('.socialWelcomeCard')?.classList.add('hidden');document.querySelector('.socialSectionTitle')?.classList.add('hidden');$('reviewForm')?.classList.add('hidden');$('socialFeedCard')?.classList.add('hidden')}
 let pendingProfileAvatar='';
 async function prepareProfilePicture(file){if(!file)return '';if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw new Error('Choose a JPG, PNG, or WebP image.');if(file.size>8*1024*1024)throw new Error('Profile picture must be under 8 MB.');const bitmap=await createImageBitmap(file),size=256,canvas=document.createElement('canvas');canvas.width=size;canvas.height=size;const ctx=canvas.getContext('2d'),side=Math.min(bitmap.width,bitmap.height),sx=(bitmap.width-side)/2,sy=(bitmap.height-side)/2;ctx.drawImage(bitmap,sx,sy,side,side,0,0,size,size);bitmap.close?.();return canvas.toDataURL('image/jpeg',.78)}
 async function avatarDigest(data){if(!data)return 'none';const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(data));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
@@ -399,6 +432,8 @@ function initSalt(){
   $('socialNavBtn')?.addEventListener('click',()=>showMainPage('social'));$('swapNavBtn')?.addEventListener('click',()=>showMainPage('swap'));
   $('shareTokenBtn')?.addEventListener('click',()=>{$('socialSearchInput')?.focus()});$('socialSearchInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const q=e.target.value.trim();if(q){$('mintInput').value=q;showMainPage('swap');scan();}}});
    $('createProfileBtn')?.addEventListener('click',openProfileModal);$('profileContinueBtn')?.addEventListener('click',createSaltProfile);$('closeProfileModal')?.addEventListener('click',closeProfileModal);document.querySelectorAll('[data-close-profile-modal]').forEach(x=>x.addEventListener('click',closeProfileModal));$('profileUsernameInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();createSaltProfile()}});$('reviewForm')?.addEventListener('submit',submitSaltReview);$('refreshReviewsBtn')?.addEventListener('click',loadReviews);$('ratingInput')?.addEventListener('input',e=>$('ratingValue').textContent=`${e.target.value}/10`);
+  $('editSaltProfileBtn')?.addEventListener('click',openProfileModal);$('editBannerBtn')?.addEventListener('click',()=>$('bannerInput')?.click());$('bannerInput')?.addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{const banner=await prepareBanner(f);await saveProfileAppearance({banner})}catch(err){alert(readableError(err))}e.target.value=''});document.querySelectorAll('.favoriteNftSlot').forEach((el,i)=>el.addEventListener('click',()=>openNftPicker(i).catch(e=>alert(readableError(e)))));$('closeNftModal')?.addEventListener('click',closeNftPicker);document.querySelectorAll('[data-close-nft-modal]').forEach(x=>x.addEventListener('click',closeNftPicker));
+  if(saltProfile)$('socialProfilePage')?.classList.remove('hidden');
   const b=$('scanBtn');if(!b)return;b.type='button';b.addEventListener('click',scan);
   $('mintInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();scan();}});
   $('walletBtn')?.addEventListener('click',walletAction);$('swapWalletBtn')?.addEventListener('click',executeSwap);$('payAmount')?.addEventListener('input',()=>{scheduleQuote();updateSwapButton()});$('paySymbol')?.addEventListener('click',()=>openTokenPicker('pay'));$('receiveSymbol')?.addEventListener('click',()=>openTokenPicker('receive'));$('closeTokenModal')?.addEventListener('click',closeTokenPicker);document.querySelectorAll('[data-close-token-modal]').forEach(x=>x.addEventListener('click',closeTokenPicker));document.querySelectorAll('[data-picker-chain]').forEach(x=>x.addEventListener('click',()=>setPickerChain(x.dataset.pickerChain)));$('clearRecent')?.addEventListener('click',()=>{try{localStorage.removeItem('salt:recentTokens')}catch{}renderRecent()});$('tokenSearchInput')?.addEventListener('input',e=>{clearTimeout(tokenSearchTimer);tokenSearchTimer=setTimeout(()=>searchTokens(e.target.value),250)});
