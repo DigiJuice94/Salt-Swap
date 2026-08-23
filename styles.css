@@ -117,3 +117,17 @@ body:has(#socialView:not(.hidden)){background:#fff!important}
 @media(max-width:1240px){.saltProfileDashboard{grid-template-columns:220px minmax(520px,1fr) 220px;gap:16px}.saltProfileActions .secondaryBtn,.saltProfileActions .solActionBtn{padding:8px 10px!important}.featuredNftFrame{max-width:210px!important}}
 @media(max-width:980px){.saltProfileDashboard{grid-template-columns:1fr 1fr}.saltProfileCenter{grid-column:1/-1;grid-row:1}.saltProfileRailLeft{grid-column:1;grid-row:2}.saltProfileRailRight{grid-column:2;grid-row:2}.featuredNftFrame{max-width:260px!important}.saltProfileRail .featuredNft{justify-self:center;width:100%}}
 @media(max-width:650px){#socialView:not(.hidden) .saltSocialPage{padding:14px 10px 50px!important}.saltProfileDashboard{grid-template-columns:1fr}.saltProfileCenter,.saltProfileRailLeft,.saltProfileRailRight{grid-column:1;grid-row:auto}.saltProfileCenter{grid-row:1}.saltProfileRailLeft{grid-row:2}.saltProfileRailRight{grid-row:3}.saltProfileBanner{height:175px!important}.saltProfileAvatar{width:100px!important;height:100px!important;top:-52px!important}.saltProfileIdentityRow{height:auto!important;min-height:102px;padding:0 14px!important}.saltProfileActions{padding-top:48px;display:grid!important;grid-template-columns:1fr 1fr;width:100%}.saltProfileActions .secondaryBtn{grid-column:1/-1}.saltProfileBio{padding:0 16px 16px!important}.featuredNftFrame{max-width:270px!important}}
+
+/* V1.10.3 — full-width white Social profile */
+html:has(#socialView:not(.hidden)),body:has(#socialView:not(.hidden)){background:#fff!important;background-image:none!important}
+#socialView:not(.hidden){width:100%!important;max-width:none!important;background:#fff!important}
+#socialView:not(.hidden) .saltSocialPage{width:100%!important;max-width:none!important;margin:0!important;padding:28px clamp(22px,3vw,58px) 72px!important;box-sizing:border-box;background:#fff!important}
+#socialView:not(.hidden) .saltProfileDashboard{width:100%!important;max-width:none!important;margin:0!important;grid-template-columns:minmax(230px,18vw) minmax(620px,1fr) minmax(230px,18vw)!important;gap:clamp(18px,2vw,34px)!important;justify-content:stretch!important}
+#socialView:not(.hidden) .saltProfileCenter{width:100%!important;max-width:none!important}
+#socialView:not(.hidden) .saltProfileHero{width:100%!important}
+#socialView:not(.hidden) .saltProfileBanner{height:clamp(250px,20vw,340px)!important}
+#socialView:not(.hidden) .featuredNftFrame{max-width:none!important;width:100%!important}
+#socialView:not(.hidden) .saltProfileRail{width:100%!important}
+@media(max-width:1180px){#socialView:not(.hidden) .saltProfileDashboard{grid-template-columns:210px minmax(500px,1fr) 210px!important;gap:16px!important}}
+@media(max-width:980px){#socialView:not(.hidden) .saltProfileDashboard{grid-template-columns:1fr 1fr!important}.saltProfileCenter{grid-column:1/-1!important}.saltProfileRailLeft{grid-column:1!important}.saltProfileRailRight{grid-column:2!important}}
+@media(max-width:650px){#socialView:not(.hidden) .saltProfileDashboard{grid-template-columns:1fr!important}#socialView:not(.hidden) .saltProfileRailLeft,#socialView:not(.hidden) .saltProfileRailRight,#socialView:not(.hidden) .saltProfileCenter{grid-column:1!important}}
