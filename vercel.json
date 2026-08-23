@@ -57,6 +57,10 @@
       "dest": "/api.mjs?route=social-market"
     },
     {
+      "src": "/api/social-news",
+      "dest": "/api.mjs?route=social-news"
+    },
+    {
       "src": "/api/social-reviews",
       "dest": "/api.mjs?route=social-reviews"
     },
