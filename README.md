@@ -233,3 +233,9 @@ V1.10.10 fixes: real full-width white Social canvas; hides floating background a
 - A failed custom-token lookup can no longer wipe the entire market ticker.
 - Existing market rows remain visible if the live market refresh temporarily fails.
 - Adding/removing custom tickers updates the ticker locally without depending on a successful full-market reload.
+
+## V1.10.19 — Ticker Logo Handoff
+- Clicking a Social market ticker now carries the ticker's resolved token metadata and logo into Salt Checker.
+- The checker receive-token selector immediately uses the same token image when available instead of reverting to initials.
+- Existing checker-side logo enrichment remains as a fallback if the ticker logo is missing or fails to load.
+- Preserves V1.10.18 feed routing, CA-only custom tickers, auto-scroll, and all prior Social/profile behavior.
