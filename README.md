@@ -226,3 +226,10 @@ V1.10.10 fixes: real full-width white Social canvas; hides floating background a
 - Ticker cards expand to fit symbol, full current price, and 24h change without clipping.
 - Clicking any ticker resolves its supported contract and opens it directly in Salt Checker.
 - Custom + Add Ticker coins use the same click-to-check behavior.
+
+## V1.10.16
+- Add Ticker now accepts coin name, ticker symbol, or a pasted contract address (CA).
+- Contract-address entries resolve the exact token and retain the CA for Salt Checker routing.
+- A failed custom-token lookup can no longer wipe the entire market ticker.
+- Existing market rows remain visible if the live market refresh temporarily fails.
+- Adding/removing custom tickers updates the ticker locally without depending on a successful full-market reload.
