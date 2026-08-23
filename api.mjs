@@ -24,6 +24,46 @@ function errorText(v){if(v==null)return 'Request failed.';if(typeof v==='string'
 function finalize(checks,critical=false){const known=checks.filter(x=>x.known),tw=checks.reduce((s,x)=>s+x.weight,0)||1,kw=known.reduce((s,x)=>s+x.weight,0),risk=known.reduce((s,x)=>s+x.weight*Math.max(0,Math.min(100,x.risk))/100,0);let score=kw?Math.round(100-(risk/kw)*100):null;if(critical&&score!=null)score=Math.min(score,20);const confidence=Math.round(kw/tw*100);let tone='unknown',label='PRELIMINARY';if(score!=null&&confidence>=45){tone=score>=80?'good':score>=55?'warn':'bad';label=score>=80?'LOOKS HEALTHY':score>=55?'BE CAREFUL':'HIGH RISK'}return{score,confidence,checksCompleted:known.length,checksTotal:checks.length,label,tone}}
 function applyHardRiskOverrides(summary,ctx={}){const reasons=[];if(ctx.authenticityBad===true)reasons.push('contract authenticity failed');if(ctx.sellabilityBad===true)reasons.push('sellability failed');if(ctx.freezable===true)reasons.push('freeze capability is active');const top10=number(ctx.top10),bundle=number(ctx.bundlePct),dev=number(ctx.devPct);if(top10!=null&&top10>80)reasons.push(`top 10 wallets hold ${top10.toFixed(1)}% of supply`);if(bundle!=null&&bundle>25)reasons.push(`bundled wallets hold ${bundle.toFixed(1)}% of supply`);if(top10!=null&&bundle!=null&&top10>70&&bundle>15&&!(top10>80)&&!(bundle>25))reasons.push(`top 10 concentration (${top10.toFixed(1)}%) and bundled supply (${bundle.toFixed(1)}%) are both severe`);if(ctx.mintable===true){if(top10!=null&&top10>70&&top10<=80)reasons.push(`mint capability is active alongside high top 10 concentration (${top10.toFixed(1)}%)`);if(bundle!=null&&bundle>15&&bundle<=25)reasons.push(`mint capability is active alongside elevated bundled supply (${bundle.toFixed(1)}%)`);if(dev!=null&&dev>=10)reasons.push(`mint capability is active while the creator/dev cohort still holds ${dev.toFixed(1)}% of supply`)}if(!reasons.length)return{...summary,hardRiskOverride:false,hardRiskReasons:[]};return{...summary,label:'HIGH RISK',tone:'bad',hardRiskOverride:true,hardRiskReasons:reasons}}
 async function fetchJson(url,options={},timeout=12000){const c=new AbortController();const t=setTimeout(()=>c.abort(),timeout);try{const r=await fetch(url,{...options,signal:c.signal});const text=await r.text();let data;try{data=text?JSON.parse(text):{}}catch{data={message:text}}if(!r.ok){const err=new Error(errorText(data?.message??data?.error??data) || `HTTP ${r.status}`);err.status=r.status;throw err}return data}finally{clearTimeout(t)}}
+let robinhoodAssetsCache={at:0,assets:[]};
+async function robinhoodStockAsset(address){
+  try{
+    if(Date.now()-robinhoodAssetsCache.at>5*60*1000||!robinhoodAssetsCache.assets.length){
+      const j=await fetchJson('https://api.robinhood.com/rhj/assets',{headers:{accept:'application/json'}},9000);
+      robinhoodAssetsCache={at:Date.now(),assets:Array.isArray(j?.assets)?j.assets:[]};
+    }
+    const a=String(address||'').toLowerCase();
+    return robinhoodAssetsCache.assets.find(asset=>(asset?.deployments||[]).some(d=>Number(d?.chainId)===4663&&String(d?.contractAddress||'').toLowerCase()===a))||null;
+  }catch(e){console.warn('Robinhood stock asset registry:',e.message);return null}
+}
+async function robinhoodStockPrice(asset){
+  const symbol=String(asset?.tokenSymbol||'').trim().toUpperCase();
+  if(!symbol)return null;
+  try{
+    const j=await fetchJson(`https://api.robinhood.com/rhj/prices/${encodeURIComponent(symbol)}`,{headers:{accept:'application/json'}},8000);
+    const q=(Array.isArray(j?.quotes)?j.quotes:[]).find(x=>String(x?.tokenSymbol||'').toUpperCase()===symbol)||j?.quotes?.[0]||null;
+    if(!q)return null;
+    const bid=number(q.bid),ask=number(q.ask),raw=bid!=null&&ask!=null?(bid+ask)/2:(bid??ask);
+    const multiplier=number(asset?.currentMultiplier)??1;
+    return {symbol,bid,ask,rawUnderlyingPriceUsd:raw,tokenPriceUsd:raw==null?null:raw*multiplier,multiplier,dailyTradingVolume:number(q.dailyTradingVolume),isTradingHalt:q.isTradingHalt===true,generatedAt:q.generatedAt||null};
+  }catch(e){console.warn('Robinhood stock price:',e.message);return null}
+}
+function parseCompactUsd(text){
+  if(!text)return null;const m=String(text).trim().replace(/[$,]/g,'').match(/^([0-9]+(?:\.[0-9]+)?)\s*([KMBT])?$/i);if(!m)return null;
+  const mult={K:1e3,M:1e6,B:1e9,T:1e12}[String(m[2]||'').toUpperCase()]||1;return Number(m[1])*mult;
+}
+async function robinhoodUnderlyingStats(symbol){
+  if(!symbol)return null;
+  try{
+    const r=await fetch(`https://robinhood.com/us/en/stocks/${encodeURIComponent(symbol)}/`,{headers:{accept:'text/html','user-agent':'Mozilla/5.0 SaltSwap/1.8.5'}});
+    if(!r.ok)throw new Error(`HTTP ${r.status}`);
+    const html=await r.text();
+    const plain=html.replace(/<script[\s\S]*?<\/script>/gi,' ').replace(/<style[\s\S]*?<\/style>/gi,' ').replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/\s+/g,' ');
+    const capMatch=plain.match(/Market cap\s*\$?([0-9][0-9,.]*\s*[KMBT]?)/i)||plain.match(/market cap (?:stands at|of)\s*\$?([0-9][0-9,.]*\s*[KMBT]?)/i);
+    const aumMatch=plain.match(/AUM\s*\$?([0-9][0-9,.]*\s*[KMBT]?)/i);
+    const marketCapUsd=parseCompactUsd(capMatch?.[1]);const aumUsd=parseCompactUsd(aumMatch?.[1]);
+    return {marketCapUsd,aumUsd,source:'Robinhood underlying asset page'};
+  }catch(e){console.warn('Robinhood underlying stats:',e.message);return null}
+}
 function dexPaidTypeLabel(type){return ({tokenProfile:'Token profile',communityTakeover:'Community takeover',tokenAd:'Token ad',trendingBarAd:'Trending bar ad',boost:'Active boost'})[type]||String(type||'Paid service')}
 function sameDexToken(row,chainId,tokenAddress){return String(row?.chainId||'').toLowerCase()===String(chainId).toLowerCase()&&String(row?.tokenAddress||'').toLowerCase()===String(tokenAddress).toLowerCase()}
 async function dexPaidIntel(chainId,tokenAddress){
@@ -266,20 +306,29 @@ async function detectEvm(address,pref){
 }
 async function scanEvm(address,pref){
   const chain=await detectEvm(address,pref),beChain=chain==='bnb'?'bsc':chain==='base'?'base':chain==='robinhood'?'robinhood':'ethereum',chainLabel=chain==='bnb'?'BNB Chain':chain==='base'?'Base':chain==='robinhood'?'Robinhood Chain':'Ethereum';
-  const [codeR,overviewR,securityR,gpR,dexR]=await Promise.allSettled([
+  const rhAsset=chain==='robinhood'?await robinhoodStockAsset(address):null;
+  const [codeR,overviewR,securityR,gpR,dexR,rhPriceR,rhStatsR]=await Promise.allSettled([
     evmRpcTry(chain,'eth_getCode',[address,'latest']),
     birdeye(`/defi/token_overview?address=${encodeURIComponent(address)}&frames=5m,1h,24h`,beChain),
     birdeye(`/defi/token_security?address=${encodeURIComponent(address)}`,beChain),
     goPlusTokenSecurity(address,chain),
-    dexEvmOverview(address,chain)
+    dexEvmOverview(address,chain),
+    rhAsset?robinhoodStockPrice(rhAsset):Promise.resolve(null),
+    rhAsset?robinhoodUnderlyingStats(String(rhAsset?.tokenSymbol||'')):Promise.resolve(null)
   ]);
   const code=codeR.status==='fulfilled'?codeR.value:null;
   if(!code||code==='0x')throw Object.assign(new Error(`No contract found on ${chainLabel}.`),{status:404});
-  const overview=overviewR.status==='fulfilled'?overviewR.value:null,security=securityR.status==='fulfilled'?securityR.value:null,gp=gpR.status==='fulfilled'?gpR.value:null,dex=dexR.status==='fulfilled'?dexR.value:null;
+  const overview=overviewR.status==='fulfilled'?overviewR.value:null,security=securityR.status==='fulfilled'?securityR.value:null,gp=gpR.status==='fulfilled'?gpR.value:null,dex=dexR.status==='fulfilled'?dexR.value:null,rhPrice=rhPriceR.status==='fulfilled'?rhPriceR.value:null,rhStats=rhStatsR.status==='fulfilled'?rhStatsR.value:null;
   const liq=number(field(overview,'liquidity','liquidityUsd','liquidity_usd'))??number(dex?.liquidityUsd);
   const holders=number(field(overview,'holder','holderCount','holder_count','holders'))??number(field(gp,'holder_count','holderCount'));
-  const priceUsd=number(field(overview,'price','priceUsd','price_usd','value'))??number(dex?.priceUsd);
-  const marketCapUsd=number(field(overview,'mc','marketCap','market_cap','marketcap','marketCapUsd','market_cap_usd','fdv'))??number(dex?.marketCapUsd)??number(dex?.fdv);
+  const indexedTokenPriceUsd=number(field(overview,'price','priceUsd','price_usd','value'))??number(dex?.priceUsd);
+  const indexedTokenMarketCapUsd=number(field(overview,'mc','marketCap','market_cap','marketcap','marketCapUsd','market_cap_usd','fdv'))??number(dex?.marketCapUsd)??number(dex?.fdv);
+  const isRobinhoodStockToken=!!rhAsset;
+  const priceUsd=isRobinhoodStockToken?(number(rhPrice?.tokenPriceUsd)??indexedTokenPriceUsd):indexedTokenPriceUsd;
+  const companyMarketCapUsd=isRobinhoodStockToken?number(rhStats?.marketCapUsd):null;
+  const underlyingAumUsd=isRobinhoodStockToken?number(rhStats?.aumUsd):null;
+  const marketCapUsd=isRobinhoodStockToken?(companyMarketCapUsd??underlyingAumUsd):indexedTokenMarketCapUsd;
+  const tokenizedMarketValueUsd=isRobinhoodStockToken?indexedTokenMarketCapUsd:null;
   const honeypot=securityBool(security,'is_honeypot','honeypot')??gpBool(gp,'is_honeypot');
   const mintable=securityBool(security,'is_mintable','mintable')??gpBool(gp,'is_mintable');
   const proxy=securityBool(security,'is_proxy','proxy')??gpBool(gp,'is_proxy');
@@ -293,12 +342,13 @@ async function scanEvm(address,pref){
   const sellabilityBad=honeypot===true||cannotSell;
   const checks=[{known:true,weight:15,risk:0},{known:honeypot!=null||cannotSell,weight:20,risk:sellabilityBad?100:0},{known:buyTax!=null||sellTax!=null,weight:15,risk:maxTax>=20?80:maxTax>=10?50:maxTax>=5?20:0},{known:mintable!=null,weight:10,risk:mintable?55:0},{known:proxy!=null,weight:10,risk:proxy?35:0},{known:blacklist!=null,weight:10,risk:blacklist?70:0},{known:liq!=null,weight:10,risk:liq<5000?100:liq<20000?75:liq<50000?45:10},{known:holders!=null,weight:10,risk:0}];
   const baseScore=finalize(checks);const sc=applyHardRiskOverrides(baseScore,{sellabilityBad,mintable,top10,devPct:ownerPct});
-  const name=field(overview,'name')||field(gp,'token_name','tokenName')||dex?.name||`${chainLabel} token`,symbol=field(overview,'symbol')||field(gp,'token_symbol','tokenSymbol')||dex?.symbol||'TOKEN',decimals=number(field(overview,'decimals','decimal'))??number(field(gp,'decimals'))??18;
+  const name=(rhAsset?.tokenName?String(rhAsset.tokenName).replace(/\s*[•·]\s*Robinhood Token\s*$/i,'').trim():null)||field(overview,'name')||field(gp,'token_name','tokenName')||dex?.name||`${chainLabel} token`,symbol=rhAsset?.tokenSymbol||field(overview,'symbol')||field(gp,'token_symbol','tokenSymbol')||dex?.symbol||'TOKEN',decimals=isRobinhoodStockToken?18:(number(field(overview,'decimals','decimal'))??number(field(gp,'decimals'))??18);
   const dexPaid=await dexPaidIntel(chain==='bnb'?'bsc':chain==='base'?'base':chain==='robinhood'?'robinhood':'ethereum',address);
   const marketSource=overview?'Birdeye':dex?'DEX Screener':'Salt';
   const securitySource=security?'Birdeye':gp?'GoPlus':'Salt';
-  const logoUri=dex?.imageUrl||field(overview,'logoURI','logo_uri','logo');
-  return {mint:address,chain,name,symbol,decimals,logoUri,logoUris:[logoUri].filter(Boolean),verified:false,priceUsd,marketCapUsd,...sc,summary:sc.hardRiskOverride?`HIGH RISK override triggered: ${sc.hardRiskReasons.join('; ')}. Salt confirmed the contract on ${chainLabel}. The numerical Salt Score is still shown, but positive checks cannot cancel these severe safety risks.`:`Salt confirmed the contract on ${chainLabel} and completed ${sc.checksCompleted}/${sc.checksTotal} core checks. Market data can fall back to DEX Screener and contract security can fall back to GoPlus when Birdeye is unavailable.`,
+  const logoUri=rhAsset?.logoUrl||dex?.imageUrl||field(overview,'logoURI','logo_uri','logo');
+  const marketCapLabel=isRobinhoodStockToken?(companyMarketCapUsd!=null?'Company Market Cap':underlyingAumUsd!=null?'Underlying AUM':'Company Market Cap'):'Market Cap';
+  return {mint:address,chain,name,symbol,decimals,logoUri,logoUris:[logoUri].filter(Boolean),verified:isRobinhoodStockToken,priceUsd,marketCapUsd,marketCapLabel,assetType:isRobinhoodStockToken?'robinhood_stock_token':'crypto_token',tokenizedMarketValueUsd,underlyingPriceUsd:number(rhPrice?.rawUnderlyingPriceUsd),stockTokenMultiplier:number(rhPrice?.multiplier),robinhoodAssetStatus:rhAsset?.status||null,...sc,summary:sc.hardRiskOverride?`HIGH RISK override triggered: ${sc.hardRiskReasons.join('; ')}. Salt confirmed the contract on ${chainLabel}. The numerical Salt Score is still shown, but positive checks cannot cancel these severe safety risks.`:`Salt confirmed the contract on ${chainLabel} and completed ${sc.checksCompleted}/${sc.checksTotal} core checks. Market data can fall back to DEX Screener and contract security can fall back to GoPlus when Birdeye is unavailable.`,
     authenticity:metric('Contract confirmed','good',`Deployed bytecode exists on ${chainLabel}.`,'EVM RPC'),
     sellable:metric(honeypot==null&&!cannotSell?'Could not verify':sellabilityBad?'Possible sell restriction':'No sell block detected',honeypot==null&&!cannotSell?'unknown':sellabilityBad?'bad':'good',cannotSell?'GoPlus reports a sell restriction.':honeypot===true?'A honeypot flag was returned.':'No current sell-block/honeypot signal was returned by the available security providers.',securitySource),
     honeypot:metric(honeypot==null?'Could not verify':honeypot?'Detected':'Not detected',honeypot==null?'unknown':honeypot?'bad':'good','Current token-security honeypot signal.',securitySource),
@@ -401,7 +451,7 @@ async function evmTokensHandler(req,res){res.setHeader('Cache-Control','public, 
 
 async function healthHandler(req,res){
   res.setHeader('Cache-Control','no-store');
-  return res.status(200).json({ok:true,service:'Salt Swap scanner',version:'1.8.4',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY),zerox:Boolean(process.env.ZEROX_API_KEY)}});
+  return res.status(200).json({ok:true,service:'Salt Swap scanner',version:'1.8.5',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY),zerox:Boolean(process.env.ZEROX_API_KEY)}});
 }
 
 export default async function handler(req,res){

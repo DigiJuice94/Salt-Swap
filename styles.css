@@ -51,3 +51,5 @@ footer{min-height:68px;border-top:1px solid #dcebf4;background:rgba(251,254,255,
 
 /* V1.7.3 modal + image reliability */
 .tokenModal.hidden{display:none!important}.tokenModalBackdrop{position:fixed!important;inset:0!important}.tokenPicker{z-index:1;margin:auto}.tokenBtnIcon img,.pickerTokenIcon img,.chipIcon img{display:block}
+
+.marketIdentity #tokenizedValueStat{min-width:180px}.marketIdentity #tokenizedValueStat strong{color:#3d627a}
