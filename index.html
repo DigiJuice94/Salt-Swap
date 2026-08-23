@@ -451,7 +451,25 @@ function initSalt(){
   $('shareTokenBtn')?.addEventListener('click',()=>{$('socialSearchInput')?.focus()});$('socialSearchInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const q=e.target.value.trim();if(q){$('mintInput').value=q;showMainPage('swap');scan();}}});
    $('socialOnboardingConnectBtn')?.addEventListener('click',async()=>{const b=$('socialOnboardingConnectBtn'),st=$('socialOnboardingStatus');try{b.disabled=true;b.textContent='Connecting…';st.textContent='Approve the connection in your Solana wallet.';await connectSocialSolana();st.textContent=`Connected ${shortWallet(walletAddress)}. Checking for your Salt profile…`;const existing=await loadSaltProfile();if(existing){st.textContent=`Welcome back, @${existing.username}`;renderProfile();}else{st.textContent='Wallet connected ✓ Now create your profile.';openProfileModal();}}catch(e){st.textContent=readableError(e);b.disabled=false;b.textContent='Connect Solana Wallet'}});$('profileContinueBtn')?.addEventListener('click',createSaltProfile);$('closeProfileModal')?.addEventListener('click',closeProfileModal);document.querySelectorAll('[data-close-profile-modal]').forEach(x=>x.addEventListener('click',closeProfileModal));$('profileUsernameInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();createSaltProfile()}});$('reviewForm')?.addEventListener('submit',submitSaltReview);$('refreshReviewsBtn')?.addEventListener('click',loadReviews);$('ratingInput')?.addEventListener('input',e=>$('ratingValue').textContent=`${e.target.value}/10`);
   $('sendSolBtn')?.addEventListener('click',()=>openSolTransfer('send'));$('receiveSolBtn')?.addEventListener('click',()=>openSolTransfer('receive'));$('closeSolModal')?.addEventListener('click',closeSolTransfer);document.querySelectorAll('[data-close-sol-modal]').forEach(x=>x.addEventListener('click',closeSolTransfer));$('copyReceiveSolBtn')?.addEventListener('click',copyReceiveSol);$('confirmSendSolBtn')?.addEventListener('click',sendProfileSol);
-  $('editSaltProfileBtn')?.addEventListener('click',openProfileModal);$('editBannerBtn')?.addEventListener('click',()=>$('bannerInput')?.click());$('bannerInput')?.addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{const banner=await prepareBanner(f);await saveProfileAppearance({banner})}catch(err){alert(readableError(err))}e.target.value=''});document.querySelectorAll('.favoriteNftSlot').forEach((el,i)=>el.addEventListener('click',()=>openNftPicker(i).catch(e=>alert(readableError(e)))));$('closeNftModal')?.addEventListener('click',closeNftPicker);document.querySelectorAll('[data-close-nft-modal]').forEach(x=>x.addEventListener('click',closeNftPicker));
+  $('editSaltProfileBtn')?.addEventListener('click',openProfileModal);
+  const bannerBtn=$('editBannerBtn'),bannerInput=$('bannerInput');
+  bannerBtn?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();bannerInput?.click()});
+  bannerInput?.addEventListener('change',async e=>{
+    const f=e.target.files?.[0]; if(!f)return;
+    const bannerEl=$('saltProfileBanner'),previous=saltProfile?.banner||'';
+    try{
+      const banner=await prepareBanner(f);
+      if(bannerEl){bannerEl.style.backgroundImage=`url(${banner})`;bannerEl.classList.add('hasImage')}
+      bannerBtn&&(bannerBtn.textContent='Saving…',bannerBtn.disabled=true);
+      await saveProfileAppearance({banner});
+      bannerBtn&&(bannerBtn.textContent='Change banner');
+    }catch(err){
+      if(bannerEl){bannerEl.style.backgroundImage=previous?`url(${previous})`:'';bannerEl.classList.toggle('hasImage',Boolean(previous))}
+      bannerBtn&&(bannerBtn.textContent='Change banner');
+      alert(readableError(err));
+    }finally{bannerBtn&&(bannerBtn.disabled=false);e.target.value=''}
+  });
+  document.querySelectorAll('.favoriteNftSlot').forEach((el,i)=>el.addEventListener('click',()=>openNftPicker(i).catch(e=>alert(readableError(e)))));$('closeNftModal')?.addEventListener('click',closeNftPicker);document.querySelectorAll('[data-close-nft-modal]').forEach(x=>x.addEventListener('click',closeNftPicker));
   if(saltProfile)$('socialProfilePage')?.classList.remove('hidden');
   const b=$('scanBtn');if(!b)return;b.type='button';b.addEventListener('click',scan);
   $('mintInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();scan();}});

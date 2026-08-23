@@ -169,10 +169,16 @@ If these are not configured, scanning/swapping still works; Salt Social will sho
 - Usernames are globally unique (case-insensitive) and reserved server-side in Redis to prevent duplicates.
 - Username availability is checked while typing and re-validated atomically when the profile is created.
 
-V1.10.6 fixes: real full-width white Social canvas; hides floating background art on Social; removes global main width cap while Social is active; adds missing Vercel routes for social NFTs, holdings, and profile feed.
+V1.10.7 fixes: real full-width white Social canvas; hides floating background art on Social; removes global main width cap while Social is active; adds missing Vercel routes for social NFTs, holdings, and profile feed.
 
 
-## V1.10.6
+## V1.10.7
 - Featured NFTs now display collection name and current SOL listing price when available.
 - Current price is fetched server-side from Magic Eden when the NFT is selected; unlisted NFTs show `Not listed`.
-- Existing V1.10.6 layout and profile behavior are preserved.
+- Existing V1.10.7 layout and profile behavior are preserved.
+
+
+## V1.10.7
+- Fixed Change banner UX: the button now opens the native image picker directly, immediately previews the selected image, crops it to the banner ratio, and saves it to the verified Salt profile.
+- No banner modal or secondary image-selection screen.
+- Existing profile, NFT, SOL send/receive, holdings, thesis, and social layout behavior preserved.
