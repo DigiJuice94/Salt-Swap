@@ -163,7 +163,7 @@ If these are not configured, scanning/swapping still works; Salt Social will sho
 - Falls back to the wallet-scoped local profile cache if the social API is temporarily unavailable.
 - Handles wallet account changes and disconnects.
 
-## V1.9.8 — Salt Social account-first onboarding
+## V1.9.9 — Salt Social account-first onboarding
 - Social opens to a clean Connect Solana Wallet landing screen for users without a Salt profile.
 - After wallet connection, existing profiles load automatically; new wallets are prompted to claim a username and choose a profile picture.
 - Usernames are globally unique (case-insensitive) and reserved server-side in Redis to prevent duplicates.
