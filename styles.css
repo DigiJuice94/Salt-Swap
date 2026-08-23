@@ -208,3 +208,12 @@ body.salt-social-active #saltSocial .featuredNftFrame:has(.featuredNftMeta)>smal
 .socialSubNav.hidden{display:none!important}.socialSubNav button{appearance:none;border:0;background:transparent;color:#70889a;font-weight:800;font-size:15px;padding:10px 24px;border-radius:999px;cursor:pointer;transition:.18s ease}.socialSubNav button:hover{background:#f2f8fc;color:#245a7c}.socialSubNav button.active{background:#eaf6fd;color:#168fd7;box-shadow:inset 0 0 0 1px #d8edf9}
 .socialTabView{width:100%;min-height:calc(100vh - 145px);background:#fff;padding:28px clamp(24px,4vw,72px) 70px}.socialTabView.hidden{display:none!important}.socialTimelineShell{width:min(920px,100%);margin:0 auto}.socialTimelineHead{padding:10px 4px 22px;border-bottom:1px solid #e7eef4}.socialTimelineHead small{font-weight:900;letter-spacing:.12em;color:#64a9d3}.socialTimelineHead h2{font-size:30px;margin:5px 0;color:#102f45}.socialTimelineHead p{margin:0;color:#6d8496}.socialTimelineList{padding-top:18px}.socialTimelineEmpty{border:1px solid #dceaf3;border-radius:18px;padding:42px;text-align:center;background:#fff}.socialTimelineEmpty b,.socialTimelineEmpty span{display:block}.socialTimelineEmpty b{color:#183b53;font-size:18px}.socialTimelineEmpty span{color:#7890a2;margin-top:7px}
 @media(max-width:700px){.socialSubNav{justify-content:stretch;padding:10px 14px}.socialSubNav button{flex:1;padding:10px 8px}.socialTabView{padding:20px 14px 50px}}
+
+/* V1.10.12 — Profile tab cleanup
+   The legacy token conversation/review composer belongs outside the Profile view.
+   Keep it forcibly hidden whenever the full Salt profile is the active Social view. */
+#socialProfilePage:not(.hidden) ~ .socialSectionTitle,
+#socialProfilePage:not(.hidden) ~ #reviewForm,
+#socialProfilePage:not(.hidden) ~ .socialFeedCard {
+  display: none !important;
+}

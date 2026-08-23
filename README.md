@@ -206,3 +206,8 @@ V1.10.10 fixes: real full-width white Social canvas; hides floating background a
 - Fixed banner persistence after reconnect/login.
 - Banner appearance now uses IndexedDB with localStorage fallback and is merged into the loaded Salt profile instead of being overwritten.
 - Banner changes still do not trigger a wallet signature popup.
+
+## V1.10.12 — Profile cleanup
+- Removed the legacy Community / Latest reviews / No token selected panel from the Social Profile tab.
+- Added both JS visibility enforcement and a CSS fallback so reconnects/rerenders cannot make the old panel appear under the profile.
+- Preserves the V1.10.11 profile reconnect behavior and all prior Social profile features.
