@@ -486,10 +486,11 @@ function showSocialTab(tab='profile'){
   $('socialProfilePage')?.classList.toggle('hidden',tab!=='profile');
   $('socialFeedView')?.classList.toggle('hidden',tab!=='feed');
   $('socialFollowingView')?.classList.toggle('hidden',tab!=='following');
-  // The old token conversation UI must never render underneath the Profile tab.
-  document.querySelector('.socialSectionTitle')?.classList.toggle('hidden',tab==='profile');
-  $('reviewForm')?.classList.toggle('hidden',tab==='profile');
-  $('socialFeedCard')?.classList.toggle('hidden',tab==='profile');
+  // Legacy token-review composer/list is no longer part of Social tabs.
+  // Token theses are posted from the Feed composer or directly from a scanned token.
+  document.querySelector('.socialSectionTitle')?.classList.add('hidden');
+  $('reviewForm')?.classList.add('hidden');
+  $('socialFeedCard')?.classList.add('hidden');
   document.querySelectorAll('#socialSubNav [data-social-tab]').forEach(b=>b.classList.toggle('active',b.dataset.socialTab===tab));
   try{localStorage.setItem('salt_social_tab',tab)}catch{}
   if(tab==='feed'){loadMarketTicker();loadCryptoNews();loadCommunityFeed();setAvatarEl($('feedComposerAvatar'),saltProfile)}

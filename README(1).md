@@ -375,3 +375,10 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Removes the cluttered all-caps insufficient-score treatment.
 - Shows a clean `0 / 20` ratings progress pill until the score unlocks.
 - Keeps the 20-rating requirement and Community Score logic unchanged.
+
+
+## V1.10.65 — Feed cleanup
+- Removes the old `Your Token Review` composer and `Latest reviews` panel from the Social Feed page.
+- The Feed now stays focused on the market ticker, crypto news, Feed thesis composer, filters, and community posts.
+- Token-specific thesis posting remains available directly on scanned token pages and still posts to the user's profile and community Feed.
+- The legacy review DOM remains hidden for compatibility with existing Community Score data/loading logic.
