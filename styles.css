@@ -247,3 +247,46 @@ body.salt-social-active #saltSocial .featuredNftFrame:has(.featuredNftMeta)>smal
 .saltNewsCarousel{position:relative}.saltNewsArrow{position:absolute;top:50%;transform:translateY(-50%);z-index:8;width:52px;height:52px;border-radius:50%;border:1px solid #e1eaf1;background:#fff;color:#087fe1;font-size:38px;line-height:42px;font-weight:500;box-shadow:0 5px 18px rgba(31,70,96,.12);cursor:pointer;display:flex;align-items:center;justify-content:center}.saltNewsArrow:hover{background:#f7fbff}.saltNewsArrow:disabled{opacity:.35;cursor:default}.saltNewsArrowLeft{left:-46px}.saltNewsArrowRight{right:-46px}.saltNewsPager{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;margin-top:12px;color:#087fe1;font-size:13px}.saltNewsDots{display:flex;align-items:center;gap:8px}.saltNewsDots button{width:9px;height:9px;padding:0;border:0;border-radius:50%;background:#dce6ee;cursor:pointer}.saltNewsDots button.active{width:11px;height:11px;background:#087fe1}.saltNewsPager b{font-size:13px}.saltNewsGrid{min-height:310px}
 @media(max-width:1050px){.saltNewsArrowLeft{left:-20px}.saltNewsArrowRight{right:-20px}}
 @media(max-width:760px){.saltNewsArrow{width:42px;height:42px;font-size:30px}.saltNewsArrowLeft{left:-8px}.saltNewsArrowRight{right:-8px}.saltNewsPager{margin-top:8px}}
+
+/* V1.10.23 — THE TRENCHES rebrand/theme update */
+:root{
+  --trench-ink:#1f211b;
+  --trench-olive:#626044;
+  --trench-olive-dark:#45452f;
+  --trench-khaki:#d8c08e;
+  --trench-sand:#efe3c9;
+  --trench-cream:#fffaf0;
+  --trench-line:rgba(79,70,45,.24);
+}
+html,body{background:#e7dcc3;color:var(--trench-ink)}
+body:before{
+  content:"";position:fixed;inset:0;z-index:-3;
+  background:url('assets/trenches-bg.jpg') center top/cover no-repeat fixed;
+  filter:saturate(.82) contrast(.92);
+}
+body:after{
+  content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,249,235,.68) 0%,rgba(245,231,198,.38) 42%,rgba(92,75,45,.20) 100%);
+}
+.topbar{background:rgba(255,250,239,.88)!important;border-color:rgba(91,76,46,.22)!important;backdrop-filter:blur(16px)}
+.brand{gap:10px}.brandCaret{color:#5d563e!important}.trenchWordmark strong{color:#202219!important;font-weight:950!important;letter-spacing:-.04em}.saltText,.swapText{color:inherit!important}
+.trenchLogoShell{position:relative;overflow:hidden;border-radius:50%;background:#d7c49b!important;border:1px solid rgba(70,61,39,.25);box-shadow:0 2px 9px rgba(52,42,20,.14)}
+.trenchLogoShell .legacySaltLogo{opacity:0!important}.trenchLogoShell:after{content:"";position:absolute;inset:0;background:url('assets/trenches-sheep.png') center 32%/145% auto no-repeat}
+.trenchLogoAsset{display:none!important}
+.nav{background:rgba(222,209,180,.62)!important;border-color:rgba(84,72,44,.16)!important}.nav button{color:#625e4a!important}.nav button.active{background:#fff9ec!important;color:#28291f!important;border-color:#514f38!important;box-shadow:0 2px 9px rgba(65,55,32,.12)!important}
+.walletBtn{background:rgba(255,251,241,.86)!important;color:#313226!important;border-color:rgba(83,72,44,.22)!important}
+.hero{position:relative;isolation:isolate}.hero:before{content:"";position:absolute;inset:-80px -6vw -110px;z-index:-1;background:radial-gradient(circle at 50% 27%,rgba(255,246,218,.94) 0,rgba(255,244,215,.72) 25%,rgba(255,244,215,.18) 57%,transparent 78%)}
+.heroBadge{background:rgba(219,202,156,.66)!important;color:#4d4b32!important;border-color:rgba(104,94,60,.16)!important;letter-spacing:.12em;font-weight:900}
+.hero h1{color:#1b1d18!important;text-shadow:0 1px 0 rgba(255,255,255,.45)}.hero h1 span{color:var(--trench-olive)!important}.heroCopy{color:#59594b!important}
+.scanShell{background:rgba(255,250,239,.92)!important;border-color:rgba(95,81,49,.25)!important;box-shadow:0 20px 45px rgba(74,58,28,.14)!important;backdrop-filter:blur(10px)}
+.scanLabel,.scanFoot{color:#6e6955!important}.chainSelect,.scanBar{background:rgba(255,252,244,.92)!important;border-color:rgba(101,86,52,.24)!important}.scanBar input{color:#24251d!important}.scanBar input::placeholder{color:#918b76!important}
+#scanBtn{background:linear-gradient(135deg,#676749,#45462f)!important;color:#fff!important;box-shadow:0 8px 20px rgba(69,70,47,.22)!important}#scanBtn:hover{filter:brightness(1.07)}
+.chainSupport span{background:#f4ead2!important;color:#5a5847!important;border-color:rgba(97,83,52,.18)!important}
+.floatCoin{filter:sepia(.12) saturate(.86);box-shadow:0 12px 28px rgba(60,48,25,.13)!important}.coinField{opacity:.80}
+footer,.footer{background:rgba(255,249,235,.90)!important;border-color:rgba(91,76,46,.18)!important;color:#66604d!important}
+.saltSocialPage,.saltProfilePage,.socialTabView{background:transparent!important}
+.socialOnboardingCard,.profileModalCard,.saltProfileHero,.saltAsideCard,.feedComposer,.saltFeedPost,.saltNewsSection{background:rgba(255,251,241,.94)!important;border-color:rgba(93,79,48,.20)!important;box-shadow:0 10px 28px rgba(66,52,26,.10)!important}
+.socialOnboardingMark{background:#ded0ad!important;color:#44432e!important}.socialOnboardingConnect,.primaryFull,.feedComposerBottom button{background:#55563b!important;color:#fff!important}.socialSubNav button.active,.feedFilters button.active{color:#4b4d34!important;background:#eee3c8!important;box-shadow:inset 0 0 0 1px rgba(89,78,47,.22)!important}
+.saltNewsHead span,.saltNewsHead button,.feedSupportLink,.feedPostActions button:last-child{color:#666744!important}.saltNewsHead i{background:#777852!important}
+.marketTickerItem:hover,.addTickerResults button:hover{background:#f4ecd9!important}.addTickerBtn{color:#5a5b3d!important;background:#f8f0df!important}
+@media(max-width:800px){body:before{background-position:center top}.trenchWordmark strong{font-size:16px}.hero:before{inset:-40px -10px -80px}}
