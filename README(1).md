@@ -464,3 +464,8 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Header wallet switching uses the same chooser.
 - Installed injected wallets are detected and additional browser wallets appear under Other wallets.
 - WalletConnect is surfaced in the UI but requires a configured WalletConnect/Reown project ID before QR sessions can be enabled.
+
+## V1.10.76 — The Trenches themed wallet chooser
+- Restyles the professional wallet chooser to match The Trenches instead of using the dark generic wallet theme.
+- Uses the site's warm off-white/cream surfaces, olive military accents, navy text, soft gold-beige borders, and muted green detected states.
+- Keeps all wallet logos, wallet detection, Social wallet restrictions, provider selection, and connection logic unchanged.

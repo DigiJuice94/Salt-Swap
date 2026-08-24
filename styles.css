@@ -2344,3 +2344,97 @@ html.walletTransferOpen,body.walletTransferOpen{overflow:hidden!important}
 .walletConnectList{display:grid;gap:3px}.walletConnectRow{width:100%;min-height:62px;display:grid;grid-template-columns:40px minmax(0,1fr) auto;align-items:center;gap:12px;padding:10px 12px;border:1px solid #292e2a;border-radius:15px;background:#202320;color:#f4f1e8;text-align:left;cursor:pointer;transition:transform .14s ease,border-color .14s ease,background .14s ease}.walletConnectRow:hover:not(:disabled){transform:translateY(-1px);background:#272b27;border-color:#465044}.walletConnectRow:disabled{opacity:.48;cursor:not-allowed}.walletConnectLogo{width:40px;height:40px;display:grid;place-items:center;overflow:hidden;border-radius:12px;background:#111411;border:1px solid #343a36}.walletConnectLogo img{width:28px;height:28px;object-fit:contain;border-radius:7px}.walletConnectLogo>span{font-weight:900;color:#dce7cf}.walletConnectCopy{min-width:0;display:grid;gap:3px}.walletConnectCopy b{font-size:14px}.walletConnectCopy small{font-size:10px;color:#8e9993}.walletConnectState{font-size:9px;color:#818b85;white-space:nowrap}.walletConnectState.detected{color:#9be071}.walletConnectState.detected:before{content:'●';font-size:7px;margin-right:5px}
 .walletOtherToggle{width:100%;min-height:58px;margin-top:7px;display:grid;grid-template-columns:40px minmax(0,1fr) auto;align-items:center;gap:12px;padding:9px 12px;border:1px solid #292e2a;border-radius:15px;background:#1b1e1c;color:#f4f1e8;text-align:left;cursor:pointer}.walletOtherToggle:hover{background:#242824}.walletOtherIcon{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:#352132;color:#ef6ddd;font-size:18px}.walletOtherToggle b{display:block;font-size:13px}.walletOtherToggle small{display:block;margin-top:2px;font-size:9px;color:#8e9993}.walletConnectOther{margin-top:5px}.walletConnectEmpty{padding:18px 12px;text-align:center;font-size:10px;color:#7f8a84}.walletConnectStatus{margin:12px 5px 2px;padding-top:10px;border-top:1px solid #292e2a;font-size:10px;line-height:1.45;color:#8c9791}
 @media(max-width:520px){.walletConnectModal{padding:10px;place-items:end center}.walletConnectPanel{width:100%;max-height:82vh;border-radius:22px 22px 14px 14px}.walletConnectRow{min-height:58px}}
+
+/* V1.10.76 — wallet chooser themed to The Trenches */
+.walletConnectBackdrop{
+  background:rgba(65,57,39,.34)!important;
+  backdrop-filter:blur(10px) saturate(.86)!important;
+  -webkit-backdrop-filter:blur(10px) saturate(.86)!important;
+}
+.walletConnectPanel{
+  border:1px solid #cdbf9c!important;
+  background:linear-gradient(180deg,#fffaf0 0%,#f5eedf 100%)!important;
+  color:#1b3444!important;
+  box-shadow:0 30px 90px rgba(69,58,34,.28),inset 0 1px 0 rgba(255,255,255,.92)!important;
+}
+.walletConnectHead small{
+  color:#7a805f!important;
+}
+.walletConnectHead h2{
+  color:#183446!important;
+}
+.walletConnectHead p{
+  color:#758993!important;
+}
+.walletConnectClose{
+  border:1px solid #d2c5a5!important;
+  background:#f1ead8!important;
+  color:#53604a!important;
+}
+.walletConnectClose:hover{
+  background:#e7ddc5!important;
+  border-color:#bdae87!important;
+}
+.walletConnectRow{
+  border:1px solid #d9ceb2!important;
+  background:rgba(255,253,247,.92)!important;
+  color:#203b4a!important;
+  box-shadow:0 5px 14px rgba(76,65,39,.035)!important;
+}
+.walletConnectRow:hover:not(:disabled){
+  transform:translateY(-1px)!important;
+  background:#f5efdf!important;
+  border-color:#9f9b6e!important;
+  box-shadow:0 8px 20px rgba(76,65,39,.08)!important;
+}
+.walletConnectLogo{
+  background:#f3ecdc!important;
+  border:1px solid #d7cbae!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8)!important;
+}
+.walletConnectLogo>span{
+  color:#46573f!important;
+}
+.walletConnectCopy b{
+  color:#213c4b!important;
+}
+.walletConnectCopy small{
+  color:#839297!important;
+}
+.walletConnectState{
+  color:#89938f!important;
+}
+.walletConnectState.detected{
+  color:#438351!important;
+  font-weight:850!important;
+}
+.walletConnectState.detected:before{
+  color:#6fa45f!important;
+}
+.walletOtherToggle{
+  border:1px solid #d9ceb2!important;
+  background:#f7f1e4!important;
+  color:#203b4a!important;
+}
+.walletOtherToggle:hover{
+  background:#eee6d3!important;
+  border-color:#aaa174!important;
+}
+.walletOtherIcon{
+  background:#3d4c35!important;
+  color:#f2e4a4!important;
+  border:1px solid #526145!important;
+}
+.walletOtherToggle small{
+  color:#859398!important;
+}
+.walletConnectEmpty{
+  color:#7d8b8e!important;
+}
+.walletConnectStatus{
+  border-top:1px solid #ded3b9!important;
+  color:#7d8b8e!important;
+}
+.walletConnectPanel::-webkit-scrollbar{width:8px}
+.walletConnectPanel::-webkit-scrollbar-track{background:transparent}
+.walletConnectPanel::-webkit-scrollbar-thumb{background:#c9bea4;border-radius:999px;border:2px solid #f8f2e5}
