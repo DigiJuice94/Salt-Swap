@@ -482,3 +482,10 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Native-asset MAX automatically reserves a small network-fee buffer so the swap is less likely to fail from spending every last gas token.
 - SPL/ERC-20 token MAX uses the full token balance because gas is paid separately in SOL/ETH/BNB.
 - If the correct wallet/network is not connected, The Trenches opens the wallet chooser instead of guessing which wallet to use.
+
+
+## V1.10.79 — Swap MAX balance fix
+- Fixes the Solana MAX button failing with `403 Access forbidden` from the public Solana RPC.
+- MAX now reads SOL and SPL-token balances server-side through the existing Helius connection instead of calling `api.mainnet-beta.solana.com` directly from the browser.
+- Native SOL still keeps a small gas reserve; SPL tokens still use the full token balance.
+- EVM MAX behavior is unchanged.

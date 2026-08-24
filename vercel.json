@@ -53,6 +53,10 @@
       "dest": "/api.mjs?route=social-auth"
     },
     {
+      "src": "/api/swap-balance",
+      "dest": "/api.mjs?route=swap-balance"
+    },
+    {
       "src": "/api/portfolio",
       "dest": "/api.mjs?route=portfolio"
     },
