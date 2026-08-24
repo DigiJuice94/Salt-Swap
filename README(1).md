@@ -284,3 +284,11 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Embeds the official Trenches verified badge directly into the profile UI so it cannot break because of static asset routing or deployment paths.
 - Keeps verification tied to the creator Solana wallet server-side.
 - No other profile or Social behavior changed.
+
+
+## V1.10.52 — Profile Watch List
+- Replaces the Profile stats card with a personal Watch List.
+- Users can add up to 8 watched tokens by verified contract address (Solana or supported EVM chains).
+- Shows token symbol, live price, and 24h change.
+- Watch List persists with the existing profile ticker storage and syncs with the market ticker.
+- Tokens can be removed directly from the profile Watch List.
