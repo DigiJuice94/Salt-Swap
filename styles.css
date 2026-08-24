@@ -746,3 +746,153 @@ footer {
   .parachuteCanopy::after{right:18px}
   .parachuteLines{top:-14px;width:52px;height:28px}
 }
+
+
+/* V1.10.36 — improved parachutes, smaller coins, better visibility */
+.floatingTokens{
+  inset:0 !important;
+  overflow:visible !important;
+  z-index:0 !important;
+  pointer-events:none !important;
+  opacity:1 !important;
+}
+
+.topbar,
+main,
+footer{
+  position:relative !important;
+  z-index:2 !important;
+}
+
+.floatCoin{
+  width:102px !important;
+  height:102px !important;
+  opacity:.82 !important;
+  overflow:visible !important;
+  border-radius:50% !important;
+  filter:none !important;
+  box-shadow:none !important;
+  animation:
+    trenchParachuteDropV2 18s ease-in-out infinite alternate,
+    trenchParachuteSwayV2 7s ease-in-out infinite !important;
+}
+
+.floatCoin img{
+  position:relative !important;
+  z-index:3 !important;
+  width:100% !important;
+  height:100% !important;
+  border-radius:50% !important;
+  object-fit:contain !important;
+  background:rgba(255,255,255,.06) !important;
+  box-shadow:
+    0 12px 24px rgba(60,45,19,.18),
+    0 0 0 8px rgba(247,239,219,.22) !important;
+}
+
+.floatCoin::after{
+  content:"" !important;
+  position:absolute !important;
+  inset:-15px !important;
+  border-radius:50% !important;
+  background:radial-gradient(circle, rgba(255,248,231,.20) 0%, rgba(255,248,231,.08) 45%, rgba(255,248,231,0) 72%) !important;
+  z-index:1 !important;
+}
+
+.parachuteCanopy,
+.parachuteLines{
+  position:absolute !important;
+  left:50% !important;
+  transform:translateX(-50%) !important;
+  pointer-events:none !important;
+}
+
+.parachuteCanopy{
+  top:-64px !important;
+  width:84px !important;
+  height:52px !important;
+  z-index:0 !important;
+  border-radius:46px 46px 18px 18px / 42px 42px 16px 16px !important;
+  border:2px solid rgba(109,86,45,.58) !important;
+  background:
+    radial-gradient(circle at 16% 40%, rgba(255,249,230,.92) 0 22%, transparent 23%),
+    radial-gradient(circle at 33% 33%, rgba(255,245,219,.90) 0 23%, transparent 24%),
+    radial-gradient(circle at 50% 28%, rgba(255,242,208,.92) 0 24%, transparent 25%),
+    radial-gradient(circle at 67% 33%, rgba(255,245,219,.90) 0 23%, transparent 24%),
+    radial-gradient(circle at 84% 40%, rgba(255,249,230,.92) 0 22%, transparent 23%),
+    linear-gradient(180deg, rgba(255,246,218,.98) 0%, rgba(231,208,158,.95) 58%, rgba(188,155,104,.96) 100%) !important;
+  box-shadow:
+    0 10px 20px rgba(76,57,25,.16),
+    inset 0 -8px 12px rgba(126,95,49,.20) !important;
+}
+
+.parachuteCanopy::before,
+.parachuteCanopy::after{
+  content:"" !important;
+  position:absolute !important;
+  top:8px !important;
+  bottom:8px !important;
+  width:2px !important;
+  background:rgba(124,94,46,.28) !important;
+}
+.parachuteCanopy::before{left:27px !important;}
+.parachuteCanopy::after{right:27px !important;}
+
+.parachuteLines{
+  top:-15px !important;
+  width:80px !important;
+  height:42px !important;
+  z-index:2 !important;
+}
+.parachuteLines::before{
+  content:"" !important;
+  position:absolute !important;
+  inset:0 !important;
+  background:
+    linear-gradient(63deg, transparent 43%, rgba(118,88,44,.68) 44%, rgba(118,88,44,.68) 46%, transparent 47%),
+    linear-gradient(78deg, transparent 45%, rgba(118,88,44,.58) 46%, rgba(118,88,44,.58) 48%, transparent 49%),
+    linear-gradient(90deg, transparent 48%, rgba(118,88,44,.68) 49%, rgba(118,88,44,.68) 51%, transparent 52%),
+    linear-gradient(102deg, transparent 51%, rgba(118,88,44,.58) 52%, rgba(118,88,44,.58) 54%, transparent 55%),
+    linear-gradient(117deg, transparent 53%, rgba(118,88,44,.68) 54%, rgba(118,88,44,.68) 56%, transparent 57%) !important;
+  filter:drop-shadow(0 1px 0 rgba(255,247,222,.15)) !important;
+}
+
+/* smaller, better-balanced positions */
+.coin-cate{left:9% !important; top:14% !important; width:104px !important; height:104px !important; animation-delay:-2s,-1.3s !important;}
+.coin-bonk{left:28% !important; top:22% !important; width:98px !important; height:98px !important; animation-delay:-7s,-2.1s !important;}
+.coin-ansem{right:7% !important; top:16% !important; width:112px !important; height:112px !important; animation-delay:-10s,-3.1s !important;}
+.coin-pepe{left:3.5% !important; top:52% !important; width:120px !important; height:120px !important; animation-delay:-13s,-2.8s !important;}
+.coin-cupsey{left:20% !important; top:84% !important; width:104px !important; height:104px !important; animation-delay:-16s,-3.4s !important;}
+.coin-wif{left:58% !important; top:40% !important; width:96px !important; height:96px !important; animation-delay:-5s,-1.8s !important; opacity:.42 !important;}
+.coin-cashcat{right:16% !important; top:55% !important; width:104px !important; height:104px !important; animation-delay:-9s,-3.0s !important;}
+.coin-popcat{left:60% !important; top:87% !important; width:96px !important; height:96px !important; animation-delay:-14s,-2.7s !important;}
+.coin-toad{right:2% !important; top:83% !important; width:98px !important; height:98px !important; animation-delay:-18s,-3.6s !important;}
+
+@keyframes trenchParachuteDropV2{
+  0%{ transform:translate3d(0,-18px,0) scale(.98); }
+  100%{ transform:translate3d(0,26px,0) scale(1.01); }
+}
+
+@keyframes trenchParachuteSwayV2{
+  0%{ margin-left:-8px; rotate:-3deg; }
+  25%{ margin-left:9px; rotate:1.5deg; }
+  50%{ margin-left:-4px; rotate:-1deg; }
+  75%{ margin-left:11px; rotate:2deg; }
+  100%{ margin-left:-7px; rotate:-2deg; }
+}
+
+@media (max-width: 860px){
+  .floatCoin{width:84px !important; height:84px !important; opacity:.74 !important;}
+  .parachuteCanopy{top:-54px !important; width:70px !important; height:44px !important;}
+  .parachuteCanopy::before{left:22px !important;}
+  .parachuteCanopy::after{right:22px !important;}
+  .parachuteLines{top:-12px !important; width:66px !important; height:34px !important;}
+}
+
+@media (max-width: 520px){
+  .floatCoin{width:64px !important; height:64px !important; opacity:.66 !important;}
+  .parachuteCanopy{top:-42px !important; width:54px !important; height:34px !important;}
+  .parachuteCanopy::before{left:17px !important;}
+  .parachuteCanopy::after{right:17px !important;}
+  .parachuteLines{top:-10px !important; width:52px !important; height:26px !important;}
+}
