@@ -445,3 +445,12 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Server profile lookup is authoritative: a successful `null` response clears any stale browser cache for that wallet.
 - Portfolio connects, wallet account changes, Social connects, and the header wallet switcher all clear stale identity state before loading the new wallet.
 - Opening Social re-checks the active wallet/profile pairing before showing a profile.
+
+
+## V1.10.74 — Trust Wallet / Social connection fix
+- Social no longer blindly opens the first injected Solana wallet (which could be Solflare).
+- Adds explicit Trust Wallet Solana detection through `window.trustwallet.solana` and supports other injected Solana providers.
+- If Trust Wallet is the active wallet and exposes a Solana provider, Social prefers Trust Wallet.
+- If multiple Solana wallets are installed and no preference exists, Social shows a wallet chooser instead of auto-opening one.
+- The selected Solana wallet provider is remembered for later Social, Portfolio, transfer, and signing flows.
+- Existing wallet/profile isolation remains intact.
