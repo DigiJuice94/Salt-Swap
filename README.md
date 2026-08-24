@@ -1,18 +1,18 @@
-# Salt Swap V1.10.33 — Crypto News Feed
+# Salt Swap V1.10.34 — Crypto News Feed
 
 Adds a live crypto-only news front page to Social → Feed, directly below the market ticker. One lead story is centered with four smaller supporting stories, sourced server-side from crypto RSS feeds. Headlines link to the original publisher. News is cached and deduplicated so failures do not break the social feed.
 
-# Salt Swap V1.10.33
+# Salt Swap V1.10.34
 
 - Removed duplicate Followers and Following rows from Profile Stats.
 - Banner images now persist to the Salt profile backend (Redis/KV), rather than only browser storage.
 - Banner restores automatically when the same wallet profile is loaded again.
 - Banner selection remains a simple image picker with no wallet-signature popup.
-- Preserves V1.10.33 Social profile layout and functionality.
+- Preserves V1.10.34 Social profile layout and functionality.
 
-# Salt Swap V1.10.33 — Social Reconnect Profile Fix
+# Salt Swap V1.10.34 — Social Reconnect Profile Fix
 
-Fixes existing-profile wallet reconnect so Social always restores the full Profile layout instead of falling back to the legacy token-review screen. Also fixes the Social tab renderer scope bug and defaults reconnects to Profile. Preserves V1.10.33 banner persistence and all prior features.
+Fixes existing-profile wallet reconnect so Social always restores the full Profile layout instead of falling back to the legacy token-review screen. Also fixes the Social tab renderer scope bug and defaults reconnects to Profile. Preserves V1.10.34 banner persistence and all prior features.
 
 # Salt Swap V1.9.7 — Salt Social UI
 
@@ -179,67 +179,67 @@ If these are not configured, scanning/swapping still works; Salt Social will sho
 - Falls back to the wallet-scoped local profile cache if the social API is temporarily unavailable.
 - Handles wallet account changes and disconnects.
 
-## V1.10.33 — Salt Social account-first onboarding
+## V1.10.34 — Salt Social account-first onboarding
 - Social opens to a clean Connect Solana Wallet landing screen for users without a Salt profile.
 - After wallet connection, existing profiles load automatically; new wallets are prompted to claim a username and choose a profile picture.
 - Usernames are globally unique (case-insensitive) and reserved server-side in Redis to prevent duplicates.
 - Username availability is checked while typing and re-validated atomically when the profile is created.
 
-V1.10.33 fixes: real full-width white Social canvas; hides floating background art on Social; removes global main width cap while Social is active; adds missing Vercel routes for social NFTs, holdings, and profile feed.
+V1.10.34 fixes: real full-width white Social canvas; hides floating background art on Social; removes global main width cap while Social is active; adds missing Vercel routes for social NFTs, holdings, and profile feed.
 
 
-## V1.10.33
+## V1.10.34
 - Featured NFTs now display collection name and current SOL listing price when available.
 - Current price is fetched server-side from Magic Eden when the NFT is selected; unlisted NFTs show `Not listed`.
-- Existing V1.10.33 layout and profile behavior are preserved.
+- Existing V1.10.34 layout and profile behavior are preserved.
 
 
-## V1.10.33
+## V1.10.34
 - Fixed Change banner UX: the button now opens the native image picker directly, immediately previews the selected image, crops it to the banner ratio, and saves it to the verified Salt profile.
 - No banner modal or secondary image-selection screen.
 - Existing profile, NFT, SOL send/receive, holdings, thesis, and social layout behavior preserved.
 
 
-## V1.10.33 banner hotfix
+## V1.10.34 banner hotfix
 - Change Banner opens only the native image picker.
 - Banner selection no longer requests a wallet signature or opens Phantom/Solflare.
 - Selected banner is immediately cached for the verified wallet in this browser and restored on reload.
 - Closing a wallet extension window can no longer roll back the banner because banner editing does not invoke the wallet.
 
 
-## V1.10.33 — Social navigation
+## V1.10.34 — Social navigation
 - Adds Profile / Feed / Following directly below the main navigation when Social is open for a verified profile.
 - Profile preserves the existing NFT, wallet, banner, SOL actions, calls, stats, and thesis layout.
 - Feed and Following have dedicated clean timeline views.
 - Salt remembers the last Social tab selected on that browser.
 
 
-## V1.10.33
+## V1.10.34
 - Fixed banner persistence after reconnect/login.
 - Banner appearance now uses IndexedDB with localStorage fallback and is merged into the loaded Salt profile instead of being overwritten.
 - Banner changes still do not trigger a wallet signature popup.
 
-## V1.10.33 — Profile cleanup
+## V1.10.34 — Profile cleanup
 - Removed the legacy Community / Latest reviews / No token selected panel from the Social Profile tab.
 - Added both JS visibility enforcement and a CSS fallback so reconnects/rerenders cannot make the old panel appear under the profile.
-- Preserves the V1.10.33 profile reconnect behavior and all prior Social profile features.
+- Preserves the V1.10.34 profile reconnect behavior and all prior Social profile features.
 
-## V1.10.33 — Auto-Scrolling Checker Ticker
+## V1.10.34 — Auto-Scrolling Checker Ticker
 - Market ticker now scrolls automatically in a seamless loop.
 - Hover/focus pauses movement for easy interaction.
 - Ticker cards expand to fit symbol, full current price, and 24h change without clipping.
 - Clicking any ticker resolves its supported contract and opens it directly in Salt Checker.
 - Custom + Add Ticker coins use the same click-to-check behavior.
 
-## V1.10.33
+## V1.10.34
 - Add Ticker now accepts coin name, ticker symbol, or a pasted contract address (CA).
 - Contract-address entries resolve the exact token and retain the CA for Salt Checker routing.
 - A failed custom-token lookup can no longer wipe the entire market ticker.
 - Existing market rows remain visible if the live market refresh temporarily fails.
 - Adding/removing custom tickers updates the ticker locally without depending on a successful full-market reload.
 
-## V1.10.33 — Ticker Logo Handoff
+## V1.10.34 — Ticker Logo Handoff
 - Clicking a Social market ticker now carries the ticker's resolved token metadata and logo into Salt Checker.
 - The checker receive-token selector immediately uses the same token image when available instead of reverting to initials.
 - Existing checker-side logo enrichment remains as a fallback if the ticker logo is missing or fails to load.
-- Preserves V1.10.33 feed routing, CA-only custom tickers, auto-scroll, and all prior Social/profile behavior.
+- Preserves V1.10.34 feed routing, CA-only custom tickers, auto-scroll, and all prior Social/profile behavior.
