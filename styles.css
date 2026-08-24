@@ -376,3 +376,36 @@ footer,.footer{background:rgba(255,249,235,.90)!important;border-color:rgba(91,7
   .trenchFullLogo{width:148px!important;max-height:42px!important;}
   .trenchFooterBrand img{width:108px!important;}
 }
+
+/* V1.10.29 — use the exact user-provided logo image, unchanged */
+.exactProvidedBrand{
+  display:flex!important;
+  align-items:center!important;
+  gap:7px!important;
+  text-decoration:none!important;
+}
+.exactProvidedLogo{
+  display:block!important;
+  width:178px!important;
+  height:46px!important;
+  object-fit:contain!important;
+  object-position:left center!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+.exactProvidedFooter img{
+  display:block!important;
+  width:132px!important;
+  height:34px!important;
+  object-fit:contain!important;
+  object-position:left center!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  border-radius:0!important;
+}
+@media(max-width:600px){
+  .exactProvidedLogo{width:150px!important;height:40px!important;}
+  .exactProvidedFooter img{width:112px!important;height:30px!important;}
+}
