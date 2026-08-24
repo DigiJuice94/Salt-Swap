@@ -1675,3 +1675,27 @@ body.salt-social-active #saltSocial .featuredNftFrame:has(.featuredNftMeta)>smal
   body.salt-social-active #saltSocial .featuredNftFrame img{left:4.45%!important;top:6.05%!important;width:91.1%!important;height:73.45%!important}
   body.salt-social-active #saltSocial .featuredNftFrame>small{bottom:5.1%!important;font-size:8px!important}
 }
+
+
+/* V1.10.49 — official Trenches verified badge */
+#saltSocial #saltProfileDisplayName.hasVerifiedBadge{
+  display:flex;
+  align-items:center;
+  gap:7px;
+}
+#saltSocial .trenchesVerifiedBadge{
+  width:24px;
+  height:24px;
+  object-fit:contain;
+  flex:0 0 24px;
+  display:inline-block;
+  vertical-align:middle;
+  filter:drop-shadow(0 1px 1px rgba(33,38,18,.2));
+}
+@media (max-width:700px){
+  #saltSocial .trenchesVerifiedBadge{
+    width:21px;
+    height:21px;
+    flex-basis:21px;
+  }
+}

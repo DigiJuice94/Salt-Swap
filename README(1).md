@@ -264,3 +264,11 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 ## V1.10.44 — Off-white Social bar + feed box
 - Changes the Social Profile/Feed/Following bar to the Trenches off-white palette.
 - Changes the empty thesis/feed box from white to matching off-white.
+
+
+## V1.10.49 — Trenches Verified Badge
+- Adds the official green/gold Trenches verified badge asset.
+- Verification is assigned server-side by Solana wallet address, not username.
+- Founder wallet `ETNz...RALN` is verified automatically.
+- The badge appears directly beside the verified profile display name.
+- Renaming the profile cannot transfer verification to another wallet.
