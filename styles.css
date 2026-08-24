@@ -1954,3 +1954,121 @@ body.portfolio-active main{width:100%!important;max-width:none!important;margin:
 .portfolioNftGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.portfolioNft{border:1px solid #d8ccb0;border-radius:18px;background:#fffaf0;padding:10px;overflow:hidden}.portfolioNft>div{aspect-ratio:1;border-radius:13px;overflow:hidden;background:#e9e4d7;margin-bottom:10px}.portfolioNft img{width:100%;height:100%;object-fit:cover}.portfolioNft b,.portfolioNft small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.portfolioNft b{font-size:11px}.portfolioNft small{font-size:9px;color:#879399;margin-top:3px}.portfolioActivityList{border:1px solid #d8ccb0;border-radius:20px;background:#fffaf0;overflow:hidden}.portfolioActivityRow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid #e6dec9;color:inherit;text-decoration:none}.portfolioActivityRow:last-child{border-bottom:0}.portfolioActivityRow:hover{background:#faf5e7}.portfolioActivityIcon{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:#e5ebdc;color:#4f694f}.portfolioActivityRow>div{display:grid;gap:3px}.portfolioActivityRow b{font-size:11px}.portfolioActivityRow small{font-size:9px;color:#849197;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.portfolioActivityRow time{font-size:9px;color:#87949a;white-space:nowrap}
 @media(max-width:860px){.portfolioPage{padding:24px 18px 60px}.portfolioOverviewGrid{grid-template-columns:1fr}.portfolioQuickActions{grid-template-columns:repeat(4,1fr)}.portfolioQuickActions button{min-height:110px}.portfolioNftGrid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:620px){.portfolioHeaderRow,.portfolioBalanceLine{align-items:flex-start;flex-direction:column}.portfolioTabs{gap:16px;overflow:auto}.portfolioBalanceLine strong{font-size:36px}.portfolioQuickActions{grid-template-columns:1fr 1fr}.portfolioTableHead{display:none}.portfolioTokenRow{grid-template-columns:minmax(0,1fr) auto}.portfolioPrice,.portfolioBalance{display:none}.portfolioNftGrid{grid-template-columns:1fr 1fr}.portfolioActivityRow time{display:none}.portfolioConnectCopy{padding:28px 18px}.portfolioConnectCopy h1{font-size:25px}}
+
+
+/* V1.10.69 — cleaner Uniswap-inspired portfolio chart */
+.portfolioValueBlock{display:grid;gap:4px}
+.portfolioValueBlock em{font-style:normal;font-size:10px;color:#819096;margin-top:1px}
+.portfolioRangeChange{font-size:12px!important;font-weight:800;letter-spacing:0!important}
+.portfolioRangeChange.up{color:#2f8d55!important}
+.portfolioRangeChange.down{color:#bd5c52!important}
+.portfolioRangeChange.neutral{color:#718188!important}
+
+.portfolioOverviewGrid{grid-template-columns:minmax(0,1fr) 250px;gap:26px}
+.portfolioChartCard{
+  min-height:360px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+  padding:0;
+}
+.portfolioChartHead{align-items:center;margin-bottom:2px}
+.portfolioChartHead>div{gap:2px}
+.portfolioChartHead b{font-size:12px;color:#263f4d}
+.portfolioChartHead small{font-size:9px;color:#8a969a}
+.portfolioChartHead button{
+  border:1px solid #d7ccb0;
+  background:rgba(255,252,244,.72);
+  border-radius:999px;
+  padding:7px 11px;
+}
+.portfolioChart{
+  height:285px;
+  margin-top:4px;
+  display:block;
+}
+.portfolioChart svg{width:100%;height:100%;overflow:visible}
+.portfolioChartGrid line{
+  stroke:#cfc8b8;
+  stroke-width:1;
+  stroke-dasharray:2 9;
+  opacity:.72;
+}
+.portfolioAxisText{
+  fill:#75858b;
+  font-size:9px;
+  font-weight:700;
+}
+.portfolioValueAxis{
+  fill:#63747a;
+  font-size:10px;
+  font-weight:800;
+}
+.portfolioChartEmpty{
+  height:100%;
+  min-height:240px;
+  display:grid;
+  place-content:center;
+  gap:5px;
+  text-align:center;
+  color:#7e8d92;
+}
+.portfolioChartEmpty b{font-size:12px;color:#52636a}
+.portfolioChartEmpty span{font-size:10px}
+
+.portfolioRangeTabs{
+  display:flex;
+  width:max-content;
+  max-width:100%;
+  gap:2px;
+  padding:3px;
+  margin-top:4px;
+  border:1px solid #d7cdb7;
+  border-radius:999px;
+  background:rgba(255,252,244,.55);
+}
+.portfolioRangeTabs button{
+  min-width:40px;
+  border:0;
+  border-radius:999px;
+  background:transparent;
+  color:#687a82;
+  padding:6px 9px;
+  font-size:9px;
+  font-weight:900;
+  cursor:pointer;
+}
+.portfolioRangeTabs button.active{
+  background:#3f4933;
+  color:#fff7dc;
+}
+.portfolioRangeTabs button:hover:not(.active){background:#ebe3cf}
+
+.portfolioQuickActions{
+  align-content:center;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.portfolioQuickActions button{
+  min-height:112px;
+  border-radius:18px;
+  padding:16px;
+}
+.portfolioQuickActions span{font-size:20px}
+.portfolioQuickActions b{font-size:13px}
+
+.portfolioTokenList{box-shadow:none}
+.portfolioSectionHead{margin-top:34px}
+
+@media(max-width:860px){
+  .portfolioOverviewGrid{grid-template-columns:1fr}
+  .portfolioQuickActions{grid-template-columns:repeat(4,1fr)}
+  .portfolioQuickActions button{min-height:92px}
+}
+@media(max-width:620px){
+  .portfolioChart{height:245px}
+  .portfolioRangeTabs{width:100%;justify-content:space-between}
+  .portfolioRangeTabs button{min-width:0;flex:1;padding-left:5px;padding-right:5px}
+  .portfolioQuickActions{grid-template-columns:1fr 1fr}
+}

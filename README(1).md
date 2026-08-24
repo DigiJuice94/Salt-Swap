@@ -403,3 +403,11 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Adds real browser-local portfolio value snapshots so the chart builds from actual observed wallet values over time rather than fabricated historical data.
 - Send / Receive reuse the existing Solana transfer flow, Swap returns to the scanner/swap tab, and Refresh updates on-chain data.
 - Viewing the portfolio only needs a wallet connection/address; no Social message signature is required.
+
+## V1.10.69 — Portfolio chart cleanup
+- Makes the Overview chart much closer to the clean Uniswap portfolio structure while retaining The Trenches colors.
+- Adds 1H / 1D / 1W / 1M / 1Y / All range controls.
+- Adds real time/date labels along the bottom of the chart.
+- An empty wallet now shows `$0.00`, a flat `$0` chart line, and `0.00%` change instead of a blank chart.
+- Wallets with assets but unavailable USD pricing still show pricing as unavailable rather than falsely displaying zero.
+- The chart continues to use real wallet snapshots stored by The Trenches; no fake historical portfolio data is generated.

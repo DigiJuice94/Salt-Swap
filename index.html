@@ -216,14 +216,30 @@
 
         <div class="portfolioPanel" data-portfolio-panel="overview">
           <div class="portfolioBalanceLine">
-            <div><small>PORTFOLIO VALUE</small><strong id="portfolioTotal">—</strong><span id="portfolioCoverage">Loading live balances…</span></div>
+            <div class="portfolioValueBlock">
+              <small>PORTFOLIO VALUE</small>
+              <strong id="portfolioTotal">—</strong>
+              <span id="portfolioRangeChange" class="portfolioRangeChange neutral">$0.00 (0.00%) · 1D</span>
+              <em id="portfolioCoverage">Loading live balances…</em>
+            </div>
             <div class="portfolioUpdated"><span class="portfolioLiveDot"></span><span id="portfolioUpdatedAt">Live</span></div>
           </div>
 
           <div class="portfolioOverviewGrid">
             <div class="portfolioChartCard">
-              <div class="portfolioChartHead"><div><b>Wallet value</b><small id="portfolioChartCaption">History builds as you use The Trenches.</small></div><button id="portfolioRefreshBtn" type="button">↻ Refresh</button></div>
+              <div class="portfolioChartHead">
+                <div><b>Wallet value</b><small id="portfolioChartCaption">Real wallet snapshots · 1D</small></div>
+                <button id="portfolioRefreshBtn" type="button">↻ Refresh</button>
+              </div>
               <div id="portfolioChart" class="portfolioChart"><div class="portfolioChartEmpty">Loading portfolio…</div></div>
+              <div class="portfolioRangeTabs" aria-label="Portfolio chart range">
+                <button type="button" data-portfolio-range="1h">1H</button>
+                <button type="button" class="active" data-portfolio-range="1d">1D</button>
+                <button type="button" data-portfolio-range="1w">1W</button>
+                <button type="button" data-portfolio-range="1m">1M</button>
+                <button type="button" data-portfolio-range="1y">1Y</button>
+                <button type="button" data-portfolio-range="all">All</button>
+              </div>
             </div>
             <div class="portfolioQuickActions">
               <button id="portfolioSendBtn" type="button"><span>↗</span><b>Send</b><small>SOL</small></button>
@@ -627,14 +643,124 @@ let cryptoNewsArticles=[],cryptoNewsPage=0;function renderCryptoNewsPage(){const
 async function loadCommunityFeed(){const el=$('saltCommunityFeed');if(!el)return;try{const j=await socialApi('/api/social-community-feed');const rows=j.reviews||[];el.innerHTML=rows.length?rows.map(r=>feedPostCard(r,'feed')).join(''):'<div class="socialTimelineEmpty"><b>Your Trenches feed is ready.</b><span>Community ratings and theses will appear here as Trenches profiles post them.</span></div>';bindSocialPostCards(el)}catch(e){el.innerHTML=`<div class="socialTimelineEmpty"><b>Feed unavailable.</b><span>${socialEsc(readableError(e))}</span></div>`}}
 async function submitFeedThesis(e){e.preventDefault();try{if(!saltProfile)throw new Error('Connect your Trenches profile first.');const token=$('feedTokenInput').value.trim(),rating=Number($('feedRating').value),text=$('feedThesisText').value.trim(),link=$('feedThesisLink').value.trim();if(!token)throw new Error('Paste a Solana token contract address first.');if(text.length<5)throw new Error('Write at least a few words for your thesis.');const chain='solana',signer=await ensureSocialAuthSession(),btn=e.target.querySelector('button[type=submit]');btn.disabled=true;btn.textContent='Posting…';await socialApi('/api/social-reviews',{method:'POST',body:JSON.stringify({wallet:signer.wallet,chain,token,rating,text,link})});$('feedThesisText').value='';$('feedThesisLink').value='';btn.disabled=false;btn.textContent='Post Thesis';await loadCommunityFeed();await loadProfileTheses()}catch(err){const btn=e.target.querySelector('button[type=submit]');if(btn){btn.disabled=false;btn.textContent='Post Thesis'}alert(readableError(err))}}
 
-let portfolioState={wallet:'',data:null,nfts:[],tab:'overview',loading:false};
+let portfolioState={wallet:'',data:null,nfts:[],tab:'overview',loading:false,range:'1d',history:[],valueKnown:false,emptyWallet:false};
 function portfolioWalletAddress(){let a='';const p=getRememberedSocialProfile?.();if(p?.wallet)a=p.wallet;if(!a&&scanSocialWallet)a=scanSocialWallet;if(!a&&walletKind==='solana'&&walletAddress)a=walletAddress;if(!a){try{a=localStorage.getItem('salt:lastSolanaWallet')||''}catch{}}return String(a||'')}
 function portfolioUsd(v){v=Number(v);if(!Number.isFinite(v))return '—';return '$'+v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:v>=1000?2:v>=1?2:6})}
 function portfolioTokenPrice(v){v=Number(v);if(!Number.isFinite(v)||v<=0)return '—';if(v>=1)return '$'+v.toLocaleString(undefined,{maximumFractionDigits:4});if(v>=.01)return '$'+v.toFixed(4);return '$'+v.toPrecision(4)}
 function portfolioHistoryKey(wallet){return `trenches:portfolio:history:${wallet}`}
 function recordPortfolioHistory(wallet,value){value=Number(value);if(!wallet||!Number.isFinite(value)||value<0)return[];let rows=[];try{rows=JSON.parse(localStorage.getItem(portfolioHistoryKey(wallet))||'[]')}catch{};rows=Array.isArray(rows)?rows.filter(x=>Number.isFinite(Number(x?.t))&&Number.isFinite(Number(x?.v))):[];const now=Date.now(),last=rows[rows.length-1];if(last&&now-Number(last.t)<5*60*1000)last.v=value,last.t=now;else rows.push({t:now,v:value});rows=rows.slice(-120);try{localStorage.setItem(portfolioHistoryKey(wallet),JSON.stringify(rows))}catch{}return rows}
 function getPortfolioHistory(wallet){try{const rows=JSON.parse(localStorage.getItem(portfolioHistoryKey(wallet))||'[]');return Array.isArray(rows)?rows:[]}catch{return[]}}
-function renderPortfolioChart(history,valueKnown){const el=$('portfolioChart');if(!el)return;if(!valueKnown){el.innerHTML='<div class="portfolioChartEmpty">Live balances loaded, but USD pricing is not available for this wallet yet.</div>';return}let rows=(history||[]).filter(x=>Number.isFinite(Number(x.v)));if(!rows.length){el.innerHTML='<div class="portfolioChartEmpty">Your live portfolio history starts here.</div>';return}if(rows.length===1)rows=[{t:Number(rows[0].t)-1,v:Number(rows[0].v)},rows[0]];const w=760,h=250,pad=18,vals=rows.map(x=>Number(x.v)),mn=Math.min(...vals),mx=Math.max(...vals),spread=Math.max(mx-mn,Math.max(1,mx*.01)),lo=mn-spread*.22,hi=mx+spread*.22;const pts=rows.map((x,i)=>{const xx=pad+(w-pad*2)*(i/(rows.length-1)),yy=pad+(h-pad*2)*(1-(Number(x.v)-lo)/(hi-lo));return [xx,yy]});const line=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' '),area=line+` L ${pts[pts.length-1][0].toFixed(1)} ${h-pad} L ${pts[0][0].toFixed(1)} ${h-pad} Z`;el.innerHTML=`<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Portfolio value history"><defs><linearGradient id="portfolioArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4e8a5b" stop-opacity=".28"/><stop offset="1" stop-color="#4e8a5b" stop-opacity=".02"/></linearGradient></defs><g class="portfolioChartGrid"><line x1="${pad}" x2="${w-pad}" y1="58" y2="58"/><line x1="${pad}" x2="${w-pad}" y1="125" y2="125"/><line x1="${pad}" x2="${w-pad}" y1="192" y2="192"/></g><path d="${area}" fill="url(#portfolioArea)"/><path d="${line}" fill="none" stroke="#4e8a5b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${pts[pts.length-1][0]}" cy="${pts[pts.length-1][1]}" r="5" fill="#4e8a5b"/></svg>`}
+function portfolioRangeMs(range){
+  return { '1h':60*60*1000,'1d':24*60*60*1000,'1w':7*24*60*60*1000,'1m':30*24*60*60*1000,'1y':365*24*60*60*1000 }[range]||null
+}
+function portfolioRangeLabel(range){return ({'1h':'1H','1d':'1D','1w':'1W','1m':'1M','1y':'1Y','all':'ALL'})[range]||'1D'}
+function portfolioRangeRows(history,range){
+  const rows=(history||[]).filter(x=>Number.isFinite(Number(x?.t))&&Number.isFinite(Number(x?.v))).sort((a,b)=>Number(a.t)-Number(b.t));
+  const ms=portfolioRangeMs(range);
+  if(!ms||!rows.length)return rows;
+  const cutoff=Date.now()-ms;
+  return rows.filter(x=>Number(x.t)>=cutoff)
+}
+function portfolioAxisWindow(rows,range){
+  const now=Date.now(),ms=portfolioRangeMs(range);
+  if(ms)return [now-ms,now];
+  if(rows.length>1)return [Number(rows[0].t),Number(rows[rows.length-1].t)];
+  return [now-24*60*60*1000,now]
+}
+function portfolioAxisLabel(ts,range,span){
+  const d=new Date(ts);
+  if(range==='1h')return d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+  if(range==='1d')return d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+  if(range==='1w')return d.toLocaleDateString([],{weekday:'short',day:'numeric'});
+  if(range==='1m')return d.toLocaleDateString([],{month:'short',day:'numeric'});
+  if(range==='1y')return d.toLocaleDateString([],{month:'short'});
+  if(span<=2*24*60*60*1000)return d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+  if(span<=45*24*60*60*1000)return d.toLocaleDateString([],{month:'short',day:'numeric'});
+  return d.toLocaleDateString([],{month:'short',year:'2-digit'})
+}
+function portfolioRangeChange(history,range,emptyWallet=false){
+  const el=$('portfolioRangeChange');if(!el)return;
+  let rows=portfolioRangeRows(history,range);
+  if(emptyWallet||!rows.length){
+    el.className='portfolioRangeChange neutral';
+    el.textContent=`$0.00 (0.00%) · ${portfolioRangeLabel(range)}`;
+    return
+  }
+  const first=Number(rows[0].v),last=Number(rows[rows.length-1].v),delta=last-first,pct=first>0?(delta/first)*100:0;
+  const sign=delta>0?'+':delta<0?'−':'';
+  el.className='portfolioRangeChange '+(delta>0?'up':delta<0?'down':'neutral');
+  el.textContent=`${sign}${portfolioUsd(Math.abs(delta))} (${sign}${Math.abs(pct).toFixed(2)}%) · ${portfolioRangeLabel(range)}`
+}
+function renderPortfolioChart(history,valueKnown,emptyWallet=false){
+  const el=$('portfolioChart');if(!el)return;
+  const range=portfolioState.range||'1d';
+  document.querySelectorAll('[data-portfolio-range]').forEach(b=>b.classList.toggle('active',b.dataset.portfolioRange===range));
+  portfolioRangeChange(history,range,emptyWallet);
+
+  let all=(history||[]).filter(x=>Number.isFinite(Number(x?.t))&&Number.isFinite(Number(x?.v))).sort((a,b)=>Number(a.t)-Number(b.t));
+  let rows=portfolioRangeRows(all,range);
+  const [axisStart,axisEnd]=portfolioAxisWindow(rows,range);
+  const axisSpan=Math.max(1,axisEnd-axisStart);
+
+  if(!valueKnown&&!emptyWallet){
+    el.innerHTML='<div class="portfolioChartEmpty"><b>Wallet connected.</b><span>Live balances loaded, but USD pricing is unavailable for these assets.</span></div>';
+    return
+  }
+
+  const w=820,h=260,left=10,right=54,top=18,bottom=42,plotBottom=h-bottom,plotRight=w-right;
+  let zeroMode=emptyWallet||(!rows.length&&valueKnown);
+  if(zeroMode){
+    rows=[{t:axisStart,v:0},{t:axisEnd,v:0}]
+  }else if(rows.length===1){
+    rows=[{t:axisStart,v:Number(rows[0].v)},rows[0]]
+  }
+
+  const vals=rows.map(x=>Number(x.v));
+  const mn=Math.min(...vals),mx=Math.max(...vals);
+  const spread=zeroMode?1:Math.max(mx-mn,Math.max(.01,Math.abs(mx)*.008));
+  const lo=zeroMode?-0.5:mn-spread*.18,hi=zeroMode?0.5:mx+spread*.18;
+
+  const pts=rows.map(x=>{
+    const t=Math.max(axisStart,Math.min(axisEnd,Number(x.t)));
+    const xx=left+(plotRight-left)*((t-axisStart)/axisSpan);
+    const yy=top+(plotBottom-top)*(1-(Number(x.v)-lo)/(hi-lo));
+    return [xx,yy]
+  });
+  const line=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const area=line+` L ${pts[pts.length-1][0].toFixed(1)} ${plotBottom} L ${pts[0][0].toFixed(1)} ${plotBottom} Z`;
+
+  const xCount=6;
+  const xLabels=Array.from({length:xCount},(_,i)=>{
+    const t=axisStart+(axisSpan*i/(xCount-1));
+    const x=left+(plotRight-left)*(i/(xCount-1));
+    const anchor=i===0?'start':i===xCount-1?'end':'middle';
+    return `<text x="${x.toFixed(1)}" y="${h-9}" text-anchor="${anchor}" class="portfolioAxisText">${socialEsc(portfolioAxisLabel(t,range,axisSpan))}</text>`
+  }).join('');
+
+  let grid='';
+  for(let i=0;i<4;i++){
+    const y=top+(plotBottom-top)*(i/3);
+    grid+=`<line x1="${left}" x2="${plotRight}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}"/>`
+  }
+  for(let i=0;i<8;i++){
+    const x=left+(plotRight-left)*(i/7);
+    grid+=`<line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${top}" y2="${plotBottom}"/>`
+  }
+
+  const lastVal=Number(rows[rows.length-1].v);
+  const yLabel=zeroMode?'$0':portfolioUsd(lastVal);
+  const last=pts[pts.length-1];
+
+  el.innerHTML=`<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Portfolio value ${portfolioRangeLabel(range)} chart">
+    <defs><linearGradient id="portfolioArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4e8a5b" stop-opacity=".22"/><stop offset="1" stop-color="#4e8a5b" stop-opacity="0"/></linearGradient></defs>
+    <g class="portfolioChartGrid">${grid}</g>
+    ${zeroMode?'':`<path d="${area}" fill="url(#portfolioArea)"/>`}
+    <path d="${line}" fill="none" stroke="#4e8a5b" stroke-width="${zeroMode?2.5:3.25}" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="${last[0]}" cy="${last[1]}" r="${zeroMode?3:4.5}" fill="#4e8a5b"/>
+    <text x="${w-6}" y="${last[1]+4}" text-anchor="end" class="portfolioValueAxis">${socialEsc(yLabel)}</text>
+    ${xLabels}
+  </svg>`
+}
 function portfolioAssetRow(a){const value=Number(a.valueUsd),price=Number(a.priceUsd),img=a.image?`<img src="${socialEsc(a.image)}" alt="" onerror="this.style.display='none'">`:`<span>${socialEsc(String(a.symbol||'?')[0])}</span>`;return `<button class="portfolioTokenRow" type="button" data-portfolio-mint="${socialEsc(a.mint||'')}"><div class="portfolioAssetIdentity"><div class="portfolioAssetIcon">${img}</div><div><b>${socialEsc(a.symbol||'TOKEN')}</b><small>${socialEsc(a.name||'Token')}</small></div></div><div class="portfolioPrice">${portfolioTokenPrice(price)}</div><div class="portfolioBalance"><b>${socialEsc(a.displayBalance||String(a.balance||'—'))}</b><small>${socialEsc(a.symbol||'')}</small></div><div class="portfolioValue"><b>${Number.isFinite(value)?portfolioUsd(value):'—'}</b><small>${Number.isFinite(value)?'Live value':'Price unavailable'}</small></div></button>`}
 function renderPortfolioTokens(items){items=Array.isArray(items)?items:[];const all=$('portfolioTokens'),top=$('portfolioTopTokens'),count=$('portfolioTokenCount');if(count)count.textContent=`${items.length} asset${items.length===1?'':'s'}`;const empty='<div class="portfolioEmpty"><b>No fungible assets found.</b><span>This wallet has no token balances Helius could return.</span></div>';if(all)all.innerHTML=items.length?items.map(portfolioAssetRow).join(''):empty;if(top)top.innerHTML=items.length?items.slice(0,5).map(portfolioAssetRow).join(''):empty;document.querySelectorAll('[data-portfolio-mint]').forEach(b=>b.addEventListener('click',()=>{const mint=b.dataset.portfolioMint;if(!mint||mint==='SOL')return;$('mintInput').value=mint;if($('chainSelect'))$('chainSelect').value='solana';$('swapNavBtn')?.click();scan()}))}
 function renderPortfolioNfts(items){items=Array.isArray(items)?items:[];portfolioState.nfts=items;const el=$('portfolioNfts'),count=$('portfolioNftCount');if(count)count.textContent=items.length?String(items.length):'';if(!el)return;el.innerHTML=items.length?items.map(n=>`<article class="portfolioNft"><div>${n.image?`<img src="${socialEsc(n.image)}" alt="${socialEsc(n.name||'NFT')}" loading="lazy">`:''}</div><b>${socialEsc(n.name||'NFT')}</b><small>${socialEsc(n.collection||'Wallet NFT')}</small></article>`).join(''):'<div class="portfolioEmpty"><b>No NFTs found.</b><span>Wallet-owned NFTs will appear here.</span></div>'}
@@ -642,7 +768,7 @@ function portfolioActivityTitle(a){const t=String(a?.type||'Transaction').replac
 function renderPortfolioActivity(rows){const el=$('portfolioActivity');if(!el)return;rows=Array.isArray(rows)?rows:[];el.innerHTML=rows.length?rows.map(a=>{const when=a.timestamp?new Date(Number(a.timestamp)*1000).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'Recent',sig=String(a.signature||''),href=sig?`https://solscan.io/tx/${encodeURIComponent(sig)}`:'#';return `<a class="portfolioActivityRow" href="${href}" ${sig?'target="_blank" rel="noopener noreferrer"':''}><span class="portfolioActivityIcon">↗</span><div><b>${socialEsc(portfolioActivityTitle(a))}</b><small>${socialEsc(a.description||'Solana wallet activity')}</small></div><time>${socialEsc(when)}</time></a>`}).join(''):'<div class="portfolioEmpty"><b>No recent activity returned.</b><span>Recent Solana transactions will appear here.</span></div>'}
 function showPortfolioTab(tab='overview'){const allowed=['overview','tokens','nfts','activity'];if(!allowed.includes(tab))tab='overview';portfolioState.tab=tab;document.querySelectorAll('[data-portfolio-tab]').forEach(b=>b.classList.toggle('active',b.dataset.portfolioTab===tab));document.querySelectorAll('[data-portfolio-panel]').forEach(p=>p.classList.toggle('hidden',p.dataset.portfolioPanel!==tab))}
 async function connectPortfolioWallet(){const p=findSolWallet();if(!p)throw new Error('No Solana wallet detected. Install Phantom or Solflare.');const r=await p.connect(),addr=String(r?.publicKey||p.publicKey||'');if(!addr)throw new Error('Wallet connected but no address was returned.');walletProvider=p;walletKind='solana';walletAddress=addr;scanSocialProvider=p;scanSocialWallet=addr;rememberSocialWallet();updateHeaderWallet();const cached=getCachedProfileForWallet(addr);if(cached&&cached.wallet===addr)saltProfile=cached;portfolioState.wallet=addr;return addr}
-async function loadPortfolio(force=false){if(portfolioState.loading&&!force)return;let wallet=portfolioWalletAddress();const hero=$('portfolioConnectHero'),dash=$('portfolioDashboard'),status=$('portfolioConnectStatus');if(!wallet){hero?.classList.remove('hidden');dash?.classList.add('hidden');return}portfolioState.loading=true;portfolioState.wallet=wallet;hero?.classList.add('hidden');dash?.classList.remove('hidden');const p=getRememberedSocialProfile?.(),name=$('portfolioWalletName'),walletEl=$('portfolioCopyWallet'),avatar=$('portfolioAvatar');if(name)name.textContent=p?.wallet===wallet&&p?.username?'@'+p.username:'Main Wallet';if(walletEl)walletEl.textContent=shortWallet(wallet)+' ⧉';if(avatar){if(p?.wallet===wallet&&p?.avatar)avatar.innerHTML=`<img src="${socialEsc(p.avatar)}" alt="">`;else avatar.textContent=p?.wallet===wallet&&p?.username?String(p.username)[0].toUpperCase():'W'}$('portfolioCoverage').textContent='Refreshing live wallet data…';try{const [data,nfts]=await Promise.all([socialApi('/api/portfolio?wallet='+encodeURIComponent(wallet)+(force?'&refresh=1':'')),socialApi('/api/social-nfts?wallet='+encodeURIComponent(wallet)).catch(()=>({items:[]}))]);portfolioState.data=data;portfolioState.nfts=nfts?.items||[];const total=Number(data.totalUsd),known=Number.isFinite(total)&&Number(data.pricedAssets||0)>0;$('portfolioTotal').textContent=known?portfolioUsd(total):'—';$('portfolioCoverage').textContent=known?`${data.pricedAssets} priced asset${data.pricedAssets===1?'':'s'} · ${data.items?.length||0} total holdings`:`${data.items?.length||0} holdings · USD prices unavailable for some assets`;$('portfolioUpdatedAt').textContent='Updated '+new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});renderPortfolioTokens(data.items||[]);renderPortfolioNfts(portfolioState.nfts);renderPortfolioActivity(data.activity||[]);const hist=known?recordPortfolioHistory(wallet,total):getPortfolioHistory(wallet);renderPortfolioChart(hist,known||hist.length>0);$('portfolioChartCaption').textContent=hist.length>1?`${hist.length} real wallet snapshots saved on this browser.`:'History builds from real wallet snapshots as you use The Trenches.'}catch(e){$('portfolioTotal').textContent='—';$('portfolioCoverage').textContent=readableError(e);renderPortfolioChart([],false);renderPortfolioTokens([]);renderPortfolioNfts([]);renderPortfolioActivity([])}finally{portfolioState.loading=false}}
+async function loadPortfolio(force=false){if(portfolioState.loading&&!force)return;let wallet=portfolioWalletAddress();const hero=$('portfolioConnectHero'),dash=$('portfolioDashboard'),status=$('portfolioConnectStatus');if(!wallet){hero?.classList.remove('hidden');dash?.classList.add('hidden');return}portfolioState.loading=true;portfolioState.wallet=wallet;hero?.classList.add('hidden');dash?.classList.remove('hidden');const p=getRememberedSocialProfile?.(),name=$('portfolioWalletName'),walletEl=$('portfolioCopyWallet'),avatar=$('portfolioAvatar');if(name)name.textContent=p?.wallet===wallet&&p?.username?'@'+p.username:'Main Wallet';if(walletEl)walletEl.textContent=shortWallet(wallet)+' ⧉';if(avatar){if(p?.wallet===wallet&&p?.avatar)avatar.innerHTML=`<img src="${socialEsc(p.avatar)}" alt="">`;else avatar.textContent=p?.wallet===wallet&&p?.username?String(p.username)[0].toUpperCase():'W'}$('portfolioCoverage').textContent='Refreshing live wallet data…';try{const [data,nfts]=await Promise.all([socialApi('/api/portfolio?wallet='+encodeURIComponent(wallet)+(force?'&refresh=1':'')),socialApi('/api/social-nfts?wallet='+encodeURIComponent(wallet)).catch(()=>({items:[]}))]);portfolioState.data=data;portfolioState.nfts=nfts?.items||[];const total=Number(data.totalUsd),itemCount=data.items?.length||0,emptyWallet=itemCount===0,known=Number.isFinite(total)&&Number(data.pricedAssets||0)>0,displayKnown=known||emptyWallet,shownTotal=known?total:(emptyWallet?0:NaN);$('portfolioTotal').textContent=displayKnown?portfolioUsd(shownTotal):'—';$('portfolioCoverage').textContent=emptyWallet?'No holdings yet':known?`${data.pricedAssets} priced asset${data.pricedAssets===1?'':'s'} · ${itemCount} total holdings`:`${itemCount} holdings · USD prices unavailable for some assets`;$('portfolioUpdatedAt').textContent='Updated '+new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});renderPortfolioTokens(data.items||[]);renderPortfolioNfts(portfolioState.nfts);renderPortfolioActivity(data.activity||[]);const hist=displayKnown?recordPortfolioHistory(wallet,shownTotal):getPortfolioHistory(wallet);portfolioState.history=hist;portfolioState.valueKnown=displayKnown||hist.length>0;portfolioState.emptyWallet=emptyWallet;renderPortfolioChart(hist,portfolioState.valueKnown,emptyWallet);$('portfolioChartCaption').textContent=`Real wallet snapshots · ${portfolioRangeLabel(portfolioState.range)}`}catch(e){$('portfolioTotal').textContent='—';$('portfolioCoverage').textContent=readableError(e);portfolioState.history=[];portfolioState.valueKnown=false;portfolioState.emptyWallet=false;renderPortfolioChart([],false,false);portfolioRangeChange([],portfolioState.range,false);renderPortfolioTokens([]);renderPortfolioNfts([]);renderPortfolioActivity([])}finally{portfolioState.loading=false}}
 async function portfolioEnsureConnected(){const target=portfolioState.wallet||portfolioWalletAddress();if(walletKind==='solana'&&walletAddress&&(!target||walletAddress===target))return walletAddress;const addr=await connectPortfolioWallet();if(target&&addr!==target)throw new Error(`Connect ${shortWallet(target)} to use wallet actions for this portfolio.`);return addr}
 async function portfolioOpenTransfer(mode){try{await portfolioEnsureConnected();const p=getCachedProfileForWallet(walletAddress);if(p&&!saltProfile)saltProfile=p;const m=$('solTransferModal'),send=$('solSendView'),recv=$('solReceiveView');if(!m)return;send.classList.toggle('hidden',mode!=='send');recv.classList.toggle('hidden',mode!=='receive');$('receiveSolUsername').textContent=saltProfile?.username?'@'+saltProfile.username:'Solana wallet';$('receiveSolAddress').textContent=walletAddress;$('solTransferStatus').textContent='';m.classList.remove('hidden');m.setAttribute('aria-hidden','false')}catch(e){alert(readableError(e))}}
 
@@ -652,6 +778,7 @@ function initSalt(){
   $('portfolioCopyWallet')?.addEventListener('click',async()=>{const a=portfolioState.wallet||portfolioWalletAddress();if(!a)return;try{await navigator.clipboard.writeText(a);const b=$('portfolioCopyWallet'),old=b.textContent;b.textContent='Copied ✓';setTimeout(()=>b.textContent=old,1100)}catch{}});
   $('portfolioRefreshBtn')?.addEventListener('click',()=>loadPortfolio(true));$('portfolioMoreBtn')?.addEventListener('click',()=>loadPortfolio(true));
   $('portfolioSendBtn')?.addEventListener('click',()=>portfolioOpenTransfer('send'));$('portfolioReceiveBtn')?.addEventListener('click',()=>portfolioOpenTransfer('receive'));$('portfolioSwapBtn')?.addEventListener('click',()=>showMainPage('swap'));
+  document.querySelectorAll('[data-portfolio-range]').forEach(b=>b.addEventListener('click',()=>{portfolioState.range=b.dataset.portfolioRange||'1d';renderPortfolioChart(portfolioState.history,portfolioState.valueKnown,portfolioState.emptyWallet);const cap=$('portfolioChartCaption');if(cap)cap.textContent=`Real wallet snapshots · ${portfolioRangeLabel(portfolioState.range)}`}));
   document.querySelectorAll('[data-portfolio-tab]').forEach(b=>b.addEventListener('click',()=>showPortfolioTab(b.dataset.portfolioTab)));document.querySelectorAll('[data-open-portfolio-tab]').forEach(b=>b.addEventListener('click',()=>showPortfolioTab(b.dataset.openPortfolioTab)));
   ensureTokenModalRoot();
   restoreSaltSocialSession();
