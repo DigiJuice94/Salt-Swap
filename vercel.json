@@ -13,6 +13,10 @@
     {
       "src": "styles.css",
       "use": "@vercel/static"
+    },
+    {
+      "src": "assets/**",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -83,6 +87,10 @@
     {
       "src": "/styles.css",
       "dest": "/styles.css"
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
     },
     {
       "src": "/",
