@@ -122,8 +122,8 @@
       </div>
 
       <div id="quickSwapNotice" class="quickSwapNotice">Quick Swap uses live cross-chain routes. The source wallet must be connected before execution.</div>
-      <button id="quickSwapAction" class="quickSwapAction" type="button">Get live route</button>
-      <button id="quickSwapConnect" class="quickSwapConnect" type="button">Connect / switch source wallet</button>
+      <button id="quickSwapAction" class="quickSwapAction" type="button">Enter an amount</button>
+      <button id="quickSwapConnect" class="quickSwapConnect" type="button">Switch source wallet</button>
       <div class="quickSwapFoot"><span>◉ Live route</span><span>Wallet approval required</span><span>No seed phrase</span></div>
     </section>
   </div>
@@ -690,6 +690,85 @@ function quickSwapSourceSigner(a){
   }
   return walletKind==='evm'&&walletAddress&&walletProvider?{address:walletAddress,provider:walletProvider}:null
 }
+function quickSwapAddressOk(a,address){
+  const v=String(address||'').trim();
+  return a.kind==='solana'?/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(v):/^0x[a-fA-F0-9]{40}$/.test(v)
+}
+function quickSwapShortAddress(v){v=String(v||'');return v.length>14?`${v.slice(0,6)}…${v.slice(-5)}`:v}
+function quickSwapProviderBrand(p){
+  if(!p)return '';
+  if(p.isTrust||p.isTrustWallet)return 'trust';
+  if(p.isPhantom)return 'phantom';
+  if(p.isSolflare)return 'solflare';
+  if(p.isCoinbaseWallet)return 'coinbase';
+  if(p.isBinance||p.isBinanceChain)return 'binance';
+  if(p.isMetaMask)return 'metamask';
+  return ''
+}
+function quickSwapCounterpartProvider(a){
+  const from=quickSwapAsset('from'),signer=quickSwapSourceSigner(from),brand=quickSwapProviderBrand(signer?.provider);
+  if(a.kind==='evm'){
+    if(brand==='trust')return window.trustwallet?.ethereum||window.trustWallet?.ethereum||null;
+    if(brand==='phantom')return window.phantom?.ethereum||null;
+    if(brand==='coinbase')return evmWalletChoices().find(x=>x.id==='coinbase')?.provider||null;
+    if(brand==='binance')return evmWalletChoices().find(x=>x.id==='binance')?.provider||null;
+    if(brand==='metamask')return evmWalletChoices().find(x=>x.id==='metamask')?.provider||null;
+    return findEvmWallet()
+  }
+  if(brand==='trust')return solWalletChoices().find(x=>x.id==='trust')?.provider||null;
+  if(brand==='phantom')return solWalletChoices().find(x=>x.id==='phantom')?.provider||null;
+  if(brand==='solflare')return solWalletChoices().find(x=>x.id==='solflare')?.provider||null;
+  return findSolWallet()
+}
+async function quickSwapAutofillDestination({interactive=false}={}){
+  const to=quickSwapAsset('to'),input=$('quickSwapRecipient');
+  let address=String(input?.value||'').trim();
+  if(quickSwapAddressOk(to,address)){quickSwapUpdateRecipientUi();return address}
+  address=quickSwapDefaultRecipient(to);
+  if(quickSwapAddressOk(to,address)){
+    input.value=address;quickSwapRecipientTouched=false;quickSwapUpdateRecipientUi();return address
+  }
+  const p=quickSwapCounterpartProvider(to);
+  if(!p){quickSwapUpdateRecipientUi();return ''}
+  try{
+    if(to.kind==='evm'){
+      let accounts=[];
+      if(p.selectedAddress)accounts=[p.selectedAddress];
+      if(!accounts.length&&typeof p.request==='function'){
+        accounts=await p.request({method:interactive?'eth_requestAccounts':'eth_accounts'})||[]
+      }
+      address=String(accounts?.[0]||p.selectedAddress||'').toLowerCase();
+      if(quickSwapAddressOk(to,address)){saveTransferAddress('evm',address);input.value=address;quickSwapRecipientTouched=false}
+    }else{
+      address=String(p.publicKey||'');
+      if(!quickSwapAddressOk(to,address)&&interactive&&typeof p.connect==='function'){
+        const r=await p.connect();address=String(r?.publicKey||p.publicKey||'')
+      }
+      if(quickSwapAddressOk(to,address)){saveTransferAddress('solana',address);input.value=address;quickSwapRecipientTouched=false}
+    }
+  }catch(e){
+    if(interactive)throw e
+  }
+  quickSwapUpdateRecipientUi();
+  return quickSwapAddressOk(to,input.value)?String(input.value).trim():''
+}
+function quickSwapUpdateRecipientUi(){
+  const to=quickSwapAsset('to'),input=$('quickSwapRecipient'),hint=$('quickSwapRecipientHint'),address=String(input?.value||'').trim(),ready=quickSwapAddressOk(to,address);
+  if(hint)hint.textContent=ready?`Ready · ${to.symbol} will arrive at ${quickSwapShortAddress(address)} on ${to.name}.`:(to.kind==='solana'?`Connect or choose a Solana wallet to receive ${to.symbol}.`:`Connect or choose an EVM wallet to receive ${to.symbol} on ${to.name}.`);
+  quickSwapUpdateAction()
+}
+function quickSwapUpdateAction(){
+  const b=$('quickSwapAction'),secondary=$('quickSwapConnect');if(!b)return;
+  const from=quickSwapAsset('from'),to=quickSwapAsset('to'),amount=quickSwapAtomic($('quickSwapAmount')?.value,from.decimals),signer=quickSwapSourceSigner(from),recipient=String($('quickSwapRecipient')?.value||'').trim();
+  if(secondary){secondary.textContent=signer?'Switch source wallet':`Connect ${from.symbol} source wallet`}
+  if(!from.supported||!to.supported||from.key===to.key){b.disabled=true;return}
+  b.disabled=false;
+  if(!signer){b.textContent=`Connect ${from.symbol} wallet`;return}
+  if(!amount){b.textContent='Enter an amount';return}
+  if(!quickSwapPreview){b.textContent='Checking best rate…';return}
+  if(!quickSwapAddressOk(to,recipient)){b.textContent=`Connect ${to.symbol} wallet to receive`;return}
+  b.textContent=`Swap ${from.symbol} → ${to.symbol}`
+}
 function quickSwapAtomic(v,d){return tokenToAtomic(v,d)}
 function quickSwapFormat(raw,d,max=8){return fmtToken(raw,d,max)}
 function quickSwapSetNotice(msg,tone=''){const el=$('quickSwapNotice');if(!el)return;el.textContent=msg;el.className='quickSwapNotice'+(tone?' '+tone:'')}
@@ -736,7 +815,7 @@ function quickSwapResetQuote({clearPreview=true}={}){
     quickSwapPreview=null;
     $('quickSwapReceive').textContent='—';$('quickSwapRouteName').textContent='Waiting for amount';$('quickSwapTime').textContent='—';$('quickSwapMin').textContent='—';
   }
-  const b=$('quickSwapAction');if(b){b.textContent='Get live route';b.disabled=false}
+  quickSwapUpdateAction()
 }
 function quickSwapPreviewSeconds(route){
   const steps=Array.isArray(route?.steps)?route.steps:[];
@@ -769,12 +848,15 @@ async function getQuickSwapPreview(){
     if(!r.ok)throw new Error(readableError(j?.error??j));
     const route=j?.route||j?.routes?.[0];
     if(!applyQuickSwapPreview(route))throw new Error('No live output estimate was returned for this amount.');
-    const gas=Number(route?.gasCostUSD||0),recipient=String($('quickSwapRecipient').value||'').trim();
-    quickSwapSetNotice(`Estimated receive amount loaded${gas>0?` · estimated gas/route cost $${gas.toFixed(2)}`:''}. ${recipient?'Tap Get live route to prepare the exact transaction.':'Add or connect a destination wallet to continue.'}`,'good')
+    const gas=Number(route?.gasCostUSD||0);
+    await quickSwapAutofillDestination({interactive:false});
+    const recipient=String($('quickSwapRecipient').value||'').trim();
+    quickSwapSetNotice(`Estimated receive amount loaded${gas>0?` · estimated gas/route cost $${gas.toFixed(2)}`:''}. ${quickSwapAddressOk(to,recipient)?'Ready to swap — one wallet approval is next.':`Connect your ${to.symbol} receiving wallet to continue.`}`,'good');
+    quickSwapUpdateAction()
   }catch(e){
     if(seq!==quickSwapPreviewSeq)return;
     quickSwapPreview=null;$('quickSwapReceive').textContent='—';$('quickSwapRouteName').textContent='Route unavailable';$('quickSwapTime').textContent='—';$('quickSwapMin').textContent='—';
-    quickSwapSetNotice(readableError(e),'warn')
+    quickSwapSetNotice(readableError(e),'warn');quickSwapUpdateAction()
   }
 }
 function scheduleQuickSwapPreview(delay=450){
@@ -789,8 +871,8 @@ function renderQuickSwap({resetRecipient=false}={}){
   $('quickSwapFromSymbol').textContent=from.symbol;$('quickSwapToSymbol').textContent=to.symbol;
   if(resetRecipient||!quickSwapRecipientTouched){const d=quickSwapDefaultRecipient(to);$('quickSwapRecipient').value=d||''}
   $('quickSwapRecipient').placeholder=to.kind==='solana'?'Solana destination address':'0x destination address';
-  $('quickSwapRecipientHint').textContent=to.kind==='solana'?`Receive ${to.symbol} on Solana.`:`Receive ${to.symbol} on ${to.name}.`;
-  quickSwapResetQuote();
+  quickSwapResetQuote();quickSwapUpdateRecipientUi();
+  quickSwapAutofillDestination({interactive:false}).catch(()=>{});
   if(!from.supported||!to.supported){
     quickSwapSetNotice('Robinhood Chain is included in The Trenches, but the current cross-chain router does not support Robinhood yet. Use the normal Robinhood swap after funding that wallet.','warn');
     $('quickSwapAction').disabled=true;
@@ -825,8 +907,8 @@ async function getQuickSwapQuote({forExecution=false}={}){
   $('quickSwapTime').textContent=secs>0?(secs<60?`~${Math.max(1,Math.round(secs))} sec`:`~${Math.ceil(secs/60)} min`):'Live';
   $('quickSwapMin').textContent=`${quickSwapFormat(min,to.decimals,8)} ${to.symbol}`;
   const gas=(j?.estimate?.gasCosts||[]).reduce((s,x)=>s+Number(x?.amountUSD||0),0),fees=(j?.estimate?.feeCosts||[]).reduce((s,x)=>s+Number(x?.amountUSD||0),0);
-  quickSwapSetNotice(`Live route ready${gas+fees>0?` · estimated route costs $${(gas+fees).toFixed(2)}`:''}. ${forExecution?'Approve the transaction in your wallet.':'Review it, then tap Swap across chains.'}`,'good');
-  const b=$('quickSwapAction');b.textContent='Swap across chains';b.disabled=false;
+  quickSwapSetNotice(`Live route ready${gas+fees>0?` · estimated route costs $${(gas+fees).toFixed(2)}`:''}. ${forExecution?'Approve the transaction in your wallet.':'Ready to swap.'}`,'good');
+  quickSwapUpdateAction();
   return j
 }
 async function ensureQuickSwapEvmChain(a,p){
@@ -852,14 +934,30 @@ async function quickSwapPollStatus(hash,quote){
   }
   quickSwapSetNotice('Source transaction sent successfully. Cross-chain settlement is still processing; it can take a few minutes.','good')
 }
+async function handleQuickSwapAction(){
+  if(quickSwapBusy)return;
+  const from=quickSwapAsset('from'),to=quickSwapAsset('to'),amount=quickSwapAtomic($('quickSwapAmount').value,from.decimals),signer=quickSwapSourceSigner(from);
+  try{
+    if(!signer){quickSwapSetNotice(`Connect the ${from.symbol} wallet you want to swap from.`,'warn');openWalletConnectModal('general');return}
+    if(!amount){$('quickSwapAmount')?.focus();quickSwapSetNotice(`Enter how much ${from.symbol} you want to swap.`,'warn');return}
+    if(!quickSwapPreview)await getQuickSwapPreview();
+    let recipient=String($('quickSwapRecipient').value||'').trim();
+    if(!quickSwapAddressOk(to,recipient)){
+      quickSwapSetNotice(`Connecting your ${to.symbol} receiving wallet…`,'warn');
+      recipient=await quickSwapAutofillDestination({interactive:true})
+    }
+    if(!quickSwapAddressOk(to,recipient))throw new Error(`Connect or enter the ${to.name} wallet that should receive your ${to.symbol}.`);
+    await executeQuickSwap()
+  }catch(e){quickSwapSetNotice(readableError(e),'bad');quickSwapUpdateAction()}
+}
+
 async function executeQuickSwap(){
   if(quickSwapBusy)return;
   const b=$('quickSwapAction');
   try{
     quickSwapBusy=true;b.disabled=true;
     const from=quickSwapAsset('from'),signer=quickSwapSourceSigner(from);
-    if(!quickSwapQuote){await getQuickSwapQuote();return}
-    b.textContent='Refreshing live route…';
+    b.textContent=quickSwapQuote?'Refreshing live route…':'Preparing swap…';
     const quote=await getQuickSwapQuote({forExecution:true}),tx=quote?.transactionRequest;
     if(!tx?.data)throw new Error('The cross-chain router did not return an executable transaction.');
     let hash='';
@@ -892,7 +990,7 @@ async function executeQuickSwap(){
     quickSwapPollStatus(hash,quote)
   }catch(e){
     quickSwapSetNotice(readableError(e),'bad');
-    b.textContent=quickSwapQuote?'Swap across chains':'Get live route'
+    quickSwapUpdateAction()
   }finally{quickSwapBusy=false;b.disabled=false}
 }
 
@@ -1261,7 +1359,7 @@ function initSalt(){
   if(saltProfile)$('socialProfilePage')?.classList.remove('hidden');
   const b=$('scanBtn');if(!b)return;b.type='button';b.addEventListener('click',scan);
   $('mintInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();scan();}});
-  $('quickSwapOpen')?.addEventListener('click',openQuickSwap);$('quickSwapClose')?.addEventListener('click',closeQuickSwap);document.querySelectorAll('[data-close-quick-swap]').forEach(x=>x.addEventListener('click',closeQuickSwap));$('quickSwapFrom')?.addEventListener('change',()=>renderQuickSwap({resetRecipient:false}));$('quickSwapTo')?.addEventListener('change',()=>{quickSwapRecipientTouched=false;renderQuickSwap({resetRecipient:true})});$('quickSwapAmount')?.addEventListener('input',()=>{quickSwapResetQuote();scheduleQuickSwapPreview()});$('quickSwapMax')?.addEventListener('click',useQuickSwapMax);$('quickSwapRecipient')?.addEventListener('input',()=>{quickSwapRecipientTouched=true;quickSwapResetQuote({clearPreview:false})});$('quickSwapFlip')?.addEventListener('click',()=>{const a=$('quickSwapFrom').value,b=$('quickSwapTo').value;$('quickSwapFrom').value=b;$('quickSwapTo').value=a;quickSwapRecipientTouched=false;renderQuickSwap({resetRecipient:true})});$('quickSwapUseWallet')?.addEventListener('click',()=>{quickSwapRecipientTouched=false;$('quickSwapRecipient').value=quickSwapDefaultRecipient(quickSwapAsset('to'))||'';quickSwapResetQuote()});$('quickSwapConnect')?.addEventListener('click',()=>openWalletConnectModal('general'));$('quickSwapAction')?.addEventListener('click',async()=>{if(quickSwapQuote)await executeQuickSwap();else try{await getQuickSwapQuote()}catch(e){quickSwapSetNotice(readableError(e),'bad')}});
+  $('quickSwapOpen')?.addEventListener('click',openQuickSwap);$('quickSwapClose')?.addEventListener('click',closeQuickSwap);document.querySelectorAll('[data-close-quick-swap]').forEach(x=>x.addEventListener('click',closeQuickSwap));$('quickSwapFrom')?.addEventListener('change',()=>renderQuickSwap({resetRecipient:false}));$('quickSwapTo')?.addEventListener('change',()=>{quickSwapRecipientTouched=false;renderQuickSwap({resetRecipient:true})});$('quickSwapAmount')?.addEventListener('input',()=>{quickSwapResetQuote();scheduleQuickSwapPreview()});$('quickSwapMax')?.addEventListener('click',useQuickSwapMax);$('quickSwapRecipient')?.addEventListener('input',()=>{quickSwapRecipientTouched=true;quickSwapResetQuote({clearPreview:false});quickSwapUpdateRecipientUi()});$('quickSwapFlip')?.addEventListener('click',()=>{const a=$('quickSwapFrom').value,b=$('quickSwapTo').value;$('quickSwapFrom').value=b;$('quickSwapTo').value=a;quickSwapRecipientTouched=false;renderQuickSwap({resetRecipient:true})});$('quickSwapUseWallet')?.addEventListener('click',async()=>{try{quickSwapRecipientTouched=false;await quickSwapAutofillDestination({interactive:true});quickSwapResetQuote({clearPreview:false});quickSwapUpdateRecipientUi()}catch(e){quickSwapSetNotice(readableError(e),'bad')}});$('quickSwapConnect')?.addEventListener('click',()=>openWalletConnectModal('general'));$('quickSwapAction')?.addEventListener('click',handleQuickSwapAction);
   $('walletBtn')?.addEventListener('click',walletAction);$('switchWalletBtn')?.addEventListener('click',openWalletProviderChoices);$('disconnectWalletBtn')?.addEventListener('click',disconnectActiveWallet);$('walletConnectClose')?.addEventListener('click',closeWalletConnectModal);document.querySelectorAll('[data-close-wallet-connect]').forEach(x=>x.addEventListener('click',closeWalletConnectModal));$('walletOtherToggle')?.addEventListener('click',()=>{walletOtherOpen=!walletOtherOpen;renderWalletConnectModal()});document.addEventListener('click',e=>{const shell=e.target.closest?.('.headerWalletShell');if(!shell&&!$('walletAccountMenu')?.classList.contains('hidden'))closeWalletAccountMenu()});$('swapWalletBtn')?.addEventListener('click',executeSwap);$('swapMaxBtn')?.addEventListener('click',useSwapMax);$('payAmount')?.addEventListener('input',()=>{scheduleQuote();updateSwapButton()});$('paySymbol')?.addEventListener('click',()=>openTokenPicker('pay'));$('receiveSymbol')?.addEventListener('click',()=>openTokenPicker('receive'));$('closeTokenModal')?.addEventListener('click',closeTokenPicker);document.querySelectorAll('[data-close-token-modal]').forEach(x=>x.addEventListener('click',closeTokenPicker));document.querySelectorAll('[data-picker-chain]').forEach(x=>x.addEventListener('click',()=>setPickerChain(x.dataset.pickerChain)));$('clearRecent')?.addEventListener('click',()=>{try{localStorage.removeItem('salt:recentTokens')}catch{}renderRecent()});$('tokenSearchInput')?.addEventListener('input',e=>{clearTimeout(tokenSearchTimer);tokenSearchTimer=setTimeout(()=>searchTokens(e.target.value),250)});
   $('newScanBtn')?.addEventListener('click',()=>{$('results')?.classList.add('hidden');$('mintInput').value='';$('mintInput').focus();window.scrollTo({top:0,behavior:'smooth'});});
   $('copyCA')?.addEventListener('click',async()=>{if(!currentMint)return;try{await navigator.clipboard.writeText(currentMint);const x=$('copyCA')?.querySelector('b');if(x){const old=x.textContent;x.textContent='Copied';setTimeout(()=>x.textContent=old,1100);}}catch{}});

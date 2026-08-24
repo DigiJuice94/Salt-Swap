@@ -2543,3 +2543,18 @@ body.wallet-account-menu-open .walletAccountMenu{
 /* V1.10.84 — live Quick Swap receive estimate */
 .quickSwapEstimate strong{font-variant-numeric:tabular-nums}
 .quickSwapEstimate strong:first-letter{color:#667a70}
+
+/* V1.10.85 — one-click Quick Swap flow */
+.quickSwapAction{
+  min-height:48px;
+  font-size:13px;
+  letter-spacing:-.01em;
+  transition:transform .14s ease,box-shadow .14s ease,background .14s ease;
+}
+.quickSwapAction:hover:not(:disabled){
+  transform:translateY(-1px);
+  box-shadow:0 12px 28px rgba(65,72,46,.23);
+  background:#3f4931;
+}
+.quickSwapAction:disabled{box-shadow:none}
+.quickSwapRecipientHint{font-weight:700}

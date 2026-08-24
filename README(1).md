@@ -526,3 +526,12 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Manual amount edits refresh the estimate after a short debounce.
 - The preview uses LI.FI advanced routes and does not require a destination address just to show the expected output.
 - The exact executable quote is still refreshed after a real destination wallet is supplied, immediately before wallet approval.
+
+## V1.10.85 — One-click Quick Swap flow
+- Removes the unnecessary two-button-step behavior after a live Quick Swap estimate.
+- Once the amount and receiving wallet are known, the main button reads `Swap SOL → ETH` (or the selected pair).
+- Clicking that button refreshes the executable route and immediately opens the source wallet for transaction approval in the same flow.
+- If a user connected a multichain wallet such as Trust Wallet, The Trenches now checks its paired EVM/Solana provider non-interactively and automatically fills the destination address when that site permission already exists.
+- If the destination side has not been authorized yet, the same primary button asks that wallet for the destination address first and then continues into the swap.
+- `Use my wallet` now actively connects/uses the correct destination-network side rather than only copying an address if one was already cached.
+- The source-wallet secondary button is reduced to a switch/connect control instead of being part of the normal happy path.
