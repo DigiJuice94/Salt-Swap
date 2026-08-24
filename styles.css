@@ -1397,3 +1397,19 @@ body.salt-social-active .feedSupportLink{
   object-fit:contain !important;
   display:block !important;
 }
+
+
+/* V1.10.43 — use exact uploaded sheep for Social onboarding/profile placeholder */
+.socialOnboardingMark{
+  background:#e8d8ae !important;
+}
+.socialOnboardingMark img{
+  width:88% !important;
+  height:88% !important;
+  object-fit:contain !important;
+}
+#profilePicturePreview img{
+  width:100% !important;
+  height:100% !important;
+  object-fit:contain !important;
+}
