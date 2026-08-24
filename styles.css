@@ -1533,3 +1533,17 @@ body.salt-social-active #saltSocial .featuredNftFrame:has(.featuredNftMeta) img{
   body.salt-social-active #saltSocial .featuredNftFrame img{inset:13px 13px 54px!important;width:calc(100% - 26px)!important;height:calc(100% - 67px)!important}
   body.salt-social-active #saltSocial .featuredNftFrame>small{bottom:18px!important}
 }
+
+/* V1.10.45 — keep Wallet Owned NFT area flush with the page background */
+body.salt-social-active #saltSocial .featuredNft,
+body.salt-social-active #saltSocial .featuredNftOwned{
+  background:transparent!important;
+  background-image:none!important;
+  box-shadow:none!important;
+  border:0!important;
+}
+body.salt-social-active #saltSocial .featuredNftOwned{
+  width:100%!important;
+  margin:0!important;
+  padding:0!important;
+}
