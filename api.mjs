@@ -681,9 +681,119 @@ async function portfolioHandler(req,res){res.setHeader('Cache-Control','no-store
 function socialPostId(wallet,chain,token){return `${String(wallet||'')}:${String(chain||'')}:${String(token||'').toLowerCase()}`}
 function parseSocialPostId(postId){const parts=String(postId||'').split(':');if(parts.length<3)return null;const wallet=safeSocialWallet(parts.shift()),chain=cleanChain(parts.shift()),token=cleanToken(parts.join(':'));return wallet&&chain&&token?{wallet,chain,token}:null}
 function cleanSocialComment(v){return String(v||'').trim().slice(0,400)}
-async function socialTokenSnapshot(chain,token,fallback={}){let snap={name:String(fallback?.name||'').trim().slice(0,100),symbol:String(fallback?.symbol||'').trim().replace(/^\$/,'').slice(0,20),priceUsd:number(fallback?.priceUsd),image:normalizeTokenIcon(fallback?.image)||''};try{const dsChain=chain==='bnb'?'bsc':chain,pairs=await fetchJson(`https://api.dexscreener.com/token-pairs/v1/${dsChain}/${encodeURIComponent(token)}`,{headers:{accept:'application/json'}},7000),rows=Array.isArray(pairs)?pairs:[],pair=rows.sort((a,b)=>number(b?.liquidity?.usd)-number(a?.liquidity?.usd))[0];if(pair){const target=String(token).toLowerCase(),base=String(pair?.baseToken?.address||'').toLowerCase()===target?pair.baseToken:null,quote=String(pair?.quoteToken?.address||'').toLowerCase()===target?pair.quoteToken:null,tok=base||quote||pair.baseToken;if(tok){snap.name=String(tok?.name||snap.name||'Token').slice(0,100);snap.symbol=String(tok?.symbol||snap.symbol||'TOKEN').replace(/^\$/,'').slice(0,20)}if(base){snap.priceUsd=number(pair?.priceUsd)??snap.priceUsd}snap.image=normalizeTokenIcon(pair?.info?.imageUrl)||snap.image}}catch{}return snap}
+const socialTokenSnapshotCache=new Map();
+function meaningfulSocialTokenName(v){v=String(v||'').trim();return Boolean(v&&!/^(token|contract token|unknown token)$/i.test(v))}
+function meaningfulSocialTokenSymbol(v){v=String(v||'').trim().replace(/^\$/,'');return Boolean(v&&!/^(token|unknown)$/i.test(v))}
+function applySocialPairSnapshot(snap,pair,token){
+  if(!pair)return snap;
+  const target=String(token||'').toLowerCase(),base=pair?.baseToken,quote=pair?.quoteToken,
+    baseMatch=String(base?.address||'').toLowerCase()===target,
+    quoteMatch=String(quote?.address||'').toLowerCase()===target,
+    tok=baseMatch?base:quoteMatch?quote:base;
+  if(tok){
+    if(meaningfulSocialTokenName(tok?.name))snap.name=String(tok.name).trim().slice(0,100);
+    if(meaningfulSocialTokenSymbol(tok?.symbol))snap.symbol=String(tok.symbol).trim().replace(/^\$/,'').slice(0,20)
+  }
+  // DexScreener priceUsd is the base-token price. Only attach it when the
+  // contract being discussed is actually the base token for that pair.
+  if(baseMatch)snap.priceUsd=number(pair?.priceUsd)??snap.priceUsd;
+  snap.image=normalizeTokenIcon(pair?.info?.imageUrl)||snap.image;
+  return snap
+}
+async function socialTokenSnapshot(chain,token,fallback={}){
+  let snap={name:String(fallback?.name||'').trim().slice(0,100),symbol:String(fallback?.symbol||'').trim().replace(/^\$/,'').slice(0,20),priceUsd:number(fallback?.priceUsd),image:normalizeTokenIcon(fallback?.image)||''},
+    dsChain=chain==='bnb'?'bsc':chain,target=String(token||'').trim(),pairs=[];
+  if(!target)return snap;
+
+  // 1) Chain-specific DexScreener pairs.
+  try{
+    const rows=await fetchJson(`https://api.dexscreener.com/token-pairs/v1/${dsChain}/${encodeURIComponent(target)}`,{headers:{accept:'application/json'}},7000);
+    pairs=Array.isArray(rows)?rows:[];
+    const pair=pairs.sort((a,b)=>(number(b?.liquidity?.usd)||0)-(number(a?.liquidity?.usd)||0))[0];
+    applySocialPairSnapshot(snap,pair,target)
+  }catch{}
+
+  // 2) DexScreener's chain-agnostic token endpoint. This catches older posts
+  // whose stored chain alias or pair lookup no longer resolves cleanly.
+  if(!meaningfulSocialTokenName(snap.name)||!meaningfulSocialTokenSymbol(snap.symbol)||snap.priceUsd==null||!snap.image){
+    try{
+      const j=await fetchJson(`https://api.dexscreener.com/latest/dex/tokens/${encodeURIComponent(target)}`,{headers:{accept:'application/json'}},7000),
+        rows=Array.isArray(j?.pairs)?j.pairs:[],
+        wanted=rows.filter(x=>!dsChain||String(x?.chainId||'').toLowerCase()===String(dsChain).toLowerCase()),
+        pair=(wanted.length?wanted:rows).sort((a,b)=>(number(b?.liquidity?.usd)||0)-(number(a?.liquidity?.usd)||0))[0];
+      applySocialPairSnapshot(snap,pair,target)
+    }catch{}
+  }
+
+  // 3) Solana metadata fallbacks for name/symbol/artwork even when there is no
+  // active DEX pair. This prevents a feed card from degrading to "Token".
+  if(chain==='solana'&&(!meaningfulSocialTokenName(snap.name)||!meaningfulSocialTokenSymbol(snap.symbol)||!snap.image)){
+    try{
+      const arr=await jupiterTokens('/search?query='+encodeURIComponent(target)),
+        hit=(Array.isArray(arr)?arr:[]).find(x=>String(x?.id||'')===target)||(Array.isArray(arr)?arr:[])[0];
+      if(hit){
+        if(meaningfulSocialTokenName(hit?.name))snap.name=String(hit.name).trim().slice(0,100);
+        if(meaningfulSocialTokenSymbol(hit?.symbol))snap.symbol=String(hit.symbol).trim().replace(/^\$/,'').slice(0,20);
+        snap.image=normalizeTokenIcon(hit?.icon)||snap.image;
+        snap.priceUsd=number(hit?.usdPrice)??snap.priceUsd
+      }
+    }catch{}
+    if((!meaningfulSocialTokenName(snap.name)||!meaningfulSocialTokenSymbol(snap.symbol)||!snap.image)&&process.env.HELIUS_API_KEY){
+      try{
+        const h=await fetchJson(`https://mainnet.helius-rpc.com/?api-key=${encodeURIComponent(process.env.HELIUS_API_KEY)}`,{
+          method:'POST',headers:{'content-type':'application/json',accept:'application/json'},
+          body:JSON.stringify({jsonrpc:'2.0',id:'trenches-social-token',method:'getAsset',params:{id:target}})
+        },7000),asset=h?.result||{},meta=asset?.content?.metadata||{};
+        if(meaningfulSocialTokenName(meta?.name))snap.name=String(meta.name).trim().slice(0,100);
+        if(meaningfulSocialTokenSymbol(meta?.symbol))snap.symbol=String(meta.symbol).trim().replace(/^\$/,'').slice(0,20);
+        snap.image=heliusAssetImage(asset)||snap.image
+      }catch{}
+    }
+  }
+
+  return snap
+}
+async function cachedSocialTokenSnapshot(chain,token,fallback={}){
+  const key=`${cleanChain(chain)}:${String(token||'').toLowerCase()}`,now=Date.now(),cached=socialTokenSnapshotCache.get(key);
+  if(cached&&now-cached.at<120000){
+    const c={...cached.value};
+    // A caller-provided historical/post snapshot remains more authoritative
+    // than the cached live values.
+    if(meaningfulSocialTokenName(fallback?.name))c.name=String(fallback.name).trim().slice(0,100);
+    if(meaningfulSocialTokenSymbol(fallback?.symbol))c.symbol=String(fallback.symbol).trim().replace(/^\$/,'').slice(0,20);
+    if(number(fallback?.priceUsd)!=null)c.priceUsd=number(fallback.priceUsd);
+    if(normalizeTokenIcon(fallback?.image))c.image=normalizeTokenIcon(fallback.image);
+    return c
+  }
+  const value=await socialTokenSnapshot(chain,token,fallback);
+  socialTokenSnapshotCache.set(key,{at:now,value:{...value}});
+  if(socialTokenSnapshotCache.size>300){
+    for(const [k,v] of socialTokenSnapshotCache){if(now-v.at>300000)socialTokenSnapshotCache.delete(k)}
+  }
+  return value
+}
 async function readSocialPostState(postId,viewerWallet=''){const raw=await kv('get',`salt:social:post:${postId}`),state=raw?JSON.parse(raw):{},likes=Array.isArray(state.likes)?state.likes:[],replies=Array.isArray(state.replies)?state.replies:[],quotes=Array.isArray(state.quotes)?state.quotes:[];return{likes,replies,quotes,likeCount:likes.length,replyCount:replies.length,quoteCount:quotes.length,liked:Boolean(viewerWallet&&likes.includes(viewerWallet))}}
-async function enrichSocialReview(review,viewerWallet=''){let r={...review};if((!r.tokenName||!r.symbol)&&r.chain&&r.token){const live=await socialTokenSnapshot(r.chain,r.token,{});r={...r,tokenName:r.tokenName||live.name||'',symbol:r.symbol||live.symbol||'',tokenImage:r.tokenImage||live.image||''}}const postId=r.postId||socialPostId(r.wallet,r.chain,r.token),st=await readSocialPostState(postId,viewerWallet);return{...r,postId,likeCount:st.likeCount,replyCount:st.replyCount,quoteCount:st.quoteCount,liked:st.liked}}
+async function enrichSocialReview(review,viewerWallet=''){
+  let r={...review},needsMeta=!meaningfulSocialTokenName(r.tokenName)||!meaningfulSocialTokenSymbol(r.symbol)||!r.tokenImage||number(r.priceAtPost)==null,live={};
+  if(needsMeta&&r.chain&&r.token){
+    live=await cachedSocialTokenSnapshot(r.chain,r.token,{});
+    r={
+      ...r,
+      tokenName:meaningfulSocialTokenName(r.tokenName)?r.tokenName:(live.name||''),
+      symbol:meaningfulSocialTokenSymbol(r.symbol)?r.symbol:(live.symbol||''),
+      tokenImage:r.tokenImage||live.image||'',
+      // Never pretend a live lookup is the historical posting price. Older
+      // posts instead get a clearly-labelled current price fallback.
+      currentPriceUsd:number(live.priceUsd)
+    }
+  }else if(r.chain&&r.token){
+    // Still provide a current price for feed cards when it is cheap/cached.
+    const cached=socialTokenSnapshotCache.get(`${cleanChain(r.chain)}:${String(r.token).toLowerCase()}`);
+    if(cached)r.currentPriceUsd=number(cached.value?.priceUsd)
+  }
+  const postId=r.postId||socialPostId(r.wallet,r.chain,r.token),st=await readSocialPostState(postId,viewerWallet);
+  return{...r,postId,likeCount:st.likeCount,replyCount:st.replyCount,quoteCount:st.quoteCount,liked:st.liked}
+}
 async function socialPostActionsHandler(req,res){res.setHeader('Cache-Control','no-store');try{const postId=String(req.method==='GET'?req.query.postId:(typeof req.body==='string'?JSON.parse(req.body||'{}')?.postId:req.body?.postId)||'').trim(),parsed=parseSocialPostId(postId);if(!parsed)return res.status(400).json({error:'Valid thesis post required.'});const reviewRaw=await kv('get',socialKey(parsed.chain,parsed.token)),reviewList=reviewRaw?JSON.parse(reviewRaw):[],original=reviewList.find(r=>String(r.wallet)===parsed.wallet);if(!original)return res.status(404).json({error:'That thesis is no longer available.'});const viewer=await socialSessionWallet(req);if(req.method==='GET'){const st=await readSocialPostState(postId,viewer);return res.status(200).json({...st,likes:undefined})}if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});if(!viewer)return res.status(401).json({error:'Connect your Trenches Social wallet to interact.'});const body=typeof req.body==='string'?JSON.parse(req.body):req.body||{},action=String(body.action||'').toLowerCase(),text=cleanSocialComment(body.text),profileRaw=await kv('get',`salt:social:profile:${viewer}`);if(!profileRaw)return res.status(403).json({error:'Create a Trenches profile first.'});const profile=JSON.parse(profileRaw),state=await readSocialPostState(postId,viewer);if(action==='like'){const i=state.likes.indexOf(viewer);if(i>=0)state.likes.splice(i,1);else state.likes.push(viewer)}else if(action==='reply'||action==='quote'){if(text.length<1)return res.status(400).json({error:`Write something before you ${action}.`});const list=action==='reply'?state.replies:state.quotes;list.push({id:`${Date.now()}-${Math.random().toString(36).slice(2,8)}`,wallet:viewer,username:profile.username,avatar:profile.avatar||'',text,createdAt:new Date().toISOString()});if(list.length>250)list.splice(0,list.length-250)}else return res.status(400).json({error:'Unknown post action.'});await kv('set',`salt:social:post:${postId}`,JSON.stringify({likes:state.likes,replies:state.replies,quotes:state.quotes}));const updated=await readSocialPostState(postId,viewer);return res.status(200).json({...updated,likes:undefined})}catch(e){return res.status(Number(e?.status)||500).json({error:errorText(e)})}}
 
 async function socialProfileFeedHandler(req,res){res.setHeader('Cache-Control','no-store');try{if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});const wallet=safeSocialWallet(req.query.wallet);if(!wallet)return res.status(400).json({error:'Valid Solana wallet required.'});const raw=await kv('get',`salt:social:feed:${wallet}`),reviews=raw?JSON.parse(raw):[],viewer=await socialSessionWallet(req),sorted=reviews.sort((a,b)=>String(b.updatedAt).localeCompare(String(a.updatedAt))).slice(0,100),enriched=await Promise.all(sorted.map(r=>enrichSocialReview(r,viewer)));return res.status(200).json({reviews:enriched})}catch(e){return res.status(Number(e?.status)||500).json({error:errorText(e)})}}
@@ -703,7 +813,7 @@ let wallet=await socialSessionWallet(req);
 if(!wallet){const legacyWallet=safeSocialWallet(b.wallet),message=String(b.message||''),signature=String(b.signature||''),expected=`The Trenches review\nWallet: ${legacyWallet}\nChain: ${chain}\nToken: ${token}\nRating: ${rating}\nText: ${text}\nLink: ${link}`,legacyExpected=`Salt Swap review\nWallet: ${legacyWallet}\nChain: ${chain}\nToken: ${token}\nRating: ${rating}\nText: ${text}\nLink: ${link}`;if(legacyWallet&&signature&&(message===expected||message===legacyExpected)&&await verifySolMessage(legacyWallet,message,signature)){wallet=legacyWallet;await setSocialSession(res,req,wallet)}}
 if(!wallet)return res.status(401).json({error:'Your Trenches Social session expired. Connect your Solana wallet and sign in once to keep posting.'});
 const claimed=safeSocialWallet(b.wallet);if(claimed&&claimed!==wallet)return res.status(403).json({error:'The connected social session does not match that profile wallet.'});
-const pr=await kv('get',`salt:social:profile:${wallet}`);if(!pr)return res.status(403).json({error:'Create a Trenches profile before posting theses.'});const profile=JSON.parse(pr),key=socialKey(chain,token),raw=await kv('get',key),reviews=raw?JSON.parse(raw):[],now=new Date().toISOString(),i=reviews.findIndex(r=>r.wallet===wallet),fallbackSnapshot={name:String(b.tokenName||'').slice(0,100),symbol:String(b.symbol||'').slice(0,20),priceUsd:number(b.priceUsd),image:String(b.tokenImage||'')},snapshot=await socialTokenSnapshot(chain,token,fallbackSnapshot),postId=socialPostId(wallet,chain,token),review={wallet,username:profile.username,avatar:profile.avatar||'',chain,token,postId,rating,text,link,tokenName:snapshot.name||reviews[i]?.tokenName||'',symbol:snapshot.symbol||reviews[i]?.symbol||'',priceAtPost:number(snapshot.priceUsd)??number(reviews[i]?.priceAtPost),tokenImage:snapshot.image||reviews[i]?.tokenImage||'',createdAt:i>=0?reviews[i].createdAt:now,updatedAt:now};if(i>=0)reviews[i]=review;else reviews.push(review);await kv('set',key,JSON.stringify(reviews.slice(-500)));const feedKey=`salt:social:feed:${wallet}`,feedRaw=await kv('get',feedKey),feed=feedRaw?JSON.parse(feedRaw):[],fi=feed.findIndex(r=>r.chain===chain&&r.token===token);if(fi>=0)feed[fi]=review;else feed.push(review);await kv('set',feedKey,JSON.stringify(feed.slice(-250)));const globalKey='salt:social:community-feed',globalRaw=await kv('get',globalKey),globalFeed=globalRaw?JSON.parse(globalRaw):[],gi=globalFeed.findIndex(r=>r.wallet===wallet&&r.chain===chain&&r.token===token);if(gi>=0)globalFeed[gi]=review;else globalFeed.push(review);await kv('set',globalKey,JSON.stringify(globalFeed.slice(-1000)));const avg=reviews.reduce((a,r)=>a+Number(r.rating||0),0)/reviews.length;return res.status(200).json({ok:true,review,average:avg,count:reviews.length})}catch(e){return res.status(Number(e?.status)||500).json({error:errorText(e)})}}
+const pr=await kv('get',`salt:social:profile:${wallet}`);if(!pr)return res.status(403).json({error:'Create a Trenches profile before posting theses.'});const profile=JSON.parse(pr),key=socialKey(chain,token),raw=await kv('get',key),reviews=raw?JSON.parse(raw):[],now=new Date().toISOString(),i=reviews.findIndex(r=>r.wallet===wallet),fallbackSnapshot={name:String(b.tokenName||'').slice(0,100),symbol:String(b.symbol||'').slice(0,20),priceUsd:number(b.priceUsd),image:String(b.tokenImage||'')},snapshot=await cachedSocialTokenSnapshot(chain,token,fallbackSnapshot),postId=socialPostId(wallet,chain,token),review={wallet,username:profile.username,avatar:profile.avatar||'',chain,token,postId,rating,text,link,tokenName:snapshot.name||reviews[i]?.tokenName||'',symbol:snapshot.symbol||reviews[i]?.symbol||'',priceAtPost:number(snapshot.priceUsd)??number(reviews[i]?.priceAtPost),tokenImage:snapshot.image||reviews[i]?.tokenImage||'',createdAt:i>=0?reviews[i].createdAt:now,updatedAt:now};if(i>=0)reviews[i]=review;else reviews.push(review);await kv('set',key,JSON.stringify(reviews.slice(-500)));const feedKey=`salt:social:feed:${wallet}`,feedRaw=await kv('get',feedKey),feed=feedRaw?JSON.parse(feedRaw):[],fi=feed.findIndex(r=>r.chain===chain&&r.token===token);if(fi>=0)feed[fi]=review;else feed.push(review);await kv('set',feedKey,JSON.stringify(feed.slice(-250)));const globalKey='salt:social:community-feed',globalRaw=await kv('get',globalKey),globalFeed=globalRaw?JSON.parse(globalRaw):[],gi=globalFeed.findIndex(r=>r.wallet===wallet&&r.chain===chain&&r.token===token);if(gi>=0)globalFeed[gi]=review;else globalFeed.push(review);await kv('set',globalKey,JSON.stringify(globalFeed.slice(-1000)));const avg=reviews.reduce((a,r)=>a+Number(r.rating||0),0)/reviews.length;return res.status(200).json({ok:true,review,average:avg,count:reviews.length})}catch(e){return res.status(Number(e?.status)||500).json({error:errorText(e)})}}
 
 async function healthHandler(req,res){
   res.setHeader('Cache-Control','no-store');

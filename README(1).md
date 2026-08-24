@@ -543,3 +543,12 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Adds a compact connected-wallet card under the Swap button showing the Trenches username when the connected Solana wallet owns a Social profile, the detected wallet brand, shortened wallet address, and source network.
 - Moves wallet switching into a small `Change` button on the connected-wallet card.
 - Keeps the live receive estimate, route, minimum received, MAX button, and settlement tracking from prior Quick Swap versions.
+
+## V1.10.87 — Feed token metadata fix
+- Fixes thesis cards that showed only `Token` / `Price snapshot unavailable` when viewed from another wallet.
+- Feed metadata is now resolved server-side and is independent of which Social wallet is viewing the feed.
+- Token lookup now tries chain-specific DexScreener, chain-agnostic DexScreener, Jupiter metadata, and Helius metadata where applicable.
+- Placeholder names such as `Token` / `TOKEN` are treated as missing metadata and are replaced when a real name/ticker is found.
+- Older posts that never stored a historical posting price now show a clearly-labelled **Current price** when live market data is available. They are never falsely given a made-up historical price.
+- New theses continue storing the real price snapshot at posting time.
+- If every metadata source is temporarily unavailable, the card shows the shortened contract instead of a meaningless generic `Token` label.
