@@ -73,6 +73,10 @@
       "dest": "/api.mjs?route=social-reviews"
     },
     {
+      "src": "/api/social-post-actions",
+      "dest": "/api.mjs?route=social-post-actions"
+    },
+    {
       "src": "/api/social-nfts",
       "dest": "/api.mjs?route=social-nfts"
     },

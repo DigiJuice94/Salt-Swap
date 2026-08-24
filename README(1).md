@@ -355,3 +355,11 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - When the session expires or the user switches wallets, the next social post/connect asks for one fresh login signature.
 - Old clients that still send signed reviews remain temporarily compatible and are upgraded into a session after a valid signature.
 - `SOCIAL_SESSION_SECRET` is optional but recommended. If omitted, the configured Upstash REST token is used as the HMAC secret so this update works without adding another environment variable.
+
+
+## V1.10.62 — Social thesis cards + interactions
+- Profile and community feed theses now use a boxed Trenches post card with profile image and @username.
+- Every new thesis stores a server-resolved token snapshot: coin name, ticker, chain, token image, and USD price at posting time.
+- Added session-authenticated Like, Reply, and Quote interactions without per-action wallet signatures.
+- Replies and quote comments expand inline under the thesis.
+- Existing older theses remain readable; if they predate price snapshots they show that the posting-price snapshot is unavailable rather than inventing a historical price.
