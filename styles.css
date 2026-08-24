@@ -2438,3 +2438,24 @@ html.walletTransferOpen,body.walletTransferOpen{overflow:hidden!important}
 .walletConnectPanel::-webkit-scrollbar{width:8px}
 .walletConnectPanel::-webkit-scrollbar-track{background:transparent}
 .walletConnectPanel::-webkit-scrollbar-thumb{background:#c9bea4;border-radius:999px;border:2px solid #f8f2e5}
+
+/* V1.10.77 — wallet account menu must always render above page content */
+body.wallet-account-menu-open .topbar{
+  z-index:30000!important;
+  isolation:isolate!important;
+  overflow:visible!important;
+}
+body.wallet-account-menu-open .headerWalletShell{
+  z-index:30010!important;
+}
+body.wallet-account-menu-open .walletAccountMenu{
+  z-index:30020!important;
+  opacity:1!important;
+  filter:none!important;
+  pointer-events:auto!important;
+}
+/* Full-screen wallet/transfer dialogs still sit above the header when opened. */
+.walletConnectModal{z-index:50000!important}
+.walletTransferModal{z-index:50000!important}
+.tokenModal{z-index:50000!important}
+.profileModal{z-index:50000!important}

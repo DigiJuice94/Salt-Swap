@@ -469,3 +469,8 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Restyles the professional wallet chooser to match The Trenches instead of using the dark generic wallet theme.
 - Uses the site's warm off-white/cream surfaces, olive military accents, navy text, soft gold-beige borders, and muted green detected states.
 - Keeps all wallet logos, wallet detection, Social wallet restrictions, provider selection, and connection logic unchanged.
+
+## V1.10.77 — Wallet menu layer fix
+- Fixes the connected-wallet dropdown appearing behind Swap, Social, Portfolio, Trending, and other page layers.
+- The header is elevated only while the wallet account menu is open, so normal page stacking stays unchanged.
+- Full-screen wallet, transfer, token, and profile dialogs remain above the header.
