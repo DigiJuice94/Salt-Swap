@@ -454,3 +454,13 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - If multiple Solana wallets are installed and no preference exists, Social shows a wallet chooser instead of auto-opening one.
 - The selected Solana wallet provider is remembered for later Social, Portfolio, transfer, and signing flows.
 - Existing wallet/profile isolation remains intact.
+
+
+## V1.10.75 — Professional wallet chooser
+- Replaces the basic connect dropdown with a centered, high-quality wallet chooser.
+- Shows Trust Wallet, Solflare, WalletConnect, MetaMask, Coinbase Wallet, Binance Wallet, plus Other wallets.
+- Adds recognizable wallet logos and detected/not-detected state.
+- Social opens the same professional chooser in Solana-only mode so the chosen wallet is the one tied to the Social profile.
+- Header wallet switching uses the same chooser.
+- Installed injected wallets are detected and additional browser wallets appear under Other wallets.
+- WalletConnect is surfaced in the UI but requires a configured WalletConnect/Reown project ID before QR sessions can be enabled.
