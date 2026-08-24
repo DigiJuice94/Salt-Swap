@@ -313,3 +313,9 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Posts use the existing 0–10 community rating + thesis + optional supporting link.
 - The same post is stored in the user's profile feed and the global community feed through the existing Social reviews endpoint.
 - Existing thesis for the same profile/token is loaded for editing; one current thesis per profile/token remains enforced.
+
+
+## V1.10.56 — Scan thesis profile bubble
+- Gives the scan-page thesis composer its own clearly separated card/bubble treatment.
+- The signed-in Trenches identity pill now shows the user profile picture, username, and shortened social wallet.
+- Existing wallet-signing, profile posting, community-feed posting, and Community Score behavior are preserved.
