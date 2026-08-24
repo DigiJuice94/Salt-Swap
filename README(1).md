@@ -382,3 +382,8 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - The Feed now stays focused on the market ticker, crypto news, Feed thesis composer, filters, and community posts.
 - Token-specific thesis posting remains available directly on scanned token pages and still posts to the user's profile and community Feed.
 - The legacy review DOM remains hidden for compatibility with existing Community Score data/loading logic.
+
+## V1.10.66 — Feed legacy reviews cleanup
+- Removes the remaining legacy “Community / Latest reviews” card from Social.
+- Keeps its internal DOM hooks hidden so existing Community Score and profile code continue working without errors.
+- Feed, profile thesis cards, scan thesis composer, ratings, and Community Score remain intact.

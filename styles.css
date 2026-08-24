@@ -1919,3 +1919,11 @@ body.salt-social-active .watchListCard{padding:18px!important}
   .results .scanCommunityCard{grid-template-columns:38px minmax(0,1fr)!important;padding:14px!important}
   .results .scanCommunityCount{grid-column:2!important;justify-self:start!important;display:inline-block!important;margin-top:4px!important}
 }
+
+/* V1.10.66 — remove legacy token review / latest reviews UI from Social */
+/* Keep the hidden DOM hooks for existing community-score/profile JS, but never render the old review UI. */
+#socialSection > .socialSectionTitle,
+#socialSection > #reviewForm,
+#socialSection > .socialFeedCard {
+  display:none !important;
+}
