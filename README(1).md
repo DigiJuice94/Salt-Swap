@@ -292,3 +292,9 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Shows token symbol, live price, and 24h change.
 - Watch List persists with the existing profile ticker storage and syncs with the market ticker.
 - Tokens can be removed directly from the profile Watch List.
+
+
+## V1.10.53 — Watch List Robinhood Chain fix
+- Watch List CA lookup now checks Robinhood Chain in addition to Ethereum, BNB Chain, Base, and Solana.
+- Fixes valid Robinhood Chain contracts incorrectly showing ‘Could not verify live market data for that CA.’
+- Existing Watch List behavior and all V1.10.52 features are preserved.
