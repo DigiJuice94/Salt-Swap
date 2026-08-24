@@ -2484,3 +2484,7 @@ body.wallet-account-menu-open .walletAccountMenu{
 .amountBox>.swapMaxBtn:hover{background:#e9dec1!important;border-color:#bbae84!important}
 .amountBox>.swapMaxBtn:disabled{opacity:.58;cursor:wait}
 @media(max-width:520px){.amountBox>.swapMaxBtn{height:30px!important;padding:0 8px!important;margin-right:5px;font-size:8px!important}}
+
+
+/* V1.10.80 — resilient token artwork in profile holdings and Portfolio */
+.holdingIconFallback,.portfolioAssetIcon .holdingIconFallback{width:100%;height:100%;display:grid;place-items:center;border-radius:inherit;background:linear-gradient(145deg,#eef3df,#dfe9c9);color:#425138;font-weight:900;font-size:13px;letter-spacing:.02em}.holdingIconFallback.hidden,.portfolioAssetIcon .holdingIconFallback.hidden{display:none}.holdingIcon img,.portfolioAssetIcon img{display:block;width:100%;height:100%;object-fit:cover}.holdingIcon{border:1px solid rgba(111,126,83,.16);background:#f2f4e8}.portfolioAssetIcon{overflow:hidden}

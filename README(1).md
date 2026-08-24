@@ -489,3 +489,10 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - MAX now reads SOL and SPL-token balances server-side through the existing Helius connection instead of calling `api.mainnet-beta.solana.com` directly from the browser.
 - Native SOL still keeps a small gas reserve; SPL tokens still use the full token balance.
 - EVM MAX behavior is unchanged.
+
+
+## V1.10.80 — Holdings token icon reliability
+- Fixes broken-image placeholders in Profile wallet holdings.
+- Uses market artwork as a fallback when Helius metadata artwork is stale or unavailable.
+- Cycles through available icon sources in the browser before falling back to a clean Trenches token-initial badge.
+- Applies the same resilient icon behavior to Portfolio token rows.
