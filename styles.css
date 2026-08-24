@@ -1593,3 +1593,85 @@ body.salt-social-active #saltSocial .featuredNftMeta{
   background:rgba(238,233,223,.96)!important;
   border-top-color:rgba(110,101,89,.18)!important;
 }
+
+/* V1.10.48 — match the supplied real Polaroid stock reference */
+body.salt-social-active #saltSocial .featuredNftFrame{
+  aspect-ratio:.82!important;
+  padding:0!important;
+  border:0!important;
+  outline:0!important;
+  background:#eeeae3 url('./polaroid-frame-texture.png') center/100% 100% no-repeat!important;
+  box-shadow:0 10px 20px rgba(57,50,40,.14),0 2px 5px rgba(57,50,40,.09)!important;
+  overflow:hidden!important;
+}
+body.salt-social-active #saltSocial .featuredNftFrame:after{
+  display:none!important;
+}
+body.salt-social-active #saltSocial .featuredNftFrame:before{
+  content:""!important;
+  position:absolute!important;
+  left:4.2%!important;
+  right:4.2%!important;
+  top:5.8%!important;
+  bottom:20.2%!important;
+  border:1px solid rgba(75,72,67,.24)!important;
+  background:#f4f5f3!important;
+  box-shadow:inset 0 0 12px rgba(45,48,46,.045)!important;
+  pointer-events:none!important;
+  z-index:0!important;
+}
+body.salt-social-active #saltSocial .featuredNftFrame img{
+  position:absolute!important;
+  left:4.45%!important;
+  right:auto!important;
+  top:6.05%!important;
+  bottom:auto!important;
+  width:91.1%!important;
+  height:73.45%!important;
+  object-fit:cover!important;
+  border-radius:0!important;
+  z-index:1!important;
+}
+body.salt-social-active #saltSocial .featuredNftFrame>span{
+  position:relative!important;
+  z-index:2!important;
+}
+body.salt-social-active #saltSocial .featuredNftFrame>small{
+  position:absolute!important;
+  left:8%!important;
+  right:8%!important;
+  bottom:5.1%!important;
+  padding:0!important;
+  background:transparent!important;
+  color:#40566a!important;
+  font-weight:850!important;
+  text-align:center!important;
+  z-index:3!important;
+}
+body.salt-social-active #saltSocial .featuredNftMeta{
+  left:5.2%!important;
+  right:5.2%!important;
+  bottom:10.8%!important;
+  background:rgba(239,235,227,.92)!important;
+  border-top:1px solid rgba(110,101,89,.17)!important;
+  padding:7px 0 3px!important;
+  z-index:4!important;
+}
+body.salt-social-active #saltSocial .featuredNftFrame:has(.featuredNftMeta){
+  padding:0!important;
+}
+body.salt-social-active #saltSocial .featuredNftFrame:has(.featuredNftMeta):before{
+  bottom:27.5%!important;
+}
+body.salt-social-active #saltSocial .featuredNftFrame:has(.featuredNftMeta) img{
+  height:66.2%!important;
+}
+body.salt-social-active #saltSocial .featuredNftFrame:has(.featuredNftMeta)>small{
+  bottom:3.4%!important;
+}
+@media(max-width:560px){
+  body.salt-social-active #saltSocial .featuredNftFrame{padding:0!important}
+  body.salt-social-active #saltSocial .featuredNftFrame:before{left:4.2%!important;right:4.2%!important;top:5.8%!important;bottom:20.2%!important}
+  body.salt-social-active #saltSocial .featuredNftFrame img{left:4.45%!important;top:6.05%!important;width:91.1%!important;height:73.45%!important}
+  body.salt-social-active #saltSocial .featuredNftFrame>small{bottom:5.1%!important;font-size:8px!important}
+}
