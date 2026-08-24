@@ -2045,3 +2045,229 @@ body.salt-social-active .profileStatsCard *{
     height:calc(100% - 76px) !important;
   }
 }
+
+
+/* V1.10.47 — FIX the NFT frame: remove striped crate look and make it read as a real hanging wood picture frame */
+
+/* Featured NFT outer card stays parchment */
+body.salt-social-active .featuredNft{
+  background:transparent !important;
+  border:0 !important;
+  box-shadow:none !important;
+  padding-top:42px !important;
+}
+
+/* clean title above frame */
+body.salt-social-active .featuredNftLabel{
+  position:relative !important;
+  z-index:7 !important;
+  background:transparent !important;
+  border:0 !important;
+  color:#40372b !important;
+  font-family:Georgia, "Times New Roman", serif !important;
+  font-size:12px !important;
+  font-weight:900 !important;
+  letter-spacing:.055em !important;
+  text-transform:uppercase !important;
+  margin:0 0 16px !important;
+}
+
+/* nail */
+body.salt-social-active .featuredNft::before{
+  content:"" !important;
+  position:absolute !important;
+  top:8px !important;
+  left:50% !important;
+  transform:translateX(-50%) !important;
+  width:13px !important;
+  height:13px !important;
+  border-radius:50% !important;
+  background:
+    radial-gradient(circle at 32% 28%, #d9c7a5 0 18%, #7b6040 22% 47%, #2c2117 52% 100%) !important;
+  box-shadow:0 2px 3px rgba(50,35,19,.30) !important;
+  z-index:9 !important;
+}
+
+/* hanging cord */
+body.salt-social-active .featuredNft::after{
+  content:"" !important;
+  position:absolute !important;
+  top:15px !important;
+  left:50% !important;
+  width:168px !important;
+  height:54px !important;
+  transform:translateX(-50%) !important;
+  background:
+    linear-gradient(35deg, transparent 48.8%, #3e3022 49.2%, #3e3022 50.8%, transparent 51.2%) left top/50% 100% no-repeat,
+    linear-gradient(-35deg, transparent 48.8%, #3e3022 49.2%, #3e3022 50.8%, transparent 51.2%) right top/50% 100% no-repeat !important;
+  pointer-events:none !important;
+  z-index:2 !important;
+}
+
+/* REAL frame body — no diagonal stripes */
+body.salt-social-active #saltSocial .featuredNftFrame{
+  position:relative !important;
+  display:block !important;
+  width:100% !important;
+  aspect-ratio:.80 !important;
+  min-height:0 !important;
+  padding:0 !important;
+  overflow:visible !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:
+    /* subtle wood grain */
+    repeating-linear-gradient(
+      7deg,
+      rgba(255,255,255,.025) 0 2px,
+      rgba(0,0,0,.025) 2px 4px,
+      transparent 4px 10px
+    ),
+    linear-gradient(135deg,#98704a 0%,#6d4d33 18%,#4d3625 37%,#8a6241 56%,#5b402b 76%,#9b714b 100%) !important;
+  box-shadow:
+    0 11px 18px rgba(55,38,21,.22),
+    inset 0 0 0 4px #2a2017,
+    inset 0 0 0 9px #8a6240,
+    inset 0 0 0 13px #3f2c1e,
+    inset 0 0 0 18px #a27750,
+    inset 0 0 0 22px #4a3322 !important;
+}
+
+/* carved rail highlights */
+body.salt-social-active #saltSocial .featuredNftFrame::before{
+  content:"" !important;
+  position:absolute !important;
+  inset:18px 18px 56px !important;
+  z-index:0 !important;
+  background:#d5d2ca !important;
+  border:3px solid #2f251b !important;
+  box-shadow:
+    0 0 0 4px #7a5739,
+    0 0 0 7px #4a3322,
+    inset 0 0 0 3px rgba(255,255,255,.22),
+    inset 0 0 20px rgba(45,38,31,.16) !important;
+}
+
+/* remove the old decorative round corner pseudo element */
+body.salt-social-active #saltSocial .featuredNftFrame::after{
+  display:none !important;
+  content:none !important;
+}
+
+/* NFT image sits INSIDE the frame */
+body.salt-social-active #saltSocial .featuredNftFrame img{
+  position:absolute !important;
+  left:25px !important;
+  top:25px !important;
+  width:calc(100% - 50px) !important;
+  height:calc(100% - 88px) !important;
+  object-fit:cover !important;
+  object-position:center !important;
+  border:0 !important;
+  border-radius:0 !important;
+  z-index:2 !important;
+  background:#d2d0c8 !important;
+  box-shadow:inset 0 0 14px rgba(0,0,0,.16) !important;
+}
+
+/* empty frame center */
+body.salt-social-active #saltSocial .featuredNftFrame > span{
+  position:absolute !important;
+  left:25px !important;
+  right:25px !important;
+  top:25px !important;
+  bottom:63px !important;
+  width:auto !important;
+  height:auto !important;
+  transform:none !important;
+  display:grid !important;
+  place-items:center !important;
+  z-index:2 !important;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(255,255,255,.22), transparent 48%),
+    linear-gradient(#d9d8d2,#c8c8c2) !important;
+  color:#6d7f84 !important;
+  font-size:36px !important;
+  border:0 !important;
+  box-shadow:inset 0 0 22px rgba(53,48,42,.14) !important;
+}
+
+/* parchment Choose NFT plaque below the frame */
+body.salt-social-active #saltSocial .featuredNftFrame > small{
+  position:absolute !important;
+  left:50% !important;
+  bottom:8px !important;
+  transform:translateX(-50%) !important;
+  z-index:5 !important;
+  min-width:118px !important;
+  padding:9px 18px !important;
+  display:inline-flex !important;
+  justify-content:center !important;
+  align-items:center !important;
+  background:
+    linear-gradient(#f5ead3,#e5d2af) !important;
+  color:#463b2d !important;
+  border:1px solid #ac946b !important;
+  border-radius:3px !important;
+  box-shadow:
+    0 2px 4px rgba(60,42,22,.15),
+    inset 0 1px rgba(255,255,255,.48) !important;
+  font-family:Georgia, "Times New Roman", serif !important;
+  font-weight:700 !important;
+  font-size:12px !important;
+}
+
+/* Keep ownership text below frame, not inside wood */
+body.salt-social-active #saltSocial .featuredNftMeta{
+  position:relative !important;
+  left:auto !important;
+  right:auto !important;
+  bottom:auto !important;
+  margin-top:8px !important;
+  padding:0 !important;
+  background:transparent !important;
+  border:0 !important;
+  color:#5d6647 !important;
+  z-index:3 !important;
+}
+
+/* make the paper itself less dotted / more like aged parchment */
+body.salt-social-active,
+body.salt-social-active #saltSocial,
+body.salt-social-active .saltSocialPage,
+body.salt-social-active .socialTabView{
+  background-color:#efe2c5 !important;
+  background-image:
+    radial-gradient(circle at 15% 18%, rgba(94,64,31,.025) 0 1px, transparent 1.6px),
+    radial-gradient(circle at 78% 64%, rgba(94,64,31,.022) 0 1px, transparent 1.6px),
+    linear-gradient(90deg, rgba(113,76,34,.025), transparent 8%, transparent 92%, rgba(113,76,34,.025)),
+    linear-gradient(180deg, rgba(113,76,34,.018), transparent 10%, transparent 90%, rgba(113,76,34,.022)) !important;
+}
+
+/* remove any inherited striped/background treatments from the previous version */
+body.salt-social-active #saltSocial .featuredNftFrame,
+body.salt-social-active #saltSocial .featuredNftFrame *{
+  background-clip:padding-box !important;
+}
+
+@media(max-width:900px){
+  body.salt-social-active .featuredNft::after{
+    width:132px !important;
+    height:44px !important;
+  }
+  body.salt-social-active #saltSocial .featuredNftFrame::before{
+    inset:15px 15px 52px !important;
+  }
+  body.salt-social-active #saltSocial .featuredNftFrame img{
+    left:22px !important;
+    top:22px !important;
+    width:calc(100% - 44px) !important;
+    height:calc(100% - 80px) !important;
+  }
+  body.salt-social-active #saltSocial .featuredNftFrame > span{
+    left:22px !important;
+    right:22px !important;
+    top:22px !important;
+    bottom:59px !important;
+  }
+}
