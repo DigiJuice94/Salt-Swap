@@ -519,3 +519,10 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - ETH / Base / BNB MAX reads the connected EVM wallet after switching to the selected source chain when necessary.
 - Native-asset MAX keeps a conservative network/route-fee reserve so the cross-chain transaction is less likely to fail from using every last unit of gas.
 - If the correct source wallet is not connected, MAX opens the wallet chooser instead of guessing.
+
+## V1.10.84 — Quick Swap live receive estimate
+- Quick Swap now automatically calculates the estimated destination amount as soon as a valid source amount is entered.
+- Tapping MAX immediately requests a live SOL→ETH / ETH→SOL / Base / BNB route preview, so the YOU RECEIVE box no longer stays blank.
+- Manual amount edits refresh the estimate after a short debounce.
+- The preview uses LI.FI advanced routes and does not require a destination address just to show the expected output.
+- The exact executable quote is still refreshed after a real destination wallet is supplied, immediately before wallet approval.

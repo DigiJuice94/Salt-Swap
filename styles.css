@@ -2539,3 +2539,7 @@ body.wallet-account-menu-open .walletAccountMenu{
 }
 .quickSwapMax:hover{background:#4b5438;color:#fff2aa;border-color:#4b5438}
 .quickSwapMax:disabled{opacity:.55;cursor:wait}
+
+/* V1.10.84 — live Quick Swap receive estimate */
+.quickSwapEstimate strong{font-variant-numeric:tabular-nums}
+.quickSwapEstimate strong:first-letter{color:#667a70}

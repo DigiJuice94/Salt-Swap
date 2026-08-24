@@ -518,6 +518,35 @@ const QUICK_SWAP_CHAINS={
 };
 function lifiHeaders(){const h={accept:'application/json'};if(process.env.LIFI_API_KEY)h['x-lifi-api-key']=process.env.LIFI_API_KEY;return h}
 function validQuickAddress(chain,address){const c=QUICK_SWAP_CHAINS[chain];return c?.kind==='solana'?validSolAddress(address):validEvmAddress(address)}
+async function quickSwapPreviewHandler(req,res){
+  res.setHeader('Cache-Control','no-store');
+  if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});
+  try{
+    const from=String(req.query.from||'').toLowerCase(),to=String(req.query.to||'').toLowerCase(),amount=String(req.query.amount||''),fromAddress=String(req.query.fromAddress||'').trim();
+    const a=QUICK_SWAP_CHAINS[from],b=QUICK_SWAP_CHAINS[to];
+    if(!a||!b)return res.status(400).json({error:'That Quick Swap network is not supported by the cross-chain router yet.'});
+    if(from===to)return res.status(400).json({error:'Choose two different networks.'});
+    if(!validPositiveInteger(amount))return res.status(400).json({error:'Quick Swap amount must be positive.'});
+    if(!validQuickAddress(from,fromAddress))return res.status(400).json({error:'Valid source-wallet address required.'});
+    const body={
+      fromChainId:Number(a.id),
+      toChainId:Number(b.id),
+      fromTokenAddress:a.token,
+      toTokenAddress:b.token,
+      fromAmount:amount,
+      fromAddress,
+      options:{slippage:0.01,order:'RECOMMENDED'}
+    };
+    const j=await fetchJson('https://li.quest/v1/advanced/routes',{
+      method:'POST',
+      headers:{...lifiHeaders(),'content-type':'application/json'},
+      body:JSON.stringify(body)
+    },20000);
+    const routes=Array.isArray(j?.routes)?j.routes:[];
+    if(!routes.length||!routes[0]?.toAmount)throw Object.assign(new Error('No live cross-chain route was returned for that amount.'),{status:422});
+    return res.status(200).json({route:routes[0],routes:routes.slice(0,3)});
+  }catch(e){console.error('Trenches Quick Swap preview:',e);return res.status(Number(e?.status)||500).json({error:errorText(e)})}
+}
 async function quickSwapQuoteHandler(req,res){
   res.setHeader('Cache-Control','no-store');
   if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});
@@ -691,6 +720,7 @@ export default async function handler(req,res){
     if(route==='tokens')return tokensHandler(req,res);
     if(route==='evm-quote')return evmQuoteHandler(req,res);
     if(route==='evm-tokens')return evmTokensHandler(req,res);
+    if(route==='quick-swap-preview')return quickSwapPreviewHandler(req,res);
     if(route==='quick-swap-quote')return quickSwapQuoteHandler(req,res);
     if(route==='quick-swap-sol-submit')return quickSwapSolSubmitHandler(req,res);
     if(route==='quick-swap-status')return quickSwapStatusHandler(req,res);

@@ -49,6 +49,10 @@
       "dest": "/api.mjs?route=evm-tokens"
     },
     {
+      "src": "/api/quick-swap-preview",
+      "dest": "/api.mjs?route=quick-swap-preview"
+    },
+    {
       "src": "/api/quick-swap-quote",
       "dest": "/api.mjs?route=quick-swap-quote"
     },

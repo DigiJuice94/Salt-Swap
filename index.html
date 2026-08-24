@@ -677,7 +677,7 @@ const QUICK_SWAP_ASSETS={
   bnb:{key:'bnb',chain:'bnb',name:'BNB Chain',symbol:'BNB',decimals:18,chainId:'56',token:'0x0000000000000000000000000000000000000000',kind:'evm',icon:'https://assets.coingecko.com/coins/images/825/standard/bnb-icon2_2x.png',supported:true},
   robinhood:{key:'robinhood',chain:'robinhood',name:'Robinhood Chain',symbol:'ETH',decimals:18,chainId:'4663',token:'0x0000000000000000000000000000000000000000',kind:'evm',icon:'https://assets.coingecko.com/coins/images/279/standard/ethereum.png',supported:false}
 };
-let quickSwapQuote=null,quickSwapBusy=false,quickSwapRecipientTouched=false;
+let quickSwapQuote=null,quickSwapPreview=null,quickSwapBusy=false,quickSwapRecipientTouched=false,quickSwapPreviewTimer=null,quickSwapPreviewSeq=0;
 function quickSwapOptions(){return Object.values(QUICK_SWAP_ASSETS).map(a=>`<option value="${a.key}">${a.symbol} · ${a.name}${a.supported?'':' · same-chain only'}</option>`).join('')}
 function quickSwapAsset(side){return QUICK_SWAP_ASSETS[$(side==='from'?'quickSwapFrom':'quickSwapTo')?.value]||QUICK_SWAP_ASSETS.solana}
 function quickSwapIcon(el,a){if(!el||!a)return;el.innerHTML=`<img src="${esc(a.icon)}" alt="" /><i>${esc(a.name==='Base'?'B':a.name==='Robinhood Chain'?'R':a.symbol.slice(0,1))}</i>`;el.dataset.chain=a.chain}
@@ -725,15 +725,64 @@ async function useQuickSwapMax(){
     if(raw<=0n)throw new Error(`No spendable ${from.symbol} balance found after reserving network fees.`);
     $('quickSwapAmount').value=atomicToSwapInput(raw,from.decimals);
     quickSwapResetQuote();
-    quickSwapSetNotice(`MAX loaded from your ${from.name} wallet. A small ${from.symbol} reserve was left for network and route fees.`,'good')
+    quickSwapSetNotice(`MAX loaded from your ${from.name} wallet. Calculating how much ${quickSwapAsset('to').symbol} you should receive…`,'good');
+    scheduleQuickSwapPreview(0)
   }catch(e){quickSwapSetNotice(readableError(e),'bad')}
   finally{b.disabled=false;b.textContent='MAX'}
 }
-function quickSwapResetQuote(){
+function quickSwapResetQuote({clearPreview=true}={}){
   quickSwapQuote=null;
-  $('quickSwapReceive').textContent='—';$('quickSwapRouteName').textContent='Waiting for amount';$('quickSwapTime').textContent='—';$('quickSwapMin').textContent='—';
+  if(clearPreview){
+    quickSwapPreview=null;
+    $('quickSwapReceive').textContent='—';$('quickSwapRouteName').textContent='Waiting for amount';$('quickSwapTime').textContent='—';$('quickSwapMin').textContent='—';
+  }
   const b=$('quickSwapAction');if(b){b.textContent='Get live route';b.disabled=false}
 }
+function quickSwapPreviewSeconds(route){
+  const steps=Array.isArray(route?.steps)?route.steps:[];
+  return steps.reduce((sum,s)=>sum+Math.max(0,Number(s?.estimate?.executionDuration||0)),0)
+}
+function quickSwapPreviewTool(route){
+  const tools=[...new Set((route?.steps||[]).map(s=>String(s?.toolDetails?.name||s?.tool||'')).filter(Boolean))];
+  return tools.length?tools.join(' + '):'Best live route'
+}
+function applyQuickSwapPreview(route){
+  const to=quickSwapAsset('to'),out=String(route?.toAmount||'0'),min=String(route?.toAmountMin||out),secs=quickSwapPreviewSeconds(route);
+  if(!out||out==='0')return false;
+  quickSwapPreview=route;
+  $('quickSwapReceive').textContent='≈ '+quickSwapFormat(out,to.decimals,8);
+  $('quickSwapRouteName').textContent=quickSwapPreviewTool(route);
+  $('quickSwapTime').textContent=secs>0?(secs<60?`~${Math.max(1,Math.round(secs))} sec`:`~${Math.ceil(secs/60)} min`):'Live';
+  $('quickSwapMin').textContent=`${quickSwapFormat(min,to.decimals,8)} ${to.symbol}`;
+  return true
+}
+async function getQuickSwapPreview(){
+  const seq=++quickSwapPreviewSeq,from=quickSwapAsset('from'),to=quickSwapAsset('to'),amount=quickSwapAtomic($('quickSwapAmount').value,from.decimals),signer=quickSwapSourceSigner(from);
+  if(!from.supported||!to.supported||from.key===to.key||!amount||!signer)return;
+  try{
+    $('quickSwapReceive').textContent='…';
+    $('quickSwapRouteName').textContent='Finding best route';
+    const q=new URLSearchParams({from:from.key,to:to.key,amount:String(amount),fromAddress:signer.address});
+    const r=await fetch('/api/quick-swap-preview?'+q,{headers:{accept:'application/json'},cache:'no-store'}),text=await r.text();
+    let j;try{j=text?JSON.parse(text):{}}catch{j={error:text||`HTTP ${r.status}`}}
+    if(seq!==quickSwapPreviewSeq)return;
+    if(!r.ok)throw new Error(readableError(j?.error??j));
+    const route=j?.route||j?.routes?.[0];
+    if(!applyQuickSwapPreview(route))throw new Error('No live output estimate was returned for this amount.');
+    const gas=Number(route?.gasCostUSD||0),recipient=String($('quickSwapRecipient').value||'').trim();
+    quickSwapSetNotice(`Estimated receive amount loaded${gas>0?` · estimated gas/route cost $${gas.toFixed(2)}`:''}. ${recipient?'Tap Get live route to prepare the exact transaction.':'Add or connect a destination wallet to continue.'}`,'good')
+  }catch(e){
+    if(seq!==quickSwapPreviewSeq)return;
+    quickSwapPreview=null;$('quickSwapReceive').textContent='—';$('quickSwapRouteName').textContent='Route unavailable';$('quickSwapTime').textContent='—';$('quickSwapMin').textContent='—';
+    quickSwapSetNotice(readableError(e),'warn')
+  }
+}
+function scheduleQuickSwapPreview(delay=450){
+  clearTimeout(quickSwapPreviewTimer);
+  quickSwapQuote=null;
+  quickSwapPreviewTimer=setTimeout(()=>getQuickSwapPreview(),delay)
+}
+
 function renderQuickSwap({resetRecipient=false}={}){
   const from=quickSwapAsset('from'),to=quickSwapAsset('to');
   quickSwapIcon($('quickSwapFromIcon'),from);quickSwapIcon($('quickSwapToIcon'),to);
@@ -750,6 +799,7 @@ function renderQuickSwap({resetRecipient=false}={}){
     $('quickSwapAction').disabled=true;
   }else{
     quickSwapSetNotice(`${from.symbol} on ${from.name} → ${to.symbol} on ${to.name}. Live route and fees are checked before you sign.`);
+    if(quickSwapAtomic($('quickSwapAmount').value,from.decimals))scheduleQuickSwapPreview(180)
   }
 }
 function openQuickSwap(){
@@ -757,7 +807,7 @@ function openQuickSwap(){
   if(!$('quickSwapFrom').options.length){$('quickSwapFrom').innerHTML=quickSwapOptions();$('quickSwapTo').innerHTML=quickSwapOptions();$('quickSwapFrom').value='solana';$('quickSwapTo').value='ethereum'}
   quickSwapRecipientTouched=false;renderQuickSwap({resetRecipient:true});m.classList.remove('hidden');document.documentElement.classList.add('modalOpen');document.body.classList.add('modalOpen')
 }
-function closeQuickSwap(){ $('quickSwapModal')?.classList.add('hidden');document.documentElement.classList.remove('modalOpen');document.body.classList.remove('modalOpen');quickSwapQuote=null }
+function closeQuickSwap(){clearTimeout(quickSwapPreviewTimer);quickSwapPreviewSeq++;$('quickSwapModal')?.classList.add('hidden');document.documentElement.classList.remove('modalOpen');document.body.classList.remove('modalOpen');quickSwapQuote=null;quickSwapPreview=null}
 async function getQuickSwapQuote({forExecution=false}={}){
   const from=quickSwapAsset('from'),to=quickSwapAsset('to'),amount=quickSwapAtomic($('quickSwapAmount').value,from.decimals),recipient=String($('quickSwapRecipient').value||'').trim(),signer=quickSwapSourceSigner(from);
   if(!from.supported||!to.supported)throw new Error('Cross-chain routing for Robinhood Chain is not supported yet.');
@@ -768,7 +818,7 @@ async function getQuickSwapQuote({forExecution=false}={}){
   quickSwapSetNotice('Checking the best live cross-chain route…');
   const q=new URLSearchParams({from:from.key,to:to.key,amount:String(amount),fromAddress:signer.address,toAddress:recipient});
   const r=await fetch('/api/quick-swap-quote?'+q,{headers:{accept:'application/json'},cache:'no-store'}),text=await r.text();let j;try{j=text?JSON.parse(text):{}}catch{j={error:text||`HTTP ${r.status}`}}if(!r.ok)throw new Error(readableError(j?.error??j));
-  quickSwapQuote=j;
+  quickSwapQuote=j;quickSwapPreview=null;
   const out=String(j?.estimate?.toAmount||'0'),min=String(j?.estimate?.toAmountMin||out),secs=Number(j?.estimate?.executionDuration||0);
   $('quickSwapReceive').textContent=quickSwapFormat(out,to.decimals,8);
   $('quickSwapRouteName').textContent=String(j?.toolDetails?.name||j?.tool||'Best route');
@@ -1211,7 +1261,7 @@ function initSalt(){
   if(saltProfile)$('socialProfilePage')?.classList.remove('hidden');
   const b=$('scanBtn');if(!b)return;b.type='button';b.addEventListener('click',scan);
   $('mintInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();scan();}});
-  $('quickSwapOpen')?.addEventListener('click',openQuickSwap);$('quickSwapClose')?.addEventListener('click',closeQuickSwap);document.querySelectorAll('[data-close-quick-swap]').forEach(x=>x.addEventListener('click',closeQuickSwap));$('quickSwapFrom')?.addEventListener('change',()=>renderQuickSwap({resetRecipient:false}));$('quickSwapTo')?.addEventListener('change',()=>{quickSwapRecipientTouched=false;renderQuickSwap({resetRecipient:true})});$('quickSwapAmount')?.addEventListener('input',quickSwapResetQuote);$('quickSwapMax')?.addEventListener('click',useQuickSwapMax);$('quickSwapRecipient')?.addEventListener('input',()=>{quickSwapRecipientTouched=true;quickSwapResetQuote()});$('quickSwapFlip')?.addEventListener('click',()=>{const a=$('quickSwapFrom').value,b=$('quickSwapTo').value;$('quickSwapFrom').value=b;$('quickSwapTo').value=a;quickSwapRecipientTouched=false;renderQuickSwap({resetRecipient:true})});$('quickSwapUseWallet')?.addEventListener('click',()=>{quickSwapRecipientTouched=false;$('quickSwapRecipient').value=quickSwapDefaultRecipient(quickSwapAsset('to'))||'';quickSwapResetQuote()});$('quickSwapConnect')?.addEventListener('click',()=>openWalletConnectModal('general'));$('quickSwapAction')?.addEventListener('click',async()=>{if(quickSwapQuote)await executeQuickSwap();else try{await getQuickSwapQuote()}catch(e){quickSwapSetNotice(readableError(e),'bad')}});
+  $('quickSwapOpen')?.addEventListener('click',openQuickSwap);$('quickSwapClose')?.addEventListener('click',closeQuickSwap);document.querySelectorAll('[data-close-quick-swap]').forEach(x=>x.addEventListener('click',closeQuickSwap));$('quickSwapFrom')?.addEventListener('change',()=>renderQuickSwap({resetRecipient:false}));$('quickSwapTo')?.addEventListener('change',()=>{quickSwapRecipientTouched=false;renderQuickSwap({resetRecipient:true})});$('quickSwapAmount')?.addEventListener('input',()=>{quickSwapResetQuote();scheduleQuickSwapPreview()});$('quickSwapMax')?.addEventListener('click',useQuickSwapMax);$('quickSwapRecipient')?.addEventListener('input',()=>{quickSwapRecipientTouched=true;quickSwapResetQuote({clearPreview:false})});$('quickSwapFlip')?.addEventListener('click',()=>{const a=$('quickSwapFrom').value,b=$('quickSwapTo').value;$('quickSwapFrom').value=b;$('quickSwapTo').value=a;quickSwapRecipientTouched=false;renderQuickSwap({resetRecipient:true})});$('quickSwapUseWallet')?.addEventListener('click',()=>{quickSwapRecipientTouched=false;$('quickSwapRecipient').value=quickSwapDefaultRecipient(quickSwapAsset('to'))||'';quickSwapResetQuote()});$('quickSwapConnect')?.addEventListener('click',()=>openWalletConnectModal('general'));$('quickSwapAction')?.addEventListener('click',async()=>{if(quickSwapQuote)await executeQuickSwap();else try{await getQuickSwapQuote()}catch(e){quickSwapSetNotice(readableError(e),'bad')}});
   $('walletBtn')?.addEventListener('click',walletAction);$('switchWalletBtn')?.addEventListener('click',openWalletProviderChoices);$('disconnectWalletBtn')?.addEventListener('click',disconnectActiveWallet);$('walletConnectClose')?.addEventListener('click',closeWalletConnectModal);document.querySelectorAll('[data-close-wallet-connect]').forEach(x=>x.addEventListener('click',closeWalletConnectModal));$('walletOtherToggle')?.addEventListener('click',()=>{walletOtherOpen=!walletOtherOpen;renderWalletConnectModal()});document.addEventListener('click',e=>{const shell=e.target.closest?.('.headerWalletShell');if(!shell&&!$('walletAccountMenu')?.classList.contains('hidden'))closeWalletAccountMenu()});$('swapWalletBtn')?.addEventListener('click',executeSwap);$('swapMaxBtn')?.addEventListener('click',useSwapMax);$('payAmount')?.addEventListener('input',()=>{scheduleQuote();updateSwapButton()});$('paySymbol')?.addEventListener('click',()=>openTokenPicker('pay'));$('receiveSymbol')?.addEventListener('click',()=>openTokenPicker('receive'));$('closeTokenModal')?.addEventListener('click',closeTokenPicker);document.querySelectorAll('[data-close-token-modal]').forEach(x=>x.addEventListener('click',closeTokenPicker));document.querySelectorAll('[data-picker-chain]').forEach(x=>x.addEventListener('click',()=>setPickerChain(x.dataset.pickerChain)));$('clearRecent')?.addEventListener('click',()=>{try{localStorage.removeItem('salt:recentTokens')}catch{}renderRecent()});$('tokenSearchInput')?.addEventListener('input',e=>{clearTimeout(tokenSearchTimer);tokenSearchTimer=setTimeout(()=>searchTokens(e.target.value),250)});
   $('newScanBtn')?.addEventListener('click',()=>{$('results')?.classList.add('hidden');$('mintInput').value='';$('mintInput').focus();window.scrollTo({top:0,behavior:'smooth'});});
   $('copyCA')?.addEventListener('click',async()=>{if(!currentMint)return;try{await navigator.clipboard.writeText(currentMint);const x=$('copyCA')?.querySelector('b');if(x){const old=x.textContent;x.textContent='Copied';setTimeout(()=>x.textContent=old,1100);}}catch{}});
