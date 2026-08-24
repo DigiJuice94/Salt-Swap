@@ -363,3 +363,8 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Added session-authenticated Like, Reply, and Quote interactions without per-action wallet signatures.
 - Replies and quote comments expand inline under the thesis.
 - Existing older theses remain readable; if they predate price snapshots they show that the posting-price snapshot is unavailable rather than inventing a historical price.
+
+## V1.10.63 — Joined The Trenches
+- Adds `Joined The Trenches` to the Social profile header.
+- Uses the profile's original server-side `createdAt` date, so the join date is tied to when that Trenches profile was created.
+- Existing profile, Social, thesis, session-auth, verified-badge, scan, and swap behavior is preserved.
