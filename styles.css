@@ -1714,3 +1714,61 @@ body.salt-social-active .watchListCard{padding:18px!important}
 .scanThesisCard{position:relative;overflow:hidden;margin:22px 0 0;padding:24px 26px;border:1px solid rgba(127,94,41,.38);border-radius:24px;background:rgba(255,252,244,.96);box-shadow:0 18px 44px rgba(72,56,31,.13),inset 0 1px 0 rgba(255,255,255,.75);backdrop-filter:blur(12px)}.scanThesisCard:before{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:linear-gradient(135deg,rgba(255,255,255,.38),transparent 38%,rgba(170,141,76,.045));}.scanThesisCard>*{position:relative;z-index:1}
 .scanThesisCard.disabled{opacity:.72}.scanThesisHead{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:17px}.scanThesisHead small{display:block;font-size:9px;letter-spacing:.14em;font-weight:900;color:#7990a1}.scanThesisHead h3{margin:4px 0 5px;font-size:20px;color:#173247}.scanThesisHead p{margin:0;max-width:680px;color:#668094;font-size:12px;line-height:1.5}.scanThesisIdentity{flex:none;display:flex;align-items:center;gap:9px;min-width:178px;padding:6px 11px 6px 7px;border:1px solid #ddceb0;border-radius:999px;background:#fffaf0;color:#526d7d;box-shadow:0 5px 14px rgba(70,54,29,.07)}.scanThesisIdentityAvatar{width:34px;height:34px;flex:0 0 34px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:#e9e3d3;border:2px solid #fff;box-shadow:0 0 0 1px #d8c79f;color:#506b7c;font-size:12px;font-weight:900}.scanThesisIdentityAvatar img{width:100%;height:100%;display:block;object-fit:cover}.scanThesisIdentityText{min-width:0;display:grid;gap:1px;line-height:1.15}.scanThesisIdentityText b{max-width:142px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:#24495f}.scanThesisIdentityText small{max-width:142px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9px;font-weight:700;color:#8295a2}.scanThesisForm{display:grid;gap:11px}.scanThesisRatingRow{display:grid;gap:7px}.scanThesisRatingRow label{display:flex;justify-content:space-between;align-items:center;color:#587389;font-size:11px;font-weight:800}.scanThesisRatingRow label strong{color:#173247}.scanThesisRatingRow input{width:100%;accent-color:#777548}.scanThesisForm textarea,.scanThesisForm input[type=url]{width:100%;box-sizing:border-box;border:1px solid #ded4bf;border-radius:13px;background:rgba(255,255,255,.9);padding:12px 14px;color:#173247;font:inherit;outline:0}.scanThesisForm textarea{min-height:106px;resize:vertical}.scanThesisForm textarea:focus,.scanThesisForm input[type=url]:focus{border-color:#a99a70;box-shadow:0 0 0 3px rgba(157,141,95,.1)}.scanThesisActions{display:flex;align-items:center;justify-content:space-between;gap:16px}.scanThesisActions span{font-size:10px;color:#788d9c;line-height:1.45}.scanThesisActions .primaryFull{width:auto;min-width:190px;padding:11px 18px;background:#5d6140}.scanThesisActions .primaryFull:hover{filter:brightness(.96)}
 @media(max-width:720px){.scanThesisHead,.scanThesisActions{flex-direction:column}.scanThesisIdentity,.scanThesisActions .primaryFull{width:100%;box-sizing:border-box}.scanThesisIdentity{justify-content:flex-start;text-align:left}}
+
+/* V1.10.57 — remove the oversized clear analysis shell + make thesis a true score-style bubble */
+.results .mainAnalysis{
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  padding:0!important;
+}
+
+/* Keep each analysis module visually independent after removing the outer shell. */
+.results .scoreBox{
+  box-shadow:0 12px 34px rgba(47,114,153,.08)!important;
+}
+.results .takeCard,
+.results .quickCard,
+.results .scanCommunityCard{
+  box-shadow:0 8px 22px rgba(47,114,153,.05)!important;
+}
+
+/* The thesis composer is its own solid card, matching the scan score-card language. */
+.results .scanThesisCard{
+  position:relative!important;
+  overflow:hidden!important;
+  margin:20px 0 0!important;
+  padding:24px!important;
+  border:1px solid #d9eaf4!important;
+  border-radius:19px!important;
+  background:rgba(255,255,255,.94)!important;
+  box-shadow:0 16px 50px rgba(47,114,153,.08)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+.results .scanThesisCard:before{
+  display:none!important;
+}
+.results .scanThesisHead h3{color:#173247!important}
+.results .scanThesisHead p{color:#718898!important}
+.results .scanThesisIdentity{
+  background:#fff!important;
+  border-color:#d9eaf4!important;
+  box-shadow:0 5px 14px rgba(47,114,153,.06)!important;
+}
+.results .scanThesisForm textarea,
+.results .scanThesisForm input[type=url]{
+  background:#f8fcff!important;
+  border-color:#dfeaf1!important;
+}
+.results .scanThesisForm textarea:focus,
+.results .scanThesisForm input[type=url]:focus{
+  border-color:#9dc9df!important;
+  box-shadow:0 0 0 3px rgba(49,137,188,.09)!important;
+}
+@media(max-width:520px){
+  .results .scanThesisCard{padding:17px!important;border-radius:19px!important}
+}

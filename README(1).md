@@ -319,3 +319,9 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Gives the scan-page thesis composer its own clearly separated card/bubble treatment.
 - The signed-in Trenches identity pill now shows the user profile picture, username, and shortened social wallet.
 - Existing wallet-signing, profile posting, community-feed posting, and Community Score behavior are preserved.
+
+## V1.10.57 — Cleaner scan layout + thesis bubble
+- Removes the large translucent outer background from the left scan-analysis column.
+- Keeps the Salt Risk Score, Community Score, Salt's Take, and quick checks as their own independent cards.
+- Gives the scan-page thesis composer its own solid white rounded bubble matching the Salt Risk Score card styling.
+- Preserves wallet/profile identity, profile photo, thesis signing, profile posting, feed posting, and Community Score behavior.
