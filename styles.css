@@ -1116,3 +1116,90 @@ footer,.footer{display:none!important;}
 @media(max-width:520px){.floatCoin::before{top:-56px!important;width:70px!important;height:70px!important}.coin-cate,.coin-bonk,.coin-ansem,.coin-pepe,.coin-cupsey,.coin-wif,.coin-cashcat,.coin-popcat,.coin-toad{width:52px!important;height:52px!important}}
 
 /* V1.10.39 — slower parachute descent */
+
+
+/* V1.10.40 — interaction hotfix: parachutes can NEVER block clicks */
+.floatingTokens,
+.floatingTokens *,
+.floatingTokens *::before,
+.floatingTokens *::after,
+.floatCoin,
+.floatCoin::before,
+.floatCoin::after,
+.floatCoin img{
+  pointer-events:none !important;
+  user-select:none !important;
+}
+
+/* Keep the animated background below every interactive page element */
+.floatingTokens{
+  z-index:0 !important;
+}
+
+.topbar,
+main,
+#home,
+.hero,
+.scanShell,
+.scanBar,
+#saltSocial,
+.saltSocialPage{
+  position:relative !important;
+  z-index:10 !important;
+}
+
+/* Explicitly restore interaction to navigation and the CA checker */
+.topbar a,
+.topbar button,
+.nav,
+.nav button,
+.walletBtn,
+.scanShell,
+.scanBar,
+.scanBar input,
+.scanBar button,
+#mintInput,
+#chainSelect,
+#scanBtn,
+#socialNavBtn,
+#swapNavBtn{
+  pointer-events:auto !important;
+}
+
+.scanBar input,
+#mintInput{
+  position:relative !important;
+  z-index:20 !important;
+  cursor:text !important;
+}
+
+.scanBar button,
+#scanBtn,
+.nav button,
+#socialNavBtn,
+#swapNavBtn{
+  position:relative !important;
+  z-index:20 !important;
+  cursor:pointer !important;
+}
+
+/* Make sure no decorative hero layer can sit over the controls */
+.hero::before,
+.hero::after,
+.ambient,
+.trenchLogoAsset{
+  pointer-events:none !important;
+}
+
+/* Social should always sit above decorative animation when opened */
+body.salt-social-active .floatingTokens{
+  display:none !important;
+}
+
+body.salt-social-active #saltSocial,
+body.salt-social-active .saltSocialPage,
+body.salt-social-active .socialTabView{
+  position:relative !important;
+  z-index:30 !important;
+  pointer-events:auto !important;
+}
