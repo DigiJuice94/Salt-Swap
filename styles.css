@@ -2656,3 +2656,6 @@ body.wallet-account-menu-open .walletAccountMenu{
 /* The destination address still exists internally for routing, but users
    should never have to manually type one in Quick Swap. */
 .quickSwapRecipient{display:none!important}
+/* V1.10.89 — wallet chooser response feedback */
+.walletConnectRow.connecting{opacity:.72;transform:none!important;cursor:wait}
+.walletConnectRow.connecting .walletConnectState{font-weight:900;color:#5b6848}

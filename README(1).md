@@ -559,3 +559,10 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Applies to Trust Wallet, Solflare, Phantom, MetaMask, Coinbase Wallet, Binance Wallet, and detected browser wallets.
 - Social onboarding also closes the wallet chooser first, then continues profile lookup/onboarding.
 - Header/account-change refreshes include a safety close so asynchronous provider events cannot leave the chooser stuck open.
+
+## V1.10.89 — Faster wallet connection
+- Removes the blocking logout/disconnect work that happened before opening the selected wallet.
+- The wallet extension request now fires immediately after the user clicks Trust Wallet, Solflare, Phantom, MetaMask, Coinbase, or Binance.
+- Old Trenches Social auth cleanup runs in parallel and is awaited only after the new wallet has already returned an address, so profile isolation remains intact without making the wallet popup feel slow.
+- The previous provider is only disconnected in the background when switching to a different provider. The selected provider is never disconnected right before reconnecting.
+- Clicking the wallet that is already active now closes the chooser immediately instead of reconnecting it unnecessarily.
