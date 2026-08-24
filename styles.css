@@ -1203,3 +1203,168 @@ body.salt-social-active .socialTabView{
   z-index:30 !important;
   pointer-events:auto !important;
 }
+
+
+/* V1.10.41 — unify Social/Profile UI into The Trenches off-white palette */
+:root{
+  --trench-offwhite:#f7f1e3;
+  --trench-offwhite-2:#fbf7ee;
+  --trench-offwhite-3:#f1e7d2;
+  --trench-border:#d8c8a8;
+  --trench-text:#24261f;
+  --trench-muted:#74715f;
+}
+
+/* Social page background */
+body.salt-social-active,
+body.salt-social-active main,
+body.salt-social-active #saltSocial,
+body.salt-social-active .saltSocialPage,
+body.salt-social-active .socialTabView{
+  background:var(--trench-offwhite) !important;
+  color:var(--trench-text) !important;
+}
+
+/* Main profile surfaces */
+body.salt-social-active .profileShell,
+body.salt-social-active .profileMain,
+body.salt-social-active .profileCard,
+body.salt-social-active .profileHero,
+body.salt-social-active .profileContent,
+body.salt-social-active .profilePanel,
+body.salt-social-active .profileSection,
+body.salt-social-active .profileSidebarCard,
+body.salt-social-active .nftCard,
+body.salt-social-active .walletHoldingsCard,
+body.salt-social-active .topCallsCard,
+body.salt-social-active .profileStatsCard,
+body.salt-social-active .feedComposer,
+body.salt-social-active .saltFeedPost{
+  background:var(--trench-offwhite-2) !important;
+  border-color:var(--trench-border) !important;
+  box-shadow:0 8px 24px rgba(72,57,27,.07) !important;
+}
+
+/* Any legacy pure-white cards inside Social/Profile */
+body.salt-social-active .profilePage *,
+body.salt-social-active .saltProfilePage *,
+body.salt-social-active .socialTabView *{
+  --card:#fbf7ee;
+}
+
+body.salt-social-active .profilePage [style*="background:#fff"],
+body.salt-social-active .profilePage [style*="background: #fff"],
+body.salt-social-active .saltProfilePage [style*="background:#fff"],
+body.salt-social-active .saltProfilePage [style*="background: #fff"]{
+  background:var(--trench-offwhite-2) !important;
+}
+
+/* Navigation + tab treatments */
+body.salt-social-active .socialProfileTabs,
+body.salt-social-active .profileSubnav,
+body.salt-social-active .profileTabs,
+body.salt-social-active .feedFilters{
+  background:transparent !important;
+}
+
+body.salt-social-active .socialProfileTabs button,
+body.salt-social-active .profileSubnav button,
+body.salt-social-active .profileTabs button,
+body.salt-social-active .feedFilters button{
+  color:#5d5b4d !important;
+}
+
+body.salt-social-active .socialProfileTabs button.active,
+body.salt-social-active .profileSubnav button.active,
+body.salt-social-active .profileTabs button.active,
+body.salt-social-active .feedFilters button.active{
+  background:#eadfbe !important;
+  color:#2d3027 !important;
+  box-shadow:none !important;
+}
+
+/* NFT placeholders */
+body.salt-social-active .featuredNft,
+body.salt-social-active .featuredNftCard,
+body.salt-social-active .nftPlaceholder,
+body.salt-social-active .nftPicker,
+body.salt-social-active .nftSlot{
+  background:var(--trench-offwhite-2) !important;
+  border-color:var(--trench-border) !important;
+}
+
+body.salt-social-active .featuredNft img,
+body.salt-social-active .featuredNftCard img,
+body.salt-social-active .nftPlaceholder{
+  background:#f4efe4 !important;
+}
+
+/* Profile banner/info area */
+body.salt-social-active .profileIdentity,
+body.salt-social-active .profileInfo,
+body.salt-social-active .profileBio,
+body.salt-social-active .profileActions,
+body.salt-social-active .profileNavRow{
+  background:var(--trench-offwhite-2) !important;
+  border-color:var(--trench-border) !important;
+}
+
+/* Buttons */
+body.salt-social-active button,
+body.salt-social-active .secondaryBtn{
+  border-color:#d5c5a5 !important;
+}
+
+body.salt-social-active .profileActionBtn,
+body.salt-social-active .editProfileBtn,
+body.salt-social-active .sendSolBtn,
+body.salt-social-active .receiveSolBtn{
+  background:#fffaf0 !important;
+  border-color:#d6c6a6 !important;
+  color:#3e4637 !important;
+}
+
+/* Input surfaces */
+body.salt-social-active input,
+body.salt-social-active textarea,
+body.salt-social-active select{
+  background:#fffaf0 !important;
+  border-color:#d8c9aa !important;
+  color:#2a2d25 !important;
+}
+
+/* Muted/secondary copy */
+body.salt-social-active .muted,
+body.salt-social-active small,
+body.salt-social-active .profileMeta,
+body.salt-social-active .feedPostHead span{
+  color:var(--trench-muted) !important;
+}
+
+/* Dividers */
+body.salt-social-active hr,
+body.salt-social-active .profileDivider,
+body.salt-social-active .sectionDivider{
+  border-color:#ded0b4 !important;
+}
+
+/* Keep the top global navbar coordinated */
+body.salt-social-active .topbar{
+  background:rgba(250,245,233,.95) !important;
+  border-bottom-color:#ded0b4 !important;
+}
+body.salt-social-active .nav{
+  background:#eee4cf !important;
+  border-color:#d8c8a8 !important;
+}
+body.salt-social-active .nav button.active{
+  background:#fffaf0 !important;
+  color:#2f3128 !important;
+}
+
+/* Blue accent gets toned down where possible */
+body.salt-social-active a,
+body.salt-social-active .profileLink,
+body.salt-social-active .feedSupportLink{
+  color:#6f7357 !important;
+}
