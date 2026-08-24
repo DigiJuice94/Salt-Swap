@@ -305,3 +305,11 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Community Score is shown only after at least 20 verified Trenches ratings.
 - Below 20 ratings, the card says NOT ENOUGH RATINGS and shows progress (for example 7/20).
 - Community Score remains separate from the Salt Risk Score and never changes the safety score.
+
+## V1.10.55 — Scan-page thesis composer
+- Adds a thesis composer directly below the main scan score/quick-check area.
+- Requires the Solana wallet tied to a Trenches Social profile and signs the thesis with that wallet.
+- Supports every scanned chain while keeping social identity anchored to the user's Solana profile wallet.
+- Posts use the existing 0–10 community rating + thesis + optional supporting link.
+- The same post is stored in the user's profile feed and the global community feed through the existing Social reviews endpoint.
+- Existing thesis for the same profile/token is loaded for editing; one current thesis per profile/token remains enforced.
