@@ -49,6 +49,10 @@
       "dest": "/api.mjs?route=evm-tokens"
     },
     {
+      "src": "/api/social-auth",
+      "dest": "/api.mjs?route=social-auth"
+    },
+    {
       "src": "/api/social-profile",
       "dest": "/api.mjs?route=social-profile"
     },

@@ -338,3 +338,20 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Restores the left scan analysis area as one unified rounded card/bubble.
 - Keeps Salt Risk Score, Community Score, Salt's Take, and quick checks inside that single bubble.
 - Leaves the separate thesis composer card unchanged.
+
+
+## V1.10.60 — Thesis wallet-signature fix
+- Fixed the thesis POST verification mismatch: the browser signs `The Trenches review`, while the API had still been requiring the legacy `Salt Swap review` prefix.
+- The API now verifies the current Trenches-branded message and temporarily accepts the legacy prefix for backward compatibility.
+- Scan thesis, Social review, and Feed thesis posts now use the same verified-wallet signature contract.
+
+
+## V1.10.61 — One-signature Trenches Social sessions
+- Connecting an existing Trenches Social profile now requests one Solana sign-in signature only when a valid session is missing.
+- The sign-in creates a secure HttpOnly, SameSite=Lax session cookie lasting 7 days.
+- Posting a thesis from the scan page, Social review area, or community Feed no longer opens Phantom/Solflare for a per-post signature.
+- The server derives the posting wallet from the verified session and rejects attempts to post as another wallet.
+- New profile creation still uses its ownership-proof signature; that same proof now starts the 7-day session automatically, so there is no second login signature.
+- When the session expires or the user switches wallets, the next social post/connect asks for one fresh login signature.
+- Old clients that still send signed reviews remain temporarily compatible and are upgraded into a session after a valid signature.
+- `SOCIAL_SESSION_SECRET` is optional but recommended. If omitted, the configured Upstash REST token is used as the HMAC secret so this update works without adding another environment variable.
