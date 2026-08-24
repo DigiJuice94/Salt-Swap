@@ -1455,3 +1455,245 @@ body.salt-social-active .socialSubNav button.active{
   color:#34362d !important;
   box-shadow:inset 0 0 0 1px #d8c8a8 !important;
 }
+
+
+/* V1.10.45 — trench paper texture + field-report/crate/NFT frame redesign */
+:root{
+  --paper:#f4ead5;
+  --paper-light:#fbf4e5;
+  --paper-deep:#e7d7b9;
+  --ink:#2e2b22;
+  --olive:#5a5a3d;
+  --olive-dark:#3f412c;
+  --wood:#7d6848;
+  --line:#b8a784;
+}
+
+/* subtle paper texture across Social */
+body.salt-social-active,
+body.salt-social-active main,
+body.salt-social-active #saltSocial,
+body.salt-social-active .saltSocialPage,
+body.salt-social-active .socialTabView{
+  background-color:var(--paper) !important;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(80,60,30,.035) 0 1px, transparent 1.6px),
+    radial-gradient(circle at 80% 70%, rgba(255,255,255,.18) 0 1px, transparent 1.8px),
+    repeating-linear-gradient(0deg, rgba(88,66,37,.018) 0 1px, transparent 1px 4px) !important;
+  background-size:9px 9px, 13px 13px, auto !important;
+  color:var(--ink) !important;
+}
+
+/* paper nav bars with worn border */
+body.salt-social-active .nav,
+body.salt-social-active .socialSubNav{
+  background:
+    radial-gradient(circle at 20% 20%, rgba(110,86,46,.05) 0 1px, transparent 1.5px),
+    linear-gradient(#efe3c9,#eadcc0) !important;
+  border:1px solid #baa67e !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.45),
+    0 2px 0 rgba(87,66,33,.12) !important;
+}
+
+body.salt-social-active .nav button,
+body.salt-social-active .socialSubNav button{
+  border-radius:9px !important;
+  color:#514b3b !important;
+}
+
+body.salt-social-active .nav button.active,
+body.salt-social-active .socialSubNav button.active{
+  background:#f7eedc !important;
+  border:1px solid #655d46 !important;
+  box-shadow:
+    inset 0 0 0 2px rgba(77,68,47,.10),
+    0 1px 2px rgba(67,52,27,.12) !important;
+  color:#2e2b22 !important;
+}
+
+/* NFT frames: rugged olive military frame */
+body.salt-social-active .featuredNft{
+  background:transparent !important;
+  border:0 !important;
+  box-shadow:none !important;
+}
+
+body.salt-social-active .featuredNftFrame{
+  position:relative !important;
+  background:
+    linear-gradient(135deg,#626044,#494a33) !important;
+  border:4px solid #333526 !important;
+  border-radius:10px !important;
+  padding:14px !important;
+  box-shadow:
+    inset 0 0 0 3px #777154,
+    inset 0 0 0 5px rgba(28,28,20,.45),
+    0 10px 20px rgba(62,48,25,.16) !important;
+}
+
+body.salt-social-active .featuredNftFrame::before,
+body.salt-social-active .featuredNftFrame::after{
+  content:"✦" !important;
+  position:absolute !important;
+  width:18px !important;
+  height:18px !important;
+  border-radius:50% !important;
+  display:grid !important;
+  place-items:center !important;
+  background:#8d805f !important;
+  border:2px solid #2f3125 !important;
+  color:#27291f !important;
+  font-size:8px !important;
+  z-index:5 !important;
+}
+body.salt-social-active .featuredNftFrame::before{left:5px !important;top:5px !important;}
+body.salt-social-active .featuredNftFrame::after{right:5px !important;bottom:5px !important;}
+
+body.salt-social-active .featuredNftFrame > *{
+  background:#f7f0e1 !important;
+}
+
+body.salt-social-active .featuredNftLabel{
+  background:#4c4e36 !important;
+  color:#f4ead5 !important;
+  border:1px solid #333526 !important;
+  border-radius:6px 6px 0 0 !important;
+  letter-spacing:.08em !important;
+}
+
+/* supply crate treatment for wallet holdings */
+body.salt-social-active .walletHoldingsCard{
+  position:relative !important;
+  overflow:visible !important;
+  margin-top:22px !important;
+  padding-top:32px !important;
+  background:
+    linear-gradient(#5a5940,#45452f) !important;
+  border:3px solid #303226 !important;
+  border-radius:9px !important;
+  box-shadow:
+    inset 0 0 0 3px #716c4f,
+    0 9px 20px rgba(55,44,24,.16) !important;
+}
+
+body.salt-social-active .walletHoldingsCard::before{
+  content:"✦  SUPPLY CRATE" !important;
+  position:absolute !important;
+  top:8px !important;
+  left:50% !important;
+  transform:translateX(-50%) !important;
+  color:#efe4ce !important;
+  font-size:11px !important;
+  font-weight:900 !important;
+  letter-spacing:.08em !important;
+  white-space:nowrap !important;
+}
+
+body.salt-social-active .walletHoldingsCard > *{
+  background:var(--paper-light) !important;
+}
+
+body.salt-social-active .saltWalletHoldings{
+  background:var(--paper-light) !important;
+  border:1px solid #c8b895 !important;
+  border-radius:5px !important;
+  padding:14px !important;
+}
+
+/* field-report treatment for Top Calls + Profile Stats */
+body.salt-social-active .topCallsCard,
+body.salt-social-active .profileStatsCard{
+  position:relative !important;
+  overflow:visible !important;
+  margin-top:22px !important;
+  padding-top:35px !important;
+  background:
+    linear-gradient(135deg,#6a5a43,#514534) !important;
+  border:3px solid #3b3327 !important;
+  border-radius:9px !important;
+  box-shadow:
+    inset 0 0 0 3px #8a7658,
+    0 9px 20px rgba(55,44,24,.15) !important;
+}
+
+body.salt-social-active .topCallsCard::before{
+  content:"FIELD REPORT" !important;
+}
+body.salt-social-active .profileStatsCard::before{
+  content:"PROFILE STATS" !important;
+}
+
+body.salt-social-active .topCallsCard::before,
+body.salt-social-active .profileStatsCard::before{
+  position:absolute !important;
+  top:8px !important;
+  left:50% !important;
+  transform:translateX(-50%) !important;
+  color:#f0e5d0 !important;
+  font-size:11px !important;
+  font-weight:900 !important;
+  letter-spacing:.08em !important;
+  white-space:nowrap !important;
+}
+
+body.salt-social-active .topCallsCard > *,
+body.salt-social-active .profileStatsCard > *{
+  background:var(--paper-light) !important;
+}
+
+body.salt-social-active .saltTopCalls,
+body.salt-social-active .saltProfileStats{
+  background:var(--paper-light) !important;
+  border:1px solid #c9b997 !important;
+  border-radius:5px !important;
+  padding:14px !important;
+}
+
+/* the central profile + thesis/feed cards become aged paper, not white */
+body.salt-social-active .saltProfileHero,
+body.salt-social-active .saltProfileFeed,
+body.salt-social-active .saltProfileTheses,
+body.salt-social-active .socialTimelineShell,
+body.salt-social-active .feedComposer,
+body.salt-social-active .saltFeedPost{
+  background-color:var(--paper-light) !important;
+  background-image:
+    radial-gradient(circle at 30% 40%, rgba(87,65,35,.028) 0 1px, transparent 1.4px),
+    repeating-linear-gradient(90deg, rgba(88,66,37,.013) 0 1px, transparent 1px 5px) !important;
+  border-color:#c9b997 !important;
+  box-shadow:0 8px 24px rgba(66,50,25,.07) !important;
+}
+
+/* headings look more like printed labels */
+body.salt-social-active .saltAsideCard h3,
+body.salt-social-active .featuredNftLabel,
+body.salt-social-active .socialSectionTitle{
+  font-family:Georgia, "Times New Roman", serif !important;
+  text-transform:uppercase !important;
+  letter-spacing:.045em !important;
+  color:#393426 !important;
+}
+
+/* remove remaining bright-blue outlines */
+body.salt-social-active .saltProfileTabs button.active,
+body.salt-social-active .profileSubnav button.active,
+body.salt-social-active .feedFilters button.active{
+  border-color:#6e654c !important;
+  color:#3d392c !important;
+  background:#eee2c6 !important;
+}
+
+body.salt-social-active .saltProfileTabs{
+  border-color:#c8b895 !important;
+  background:var(--paper-light) !important;
+}
+
+/* softer paper inputs/placeholders */
+body.salt-social-active input,
+body.salt-social-active textarea,
+body.salt-social-active select,
+body.salt-social-active .socialTimelineEmpty{
+  background:#f6edda !important;
+  border-color:#cbb994 !important;
+}
