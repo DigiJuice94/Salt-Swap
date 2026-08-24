@@ -2271,3 +2271,145 @@ body.salt-social-active #saltSocial .featuredNftFrame *{
     bottom:59px !important;
   }
 }
+
+
+/* V1.10.48 — remove extra NFT topper + revert trench prop cards/nav to classic off-white */
+
+/* 1) REMOVE the decorative FEATURED NFT topper/nail/cord above NFT frames */
+body.salt-social-active .featuredNft{
+  padding-top:0 !important;
+}
+
+body.salt-social-active .featuredNftLabel{
+  display:none !important;
+}
+
+body.salt-social-active .featuredNft::before,
+body.salt-social-active .featuredNft::after{
+  display:none !important;
+  content:none !important;
+}
+
+/* Keep the actual wooden NFT frame itself */
+body.salt-social-active #saltSocial .featuredNftFrame{
+  margin-top:0 !important;
+}
+
+/* 2) REVERT main Social/Profile nav back to the cleaner off-white style */
+body.salt-social-active .nav,
+body.salt-social-active .socialSubNav{
+  background:#f3ead7 !important;
+  border:1px solid #d8c8a8 !important;
+  box-shadow:none !important;
+}
+
+body.salt-social-active .nav button,
+body.salt-social-active .socialSubNav button{
+  background:transparent !important;
+  border:0 !important;
+  color:#5c584a !important;
+  font-family:inherit !important;
+  font-weight:700 !important;
+  box-shadow:none !important;
+}
+
+body.salt-social-active .nav button.active,
+body.salt-social-active .socialSubNav button.active{
+  background:#fffaf0 !important;
+  border:1px solid #cdbb98 !important;
+  color:#2f3128 !important;
+  box-shadow:0 1px 2px rgba(72,57,27,.08) !important;
+}
+
+/* 3) REVERT wallet holdings / top calls / profile stats to original-style off-white cards */
+body.salt-social-active .walletHoldingsCard,
+body.salt-social-active .topCallsCard,
+body.salt-social-active .profileStatsCard{
+  position:relative !important;
+  margin-top:0 !important;
+  padding:18px !important;
+  overflow:hidden !important;
+  background:#fbf7ee !important;
+  border:1px solid #d8c8a8 !important;
+  border-radius:16px !important;
+  box-shadow:0 8px 24px rgba(72,57,27,.06) !important;
+}
+
+/* remove supply crate / field report fake labels and hardware */
+body.salt-social-active .walletHoldingsCard::before,
+body.salt-social-active .walletHoldingsCard::after,
+body.salt-social-active .topCallsCard::before,
+body.salt-social-active .topCallsCard::after,
+body.salt-social-active .profileStatsCard::before,
+body.salt-social-active .profileStatsCard::after{
+  display:none !important;
+  content:none !important;
+}
+
+/* inner content returns to clean off-white */
+body.salt-social-active .walletHoldingsCard > *,
+body.salt-social-active .topCallsCard > *,
+body.salt-social-active .profileStatsCard > *{
+  background:transparent !important;
+}
+
+body.salt-social-active .saltWalletHoldings,
+body.salt-social-active .saltTopCalls,
+body.salt-social-active .saltProfileStats,
+body.salt-social-active .saltAsideTitle{
+  background:#f7f1e3 !important;
+  border:0 !important;
+  color:#2f3128 !important;
+  border-radius:12px !important;
+  padding:0 !important;
+}
+
+/* headings back to original clean look */
+body.salt-social-active .saltAsideCard h3,
+body.salt-social-active .socialSectionTitle{
+  font-family:inherit !important;
+  text-transform:none !important;
+  letter-spacing:0 !important;
+  color:#2d312a !important;
+}
+
+/* clean stat/empty boxes */
+body.salt-social-active .saltWalletHoldings .empty,
+body.salt-social-active .saltTopCalls .empty,
+body.salt-social-active .saltProfileStats .empty,
+body.salt-social-active .walletHoldingsCard .empty,
+body.salt-social-active .topCallsCard .empty,
+body.salt-social-active .profileStatsCard .empty{
+  background:#f2f5f4 !important;
+  border:0 !important;
+  border-radius:12px !important;
+  color:#7b8790 !important;
+}
+
+/* Keep off-white page/background and parchment feel, but remove prop-card styling */
+body.salt-social-active,
+body.salt-social-active main,
+body.salt-social-active #saltSocial,
+body.salt-social-active .saltSocialPage,
+body.salt-social-active .socialTabView{
+  background-color:#f3ead7 !important;
+}
+
+/* soften paper texture so it reads off-white first */
+body.salt-social-active,
+body.salt-social-active #saltSocial,
+body.salt-social-active .saltSocialPage,
+body.salt-social-active .socialTabView{
+  background-image:
+    radial-gradient(circle at 18% 24%, rgba(94,64,31,.018) 0 1px, transparent 1.6px),
+    radial-gradient(circle at 78% 68%, rgba(94,64,31,.016) 0 1px, transparent 1.6px) !important;
+}
+
+/* central profile/feed cards remain clean off-white */
+body.salt-social-active .saltProfileHero,
+body.salt-social-active .saltProfileFeed,
+body.salt-social-active .saltProfileTheses{
+  background:#fbf7ee !important;
+  border:1px solid #d8c8a8 !important;
+  box-shadow:0 8px 24px rgba(72,57,27,.06) !important;
+}
