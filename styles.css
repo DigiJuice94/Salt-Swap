@@ -2459,3 +2459,28 @@ body.wallet-account-menu-open .walletAccountMenu{
 .walletTransferModal{z-index:50000!important}
 .tokenModal{z-index:50000!important}
 .profileModal{z-index:50000!important}
+
+
+/* V1.10.78 — MAX balance control for swaps */
+.amountBox>.swapMaxBtn{
+  min-width:auto!important;
+  max-width:none!important;
+  width:auto!important;
+  height:32px!important;
+  flex:0 0 auto;
+  margin-right:7px;
+  padding:0 10px!important;
+  justify-content:center!important;
+  border:1px solid #cfc39e!important;
+  border-radius:999px!important;
+  background:#f4ecd8!important;
+  color:#4c583b!important;
+  font-size:9px!important;
+  font-weight:950!important;
+  letter-spacing:.08em;
+  line-height:1!important;
+  box-shadow:none!important;
+}
+.amountBox>.swapMaxBtn:hover{background:#e9dec1!important;border-color:#bbae84!important}
+.amountBox>.swapMaxBtn:disabled{opacity:.58;cursor:wait}
+@media(max-width:520px){.amountBox>.swapMaxBtn{height:30px!important;padding:0 8px!important;margin-right:5px;font-size:8px!important}}

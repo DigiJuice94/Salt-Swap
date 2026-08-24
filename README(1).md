@@ -474,3 +474,11 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Fixes the connected-wallet dropdown appearing behind Swap, Social, Portfolio, Trending, and other page layers.
 - The header is elevated only while the wallet account menu is open, so normal page stacking stays unchanged.
 - Full-screen wallet, transfer, token, and profile dialogs remain above the header.
+
+
+## V1.10.78 — Swap MAX button
+- Adds a MAX control to the pay side of every swap.
+- Reads the connected wallet's real balance for SOL, SPL tokens, native EVM assets, and ERC-20/BEP-20 tokens.
+- Native-asset MAX automatically reserves a small network-fee buffer so the swap is less likely to fail from spending every last gas token.
+- SPL/ERC-20 token MAX uses the full token balance because gas is paid separately in SOL/ETH/BNB.
+- If the correct wallet/network is not connected, The Trenches opens the wallet chooser instead of guessing which wallet to use.
