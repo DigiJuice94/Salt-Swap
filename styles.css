@@ -1368,3 +1368,32 @@ body.salt-social-active .profileLink,
 body.salt-social-active .feedSupportLink{
   color:#6f7357 !important;
 }
+
+
+/* V1.10.42 — sheep branding replaces legacy salt icon in Social onboarding */
+.socialOnboardingMark{
+  display:grid !important;
+  place-items:center !important;
+  overflow:hidden !important;
+  background:#e8d8ae !important;
+}
+
+.socialOnboardingMark img{
+  width:78% !important;
+  height:78% !important;
+  object-fit:contain !important;
+  display:block !important;
+}
+
+#profilePicturePreview{
+  display:grid !important;
+  place-items:center !important;
+  overflow:hidden !important;
+}
+
+#profilePicturePreview img{
+  width:100% !important;
+  height:100% !important;
+  object-fit:contain !important;
+  display:block !important;
+}
