@@ -278,3 +278,9 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Moves the official Trenches verified badge into `/assets/verified-badge.png` so Vercel serves it through the existing static assets route.
 - Updates the profile badge image source to `/assets/verified-badge.png`.
 - Preserves wallet-based verification and all V1.10.49 behavior.
+
+
+## V1.10.51 — Verified badge inline display fix
+- Embeds the official Trenches verified badge directly into the profile UI so it cannot break because of static asset routing or deployment paths.
+- Keeps verification tied to the creator Solana wallet server-side.
+- No other profile or Social behavior changed.
