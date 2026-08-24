@@ -511,3 +511,11 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Tracks cross-chain settlement after the source transaction is sent.
 - Robinhood Chain remains visible in the selector, but cross-chain routing is disabled until the bridge provider supports that chain. The existing Robinhood same-chain 0x swap remains unchanged.
 - Public LI.FI rate limits work without a key; `LIFI_API_KEY` is optional for higher throughput.
+
+## V1.10.83 — Quick Swap MAX
+- Adds a MAX button to the Quick Swap pay amount.
+- MAX reads the real connected source-network wallet balance.
+- Solana MAX uses the existing server-side Helius balance endpoint instead of the browser-blocked public RPC.
+- ETH / Base / BNB MAX reads the connected EVM wallet after switching to the selected source chain when necessary.
+- Native-asset MAX keeps a conservative network/route-fee reserve so the cross-chain transaction is less likely to fail from using every last unit of gas.
+- If the correct source wallet is not connected, MAX opens the wallet chooser instead of guessing.

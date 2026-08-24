@@ -92,6 +92,7 @@
           </div>
           <div class="quickSwapAmountRow">
             <input id="quickSwapAmount" inputmode="decimal" autocomplete="off" placeholder="0.00" aria-label="Quick Swap amount"/>
+            <button id="quickSwapMax" class="quickSwapMax" type="button">MAX</button>
             <span id="quickSwapFromSymbol">SOL</span>
           </div>
         </div>
@@ -692,6 +693,42 @@ function quickSwapSourceSigner(a){
 function quickSwapAtomic(v,d){return tokenToAtomic(v,d)}
 function quickSwapFormat(raw,d,max=8){return fmtToken(raw,d,max)}
 function quickSwapSetNotice(msg,tone=''){const el=$('quickSwapNotice');if(!el)return;el.textContent=msg;el.className='quickSwapNotice'+(tone?' '+tone:'')}
+async function quickSwapSpendableBalanceAtomic(a){
+  const signer=quickSwapSourceSigner(a);
+  if(!signer)throw new Error(`Connect the ${a.kind==='solana'?'Solana':'EVM'} wallet you want to swap from.`);
+  if(a.kind==='solana'){
+    const q=new URLSearchParams({wallet:signer.address,mint:'SOL'}),j=await socialApi('/api/swap-balance?'+q.toString()),raw=BigInt(String(j.atomic||'0'));
+    const reserve=15000000n; // keep 0.015 SOL for network + route fees
+    return raw>reserve?raw-reserve:0n
+  }
+  await ensureQuickSwapEvmChain(a,signer.provider);
+  const raw=BigInt(await signer.provider.request({method:'eth_getBalance',params:[signer.address,'latest']}));
+  let gasPrice=0n;try{gasPrice=BigInt(await signer.provider.request({method:'eth_gasPrice'}))}catch{}
+  const dynamic=gasPrice*550000n*125n/100n;
+  const floor=a.key==='ethereum'?3000000000000000n:a.key==='bnb'?1000000000000000n:500000000000000n;
+  const reserve=dynamic>floor?dynamic:floor;
+  return raw>reserve?raw-reserve:0n
+}
+async function useQuickSwapMax(){
+  const b=$('quickSwapMax'),from=quickSwapAsset('from');
+  if(!b||b.disabled)return;
+  try{
+    b.disabled=true;b.textContent='…';
+    const signer=quickSwapSourceSigner(from);
+    if(!signer){
+      quickSwapSetNotice(`Connect the ${from.kind==='solana'?'Solana':'EVM'} wallet you want to swap from, then tap MAX again.`,'warn');
+      openWalletConnectModal('general');
+      return
+    }
+    quickSwapSetNotice(`Checking your spendable ${from.symbol} balance on ${from.name}…`);
+    const raw=await quickSwapSpendableBalanceAtomic(from);
+    if(raw<=0n)throw new Error(`No spendable ${from.symbol} balance found after reserving network fees.`);
+    $('quickSwapAmount').value=atomicToSwapInput(raw,from.decimals);
+    quickSwapResetQuote();
+    quickSwapSetNotice(`MAX loaded from your ${from.name} wallet. A small ${from.symbol} reserve was left for network and route fees.`,'good')
+  }catch(e){quickSwapSetNotice(readableError(e),'bad')}
+  finally{b.disabled=false;b.textContent='MAX'}
+}
 function quickSwapResetQuote(){
   quickSwapQuote=null;
   $('quickSwapReceive').textContent='—';$('quickSwapRouteName').textContent='Waiting for amount';$('quickSwapTime').textContent='—';$('quickSwapMin').textContent='—';
@@ -1174,7 +1211,7 @@ function initSalt(){
   if(saltProfile)$('socialProfilePage')?.classList.remove('hidden');
   const b=$('scanBtn');if(!b)return;b.type='button';b.addEventListener('click',scan);
   $('mintInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();scan();}});
-  $('quickSwapOpen')?.addEventListener('click',openQuickSwap);$('quickSwapClose')?.addEventListener('click',closeQuickSwap);document.querySelectorAll('[data-close-quick-swap]').forEach(x=>x.addEventListener('click',closeQuickSwap));$('quickSwapFrom')?.addEventListener('change',()=>renderQuickSwap({resetRecipient:false}));$('quickSwapTo')?.addEventListener('change',()=>{quickSwapRecipientTouched=false;renderQuickSwap({resetRecipient:true})});$('quickSwapAmount')?.addEventListener('input',quickSwapResetQuote);$('quickSwapRecipient')?.addEventListener('input',()=>{quickSwapRecipientTouched=true;quickSwapResetQuote()});$('quickSwapFlip')?.addEventListener('click',()=>{const a=$('quickSwapFrom').value,b=$('quickSwapTo').value;$('quickSwapFrom').value=b;$('quickSwapTo').value=a;quickSwapRecipientTouched=false;renderQuickSwap({resetRecipient:true})});$('quickSwapUseWallet')?.addEventListener('click',()=>{quickSwapRecipientTouched=false;$('quickSwapRecipient').value=quickSwapDefaultRecipient(quickSwapAsset('to'))||'';quickSwapResetQuote()});$('quickSwapConnect')?.addEventListener('click',()=>openWalletConnectModal('general'));$('quickSwapAction')?.addEventListener('click',async()=>{if(quickSwapQuote)await executeQuickSwap();else try{await getQuickSwapQuote()}catch(e){quickSwapSetNotice(readableError(e),'bad')}});
+  $('quickSwapOpen')?.addEventListener('click',openQuickSwap);$('quickSwapClose')?.addEventListener('click',closeQuickSwap);document.querySelectorAll('[data-close-quick-swap]').forEach(x=>x.addEventListener('click',closeQuickSwap));$('quickSwapFrom')?.addEventListener('change',()=>renderQuickSwap({resetRecipient:false}));$('quickSwapTo')?.addEventListener('change',()=>{quickSwapRecipientTouched=false;renderQuickSwap({resetRecipient:true})});$('quickSwapAmount')?.addEventListener('input',quickSwapResetQuote);$('quickSwapMax')?.addEventListener('click',useQuickSwapMax);$('quickSwapRecipient')?.addEventListener('input',()=>{quickSwapRecipientTouched=true;quickSwapResetQuote()});$('quickSwapFlip')?.addEventListener('click',()=>{const a=$('quickSwapFrom').value,b=$('quickSwapTo').value;$('quickSwapFrom').value=b;$('quickSwapTo').value=a;quickSwapRecipientTouched=false;renderQuickSwap({resetRecipient:true})});$('quickSwapUseWallet')?.addEventListener('click',()=>{quickSwapRecipientTouched=false;$('quickSwapRecipient').value=quickSwapDefaultRecipient(quickSwapAsset('to'))||'';quickSwapResetQuote()});$('quickSwapConnect')?.addEventListener('click',()=>openWalletConnectModal('general'));$('quickSwapAction')?.addEventListener('click',async()=>{if(quickSwapQuote)await executeQuickSwap();else try{await getQuickSwapQuote()}catch(e){quickSwapSetNotice(readableError(e),'bad')}});
   $('walletBtn')?.addEventListener('click',walletAction);$('switchWalletBtn')?.addEventListener('click',openWalletProviderChoices);$('disconnectWalletBtn')?.addEventListener('click',disconnectActiveWallet);$('walletConnectClose')?.addEventListener('click',closeWalletConnectModal);document.querySelectorAll('[data-close-wallet-connect]').forEach(x=>x.addEventListener('click',closeWalletConnectModal));$('walletOtherToggle')?.addEventListener('click',()=>{walletOtherOpen=!walletOtherOpen;renderWalletConnectModal()});document.addEventListener('click',e=>{const shell=e.target.closest?.('.headerWalletShell');if(!shell&&!$('walletAccountMenu')?.classList.contains('hidden'))closeWalletAccountMenu()});$('swapWalletBtn')?.addEventListener('click',executeSwap);$('swapMaxBtn')?.addEventListener('click',useSwapMax);$('payAmount')?.addEventListener('input',()=>{scheduleQuote();updateSwapButton()});$('paySymbol')?.addEventListener('click',()=>openTokenPicker('pay'));$('receiveSymbol')?.addEventListener('click',()=>openTokenPicker('receive'));$('closeTokenModal')?.addEventListener('click',closeTokenPicker);document.querySelectorAll('[data-close-token-modal]').forEach(x=>x.addEventListener('click',closeTokenPicker));document.querySelectorAll('[data-picker-chain]').forEach(x=>x.addEventListener('click',()=>setPickerChain(x.dataset.pickerChain)));$('clearRecent')?.addEventListener('click',()=>{try{localStorage.removeItem('salt:recentTokens')}catch{}renderRecent()});$('tokenSearchInput')?.addEventListener('input',e=>{clearTimeout(tokenSearchTimer);tokenSearchTimer=setTimeout(()=>searchTokens(e.target.value),250)});
   $('newScanBtn')?.addEventListener('click',()=>{$('results')?.classList.add('hidden');$('mintInput').value='';$('mintInput').focus();window.scrollTo({top:0,behavior:'smooth'});});
   $('copyCA')?.addEventListener('click',async()=>{if(!currentMint)return;try{await navigator.clipboard.writeText(currentMint);const x=$('copyCA')?.querySelector('b');if(x){const old=x.textContent;x.textContent='Copied';setTimeout(()=>x.textContent=old,1100);}}catch{}});
