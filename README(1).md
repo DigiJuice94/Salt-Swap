@@ -429,3 +429,11 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Receive is designed for any token on the selected network; the UI warns users to match the sending network exactly.
 - Native-asset sending is supported from the popup: SOL on Solana, ETH on Ethereum/Base/Robinhood, and BNB on BNB Chain.
 - No seed phrase or private key is ever requested.
+
+
+## V1.10.72 — Wallet account switcher
+- The top-right connected-wallet pill now opens a wallet account popover.
+- Adds **Connect a different wallet** for switching Solana accounts or choosing a detected Phantom / Solflare provider.
+- Adds **Disconnect**.
+- Switching safely ends the old server auth session before connecting the new wallet, then loads the profile tied to the new wallet.
+- Portfolio and thesis identity refresh to the newly connected wallet.
