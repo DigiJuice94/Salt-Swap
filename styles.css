@@ -896,3 +896,198 @@ footer{
   .parachuteCanopy::after{right:17px !important;}
   .parachuteLines{top:-10px !important; width:52px !important; height:26px !important;}
 }
+
+
+/* V1.10.37 — use the real parachute image and make coins fall through the full screen */
+.floatingTokens{
+  position:fixed !important;
+  inset:78px 0 0 0 !important;
+  overflow:hidden !important;
+  z-index:0 !important;
+  pointer-events:none !important;
+  opacity:1 !important;
+}
+
+.topbar,
+main,
+footer{
+  position:relative !important;
+  z-index:2 !important;
+}
+
+/* hide the old CSS parachute shapes */
+.parachuteCanopy,
+.parachuteLines{
+  display:none !important;
+}
+
+.floatCoin{
+  position:absolute !important;
+  top:0 !important;
+  overflow:visible !important;
+  border-radius:50% !important;
+  opacity:.92 !important;
+  animation: trenchParachuteFullDrop var(--fallDuration, 20s) linear infinite !important;
+  will-change: transform !important;
+  filter:none !important;
+  box-shadow:none !important;
+}
+
+.floatCoin::before{
+  content:"" !important;
+  position:absolute !important;
+  left:50% !important;
+  transform:translateX(-50%) !important;
+  top:calc(var(--parachuteOffset, 92px) * -1) !important;
+  width:var(--parachuteWidth, 112px) !important;
+  height:var(--parachuteHeight, 112px) !important;
+  background:url("assets/trench-parachute.png") center center / contain no-repeat !important;
+  z-index:1 !important;
+  opacity:.98 !important;
+  filter: drop-shadow(0 6px 10px rgba(39,31,17,.20)) !important;
+}
+
+.floatCoin img{
+  position:relative !important;
+  z-index:2 !important;
+  width:100% !important;
+  height:100% !important;
+  display:block !important;
+  border-radius:50% !important;
+  object-fit:contain !important;
+  background:transparent !important;
+  box-shadow:
+    0 10px 22px rgba(55,40,18,.16),
+    0 0 0 7px rgba(255,248,232,.18) !important;
+}
+
+.floatCoin::after{
+  content:"" !important;
+  position:absolute !important;
+  inset:-14px !important;
+  border-radius:50% !important;
+  background:radial-gradient(circle, rgba(255,250,241,.18) 0%, rgba(255,250,241,.08) 40%, rgba(255,250,241,0) 70%) !important;
+  z-index:0 !important;
+}
+
+@keyframes trenchParachuteFullDrop{
+  0%{
+    transform:translate3d(0,-145vh,0) rotate(-3deg);
+  }
+  18%{
+    transform:translate3d(10px,-90vh,0) rotate(1.5deg);
+  }
+  36%{
+    transform:translate3d(-8px,-28vh,0) rotate(-1.8deg);
+  }
+  54%{
+    transform:translate3d(12px,35vh,0) rotate(2deg);
+  }
+  72%{
+    transform:translate3d(-10px,88vh,0) rotate(-1.4deg);
+  }
+  100%{
+    transform:translate3d(8px,145vh,0) rotate(1.2deg);
+  }
+}
+
+/* smaller coin sizes + staggered positions/durations */
+.coin-cate{
+  left:8.5% !important;
+  width:94px !important;
+  height:94px !important;
+  --parachuteWidth: 108px; --parachuteHeight:108px; --parachuteOffset:88px;
+  --fallDuration: 21s;
+  animation-delay:-5s !important;
+}
+.coin-bonk{
+  left:28% !important;
+  width:88px !important;
+  height:88px !important;
+  --parachuteWidth: 102px; --parachuteHeight:102px; --parachuteOffset:84px;
+  --fallDuration: 18s;
+  animation-delay:-9s !important;
+}
+.coin-ansem{
+  right:7% !important;
+  width:98px !important;
+  height:98px !important;
+  --parachuteWidth: 114px; --parachuteHeight:114px; --parachuteOffset:92px;
+  --fallDuration: 23s;
+  animation-delay:-14s !important;
+}
+.coin-pepe{
+  left:3.2% !important;
+  width:104px !important;
+  height:104px !important;
+  --parachuteWidth: 120px; --parachuteHeight:120px; --parachuteOffset:96px;
+  --fallDuration: 24s;
+  animation-delay:-11s !important;
+}
+.coin-cupsey{
+  left:20% !important;
+  width:92px !important;
+  height:92px !important;
+  --parachuteWidth: 106px; --parachuteHeight:106px; --parachuteOffset:86px;
+  --fallDuration: 19s;
+  animation-delay:-16s !important;
+}
+.coin-wif{
+  left:58% !important;
+  width:84px !important;
+  height:84px !important;
+  --parachuteWidth: 98px; --parachuteHeight:98px; --parachuteOffset:80px;
+  --fallDuration: 20s;
+  animation-delay:-3s !important;
+  opacity:.55 !important;
+}
+.coin-cashcat{
+  right:16% !important;
+  width:92px !important;
+  height:92px !important;
+  --parachuteWidth: 106px; --parachuteHeight:106px; --parachuteOffset:86px;
+  --fallDuration: 22s;
+  animation-delay:-8s !important;
+}
+.coin-popcat{
+  left:60% !important;
+  width:86px !important;
+  height:86px !important;
+  --parachuteWidth: 100px; --parachuteHeight:100px; --parachuteOffset:82px;
+  --fallDuration: 19.5s;
+  animation-delay:-15s !important;
+}
+.coin-toad{
+  right:1.5% !important;
+  width:90px !important;
+  height:90px !important;
+  --parachuteWidth: 104px; --parachuteHeight:104px; --parachuteOffset:84px;
+  --fallDuration: 25s;
+  animation-delay:-18s !important;
+}
+
+@media (max-width: 860px){
+  .floatCoin img{
+    box-shadow:
+      0 8px 18px rgba(55,40,18,.14),
+      0 0 0 5px rgba(255,248,232,.14) !important;
+  }
+  .coin-cate,.coin-bonk,.coin-ansem,.coin-pepe,.coin-cupsey,.coin-wif,.coin-cashcat,.coin-popcat,.coin-toad{
+    width:72px !important;
+    height:72px !important;
+    --parachuteWidth: 84px !important;
+    --parachuteHeight: 84px !important;
+    --parachuteOffset: 68px !important;
+  }
+}
+
+@media (max-width: 520px){
+  .coin-cate,.coin-bonk,.coin-ansem,.coin-pepe,.coin-cupsey,.coin-wif,.coin-cashcat,.coin-popcat,.coin-toad{
+    width:58px !important;
+    height:58px !important;
+    --parachuteWidth: 70px !important;
+    --parachuteHeight: 70px !important;
+    --parachuteOffset: 56px !important;
+    opacity:.72 !important;
+  }
+}
