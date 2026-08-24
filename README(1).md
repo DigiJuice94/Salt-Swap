@@ -437,3 +437,11 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Adds **Disconnect**.
 - Switching safely ends the old server auth session before connecting the new wallet, then loads the profile tied to the new wallet.
 - Portfolio and thesis identity refresh to the newly connected wallet.
+
+
+## V1.10.73 — Wallet/Profile isolation fix
+- A Trenches Social profile can now render only when its stored wallet exactly matches the currently connected Solana wallet.
+- Switching to a wallet with no Trenches profile now shows the new-profile onboarding instead of reusing the previous account.
+- Server profile lookup is authoritative: a successful `null` response clears any stale browser cache for that wallet.
+- Portfolio connects, wallet account changes, Social connects, and the header wallet switcher all clear stale identity state before loading the new wallet.
+- Opening Social re-checks the active wallet/profile pairing before showing a profile.
