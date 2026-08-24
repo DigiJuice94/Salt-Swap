@@ -321,3 +321,58 @@ footer,.footer{background:rgba(255,249,235,.90)!important;border-color:rgba(91,7
   object-position:center!important;
   border-radius:50%!important;
 }
+
+/* V1.10.27 — transparent PNG logo */
+.trenchLogoShell{
+  background:transparent!important;
+  border:none!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+}
+.trenchLogoImg{
+  object-fit:contain!important;
+  background:transparent!important;
+}
+.footerBrand img{
+  object-fit:contain!important;
+  background:transparent!important;
+  border-radius:0!important;
+}
+
+/* V1.10.28 — exact full-logo treatment: sheep + wordmark in ONE PNG */
+.trenchFullBrand{
+  display:flex!important;
+  align-items:center!important;
+  gap:7px!important;
+  text-decoration:none!important;
+}
+.trenchFullLogo{
+  display:block!important;
+  width:176px!important;
+  height:auto!important;
+  max-height:48px!important;
+  object-fit:contain!important;
+  object-position:left center!important;
+  background:transparent!important;
+}
+.trenchFullBrand .brandCaret{
+  margin-left:0!important;
+  color:#4c4a3a!important;
+}
+.trenchFooterBrand{
+  display:flex!important;
+  align-items:center!important;
+}
+.trenchFooterBrand img{
+  width:126px!important;
+  height:auto!important;
+  max-height:38px!important;
+  object-fit:contain!important;
+  object-position:left center!important;
+  background:transparent!important;
+  border-radius:0!important;
+}
+@media(max-width:600px){
+  .trenchFullLogo{width:148px!important;max-height:42px!important;}
+  .trenchFooterBrand img{width:108px!important;}
+}
