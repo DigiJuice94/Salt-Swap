@@ -272,3 +272,9 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Founder wallet `ETNz...RALN` is verified automatically.
 - The badge appears directly beside the verified profile display name.
 - Renaming the profile cannot transfer verification to another wallet.
+
+
+## V1.10.50 — Verified badge asset route fix
+- Moves the official Trenches verified badge into `/assets/verified-badge.png` so Vercel serves it through the existing static assets route.
+- Updates the profile badge image source to `/assets/verified-badge.png`.
+- Preserves wallet-based verification and all V1.10.49 behavior.
