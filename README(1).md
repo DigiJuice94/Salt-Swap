@@ -325,3 +325,10 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Keeps the Salt Risk Score, Community Score, Salt's Take, and quick checks as their own independent cards.
 - Gives the scan-page thesis composer its own solid white rounded bubble matching the Salt Risk Score card styling.
 - Preserves wallet/profile identity, profile photo, thesis signing, profile posting, feed posting, and Community Score behavior.
+
+
+## V1.10.58 — Scan thesis social-wallet sync
+- The scan-page thesis identity now refreshes immediately after the Trenches Social Solana wallet connects.
+- Social profile cache lookups are keyed by the profile's Solana wallet instead of the currently selected trading chain wallet.
+- Robinhood/Ethereum/Base/BNB scans can keep the connected Trenches Social identity visible while trading-wallet state changes.
+- Profile picture, @username, and wallet pill update without requiring a rescan or page reload.
