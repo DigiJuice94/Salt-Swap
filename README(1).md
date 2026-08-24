@@ -387,3 +387,9 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Removes the remaining legacy “Community / Latest reviews” card from Social.
 - Keeps its internal DOM hooks hidden so existing Community Score and profile code continue working without errors.
 - Feed, profile thesis cards, scan thesis composer, ratings, and Community Score remain intact.
+
+## V1.10.67 — Legacy Latest Reviews hard removal
+- Fixes the previous cleanup selector, which targeted a parent id that does not exist in the current Social DOM.
+- The remaining legacy `Latest reviews` card is now hard-hidden directly by its unique `.socialFeedCard` class.
+- Modern Feed thesis posts are unaffected because they use `.saltFeedPost`, not `.socialFeedCard`.
+- The hidden legacy DOM hooks remain available so Community Score/review data code does not break.

@@ -1927,3 +1927,9 @@ body.salt-social-active .watchListCard{padding:18px!important}
 #socialSection > .socialFeedCard {
   display:none !important;
 }
+
+/* V1.10.67 — hard-hide the final legacy Latest Reviews card.
+   There is only one .socialFeedCard in the app; modern Feed posts use .saltFeedPost. */
+.socialFeedCard {
+  display: none !important;
+}
