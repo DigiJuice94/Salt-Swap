@@ -535,3 +535,11 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - If the destination side has not been authorized yet, the same primary button asks that wallet for the destination address first and then continues into the swap.
 - `Use my wallet` now actively connects/uses the correct destination-network side rather than only copying an address if one was already cached.
 - The source-wallet secondary button is reduced to a switch/connect control instead of being part of the normal happy path.
+
+## V1.10.86 — Connected-wallet Quick Swap
+- Removes the manual `RECEIVE AT` destination-address box from Quick Swap.
+- Quick Swap is now wallet-first: a connected source wallet plus an amount produces one large `Swap` button.
+- The destination-network address is resolved internally from the same connected multichain wallet. If that network side has not yet been authorized by the browser wallet, the wallet's normal account-permission prompt can appear during the Swap click.
+- Adds a compact connected-wallet card under the Swap button showing the Trenches username when the connected Solana wallet owns a Social profile, the detected wallet brand, shortened wallet address, and source network.
+- Moves wallet switching into a small `Change` button on the connected-wallet card.
+- Keeps the live receive estimate, route, minimum received, MAX button, and settlement tracking from prior Quick Swap versions.

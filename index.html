@@ -109,11 +109,7 @@
         </div>
       </div>
 
-      <div class="quickSwapRecipient">
-        <label for="quickSwapRecipient">RECEIVE AT</label>
-        <div><input id="quickSwapRecipient" autocomplete="off" spellcheck="false" placeholder="Destination wallet address"/><button id="quickSwapUseWallet" type="button">Use my wallet</button></div>
-        <small id="quickSwapRecipientHint">Your connected destination-network wallet is used when available.</small>
-      </div>
+      <input id="quickSwapRecipient" type="hidden" />
 
       <div id="quickSwapRoute" class="quickSwapRoute">
         <div><small>ROUTE</small><strong id="quickSwapRouteName">Waiting for amount</strong></div>
@@ -121,9 +117,19 @@
         <div><small>MINIMUM RECEIVED</small><strong id="quickSwapMin">—</strong></div>
       </div>
 
-      <div id="quickSwapNotice" class="quickSwapNotice">Quick Swap uses live cross-chain routes. The source wallet must be connected before execution.</div>
-      <button id="quickSwapAction" class="quickSwapAction" type="button">Enter an amount</button>
-      <button id="quickSwapConnect" class="quickSwapConnect" type="button">Switch source wallet</button>
+      <div id="quickSwapNotice" class="quickSwapNotice">Your connected wallet is used automatically for the swap.</div>
+      <button id="quickSwapAction" class="quickSwapAction quickSwapPrimarySwap" type="button">Swap</button>
+
+      <div id="quickSwapConnected" class="quickSwapConnected">
+        <span id="quickSwapConnectedAvatar" class="quickSwapConnectedAvatar">W</span>
+        <span class="quickSwapConnectedCopy">
+          <small>CONNECTED WALLET</small>
+          <b id="quickSwapConnectedUser">Wallet connected</b>
+          <em id="quickSwapConnectedMeta">—</em>
+        </span>
+        <button id="quickSwapConnect" type="button">Change</button>
+      </div>
+
       <div class="quickSwapFoot"><span>◉ Live route</span><span>Wallet approval required</span><span>No seed phrase</span></div>
     </section>
   </div>
@@ -752,22 +758,52 @@ async function quickSwapAutofillDestination({interactive=false}={}){
   quickSwapUpdateRecipientUi();
   return quickSwapAddressOk(to,input.value)?String(input.value).trim():''
 }
+function quickSwapWalletLabel(provider){
+  const brand=quickSwapProviderBrand(provider);
+  return ({trust:'Trust Wallet',phantom:'Phantom',solflare:'Solflare',coinbase:'Coinbase Wallet',binance:'Binance Wallet',metamask:'MetaMask'})[brand]||'Connected wallet'
+}
+function quickSwapConnectedProfile(){
+  try{
+    const signer=quickSwapSourceSigner(quickSwapAsset('from'));
+    const p=typeof activeWalletProfile==='function'?activeWalletProfile():null;
+    if(p?.wallet&&signer?.address&&p.wallet===signer.address)return p;
+    const remembered=typeof getRememberedSocialProfile==='function'?getRememberedSocialProfile():null;
+    if(remembered?.wallet&&signer?.address&&remembered.wallet===signer.address)return remembered
+  }catch{}
+  return null
+}
+function renderQuickSwapConnectedWallet(){
+  const box=$('quickSwapConnected'),avatar=$('quickSwapConnectedAvatar'),user=$('quickSwapConnectedUser'),meta=$('quickSwapConnectedMeta');
+  if(!box||!avatar||!user||!meta)return;
+  const from=quickSwapAsset('from'),signer=quickSwapSourceSigner(from),profile=quickSwapConnectedProfile();
+  if(!signer){
+    box.classList.add('notConnected');
+    avatar.textContent='?';
+    user.textContent='No source wallet connected';
+    meta.textContent=`Connect a ${from.name} wallet`;
+    return
+  }
+  box.classList.remove('notConnected');
+  if(profile?.avatar)avatar.innerHTML=`<img src="${socialEsc(profile.avatar)}" alt="" />`;
+  else avatar.textContent=String(profile?.username||quickSwapWalletLabel(signer.provider)||'W').slice(0,1).toUpperCase();
+  user.textContent=profile?.username?`@${profile.username}`:quickSwapWalletLabel(signer.provider);
+  meta.textContent=`${quickSwapWalletLabel(signer.provider)} · ${quickSwapShortAddress(signer.address)} · ${from.name}`
+}
 function quickSwapUpdateRecipientUi(){
-  const to=quickSwapAsset('to'),input=$('quickSwapRecipient'),hint=$('quickSwapRecipientHint'),address=String(input?.value||'').trim(),ready=quickSwapAddressOk(to,address);
-  if(hint)hint.textContent=ready?`Ready · ${to.symbol} will arrive at ${quickSwapShortAddress(address)} on ${to.name}.`:(to.kind==='solana'?`Connect or choose a Solana wallet to receive ${to.symbol}.`:`Connect or choose an EVM wallet to receive ${to.symbol} on ${to.name}.`);
+  // The destination address is intentionally hidden from the interface.
+  // The Trenches resolves the matching destination-network account from
+  // the connected multichain wallet when the user presses Swap.
   quickSwapUpdateAction()
 }
 function quickSwapUpdateAction(){
-  const b=$('quickSwapAction'),secondary=$('quickSwapConnect');if(!b)return;
-  const from=quickSwapAsset('from'),to=quickSwapAsset('to'),amount=quickSwapAtomic($('quickSwapAmount')?.value,from.decimals),signer=quickSwapSourceSigner(from),recipient=String($('quickSwapRecipient')?.value||'').trim();
-  if(secondary){secondary.textContent=signer?'Switch source wallet':`Connect ${from.symbol} source wallet`}
-  if(!from.supported||!to.supported||from.key===to.key){b.disabled=true;return}
-  b.disabled=false;
-  if(!signer){b.textContent=`Connect ${from.symbol} wallet`;return}
-  if(!amount){b.textContent='Enter an amount';return}
-  if(!quickSwapPreview){b.textContent='Checking best rate…';return}
-  if(!quickSwapAddressOk(to,recipient)){b.textContent=`Connect ${to.symbol} wallet to receive`;return}
-  b.textContent=`Swap ${from.symbol} → ${to.symbol}`
+  const b=$('quickSwapAction');if(!b)return;
+  const from=quickSwapAsset('from'),to=quickSwapAsset('to'),amount=quickSwapAtomic($('quickSwapAmount')?.value,from.decimals),signer=quickSwapSourceSigner(from);
+  b.textContent='Swap';
+  if(!from.supported||!to.supported||from.key===to.key){b.disabled=true;renderQuickSwapConnectedWallet();return}
+  // Keep the UI simple: Swap is the only primary action. If the correct
+  // wallet side needs permission, clicking Swap handles that in-flow.
+  b.disabled=!signer||!amount;
+  renderQuickSwapConnectedWallet()
 }
 function quickSwapAtomic(v,d){return tokenToAtomic(v,d)}
 function quickSwapFormat(raw,d,max=8){return fmtToken(raw,d,max)}
@@ -851,7 +887,7 @@ async function getQuickSwapPreview(){
     const gas=Number(route?.gasCostUSD||0);
     await quickSwapAutofillDestination({interactive:false});
     const recipient=String($('quickSwapRecipient').value||'').trim();
-    quickSwapSetNotice(`Estimated receive amount loaded${gas>0?` · estimated gas/route cost $${gas.toFixed(2)}`:''}. ${quickSwapAddressOk(to,recipient)?'Ready to swap — one wallet approval is next.':`Connect your ${to.symbol} receiving wallet to continue.`}`,'good');
+    quickSwapSetNotice(`Estimated receive amount loaded${gas>0?` · estimated gas/route cost $${gas.toFixed(2)}`:''}. Tap Swap and The Trenches will use your connected wallet automatically.`,'good');
     quickSwapUpdateAction()
   }catch(e){
     if(seq!==quickSwapPreviewSeq)return;
@@ -870,9 +906,10 @@ function renderQuickSwap({resetRecipient=false}={}){
   quickSwapIcon($('quickSwapFromIcon'),from);quickSwapIcon($('quickSwapToIcon'),to);
   $('quickSwapFromSymbol').textContent=from.symbol;$('quickSwapToSymbol').textContent=to.symbol;
   if(resetRecipient||!quickSwapRecipientTouched){const d=quickSwapDefaultRecipient(to);$('quickSwapRecipient').value=d||''}
-  $('quickSwapRecipient').placeholder=to.kind==='solana'?'Solana destination address':'0x destination address';
   quickSwapResetQuote();quickSwapUpdateRecipientUi();
-  quickSwapAutofillDestination({interactive:false}).catch(()=>{});
+  // Silently recognize the destination side of the same multichain wallet
+  // whenever the browser has already granted access.
+  quickSwapAutofillDestination({interactive:false}).then(()=>quickSwapUpdateAction()).catch(()=>quickSwapUpdateAction());
   if(!from.supported||!to.supported){
     quickSwapSetNotice('Robinhood Chain is included in The Trenches, but the current cross-chain router does not support Robinhood yet. Use the normal Robinhood swap after funding that wallet.','warn');
     $('quickSwapAction').disabled=true;
@@ -938,15 +975,22 @@ async function handleQuickSwapAction(){
   if(quickSwapBusy)return;
   const from=quickSwapAsset('from'),to=quickSwapAsset('to'),amount=quickSwapAtomic($('quickSwapAmount').value,from.decimals),signer=quickSwapSourceSigner(from);
   try{
-    if(!signer){quickSwapSetNotice(`Connect the ${from.symbol} wallet you want to swap from.`,'warn');openWalletConnectModal('general');return}
+    if(!signer){openWalletConnectModal('general');return}
     if(!amount){$('quickSwapAmount')?.focus();quickSwapSetNotice(`Enter how much ${from.symbol} you want to swap.`,'warn');return}
     if(!quickSwapPreview)await getQuickSwapPreview();
+
+    // No destination-address form. Resolve the destination-network account
+    // from the same connected multichain wallet. If that side has not been
+    // authorized yet, the wallet may show its normal permission prompt here.
     let recipient=String($('quickSwapRecipient').value||'').trim();
     if(!quickSwapAddressOk(to,recipient)){
-      quickSwapSetNotice(`Connecting your ${to.symbol} receiving wallet…`,'warn');
+      quickSwapSetNotice(`Preparing ${to.name} inside your connected wallet…`,'good');
       recipient=await quickSwapAutofillDestination({interactive:true})
     }
-    if(!quickSwapAddressOk(to,recipient))throw new Error(`Connect or enter the ${to.name} wallet that should receive your ${to.symbol}.`);
+    if(!quickSwapAddressOk(to,recipient)){
+      throw new Error(`Your connected wallet did not provide a ${to.name} receiving account. Use Change below to select a wallet that supports both sides of this swap.`)
+    }
+
     await executeQuickSwap()
   }catch(e){quickSwapSetNotice(readableError(e),'bad');quickSwapUpdateAction()}
 }
@@ -1359,7 +1403,7 @@ function initSalt(){
   if(saltProfile)$('socialProfilePage')?.classList.remove('hidden');
   const b=$('scanBtn');if(!b)return;b.type='button';b.addEventListener('click',scan);
   $('mintInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();scan();}});
-  $('quickSwapOpen')?.addEventListener('click',openQuickSwap);$('quickSwapClose')?.addEventListener('click',closeQuickSwap);document.querySelectorAll('[data-close-quick-swap]').forEach(x=>x.addEventListener('click',closeQuickSwap));$('quickSwapFrom')?.addEventListener('change',()=>renderQuickSwap({resetRecipient:false}));$('quickSwapTo')?.addEventListener('change',()=>{quickSwapRecipientTouched=false;renderQuickSwap({resetRecipient:true})});$('quickSwapAmount')?.addEventListener('input',()=>{quickSwapResetQuote();scheduleQuickSwapPreview()});$('quickSwapMax')?.addEventListener('click',useQuickSwapMax);$('quickSwapRecipient')?.addEventListener('input',()=>{quickSwapRecipientTouched=true;quickSwapResetQuote({clearPreview:false});quickSwapUpdateRecipientUi()});$('quickSwapFlip')?.addEventListener('click',()=>{const a=$('quickSwapFrom').value,b=$('quickSwapTo').value;$('quickSwapFrom').value=b;$('quickSwapTo').value=a;quickSwapRecipientTouched=false;renderQuickSwap({resetRecipient:true})});$('quickSwapUseWallet')?.addEventListener('click',async()=>{try{quickSwapRecipientTouched=false;await quickSwapAutofillDestination({interactive:true});quickSwapResetQuote({clearPreview:false});quickSwapUpdateRecipientUi()}catch(e){quickSwapSetNotice(readableError(e),'bad')}});$('quickSwapConnect')?.addEventListener('click',()=>openWalletConnectModal('general'));$('quickSwapAction')?.addEventListener('click',handleQuickSwapAction);
+  $('quickSwapOpen')?.addEventListener('click',openQuickSwap);$('quickSwapClose')?.addEventListener('click',closeQuickSwap);document.querySelectorAll('[data-close-quick-swap]').forEach(x=>x.addEventListener('click',closeQuickSwap));$('quickSwapFrom')?.addEventListener('change',()=>renderQuickSwap({resetRecipient:false}));$('quickSwapTo')?.addEventListener('change',()=>{quickSwapRecipientTouched=false;renderQuickSwap({resetRecipient:true})});$('quickSwapAmount')?.addEventListener('input',()=>{quickSwapResetQuote();scheduleQuickSwapPreview()});$('quickSwapMax')?.addEventListener('click',useQuickSwapMax);$('quickSwapFlip')?.addEventListener('click',()=>{const a=$('quickSwapFrom').value,b=$('quickSwapTo').value;$('quickSwapFrom').value=b;$('quickSwapTo').value=a;quickSwapRecipientTouched=false;renderQuickSwap({resetRecipient:true})});$('quickSwapConnect')?.addEventListener('click',()=>openWalletConnectModal('general'));$('quickSwapAction')?.addEventListener('click',handleQuickSwapAction);
   $('walletBtn')?.addEventListener('click',walletAction);$('switchWalletBtn')?.addEventListener('click',openWalletProviderChoices);$('disconnectWalletBtn')?.addEventListener('click',disconnectActiveWallet);$('walletConnectClose')?.addEventListener('click',closeWalletConnectModal);document.querySelectorAll('[data-close-wallet-connect]').forEach(x=>x.addEventListener('click',closeWalletConnectModal));$('walletOtherToggle')?.addEventListener('click',()=>{walletOtherOpen=!walletOtherOpen;renderWalletConnectModal()});document.addEventListener('click',e=>{const shell=e.target.closest?.('.headerWalletShell');if(!shell&&!$('walletAccountMenu')?.classList.contains('hidden'))closeWalletAccountMenu()});$('swapWalletBtn')?.addEventListener('click',executeSwap);$('swapMaxBtn')?.addEventListener('click',useSwapMax);$('payAmount')?.addEventListener('input',()=>{scheduleQuote();updateSwapButton()});$('paySymbol')?.addEventListener('click',()=>openTokenPicker('pay'));$('receiveSymbol')?.addEventListener('click',()=>openTokenPicker('receive'));$('closeTokenModal')?.addEventListener('click',closeTokenPicker);document.querySelectorAll('[data-close-token-modal]').forEach(x=>x.addEventListener('click',closeTokenPicker));document.querySelectorAll('[data-picker-chain]').forEach(x=>x.addEventListener('click',()=>setPickerChain(x.dataset.pickerChain)));$('clearRecent')?.addEventListener('click',()=>{try{localStorage.removeItem('salt:recentTokens')}catch{}renderRecent()});$('tokenSearchInput')?.addEventListener('input',e=>{clearTimeout(tokenSearchTimer);tokenSearchTimer=setTimeout(()=>searchTokens(e.target.value),250)});
   $('newScanBtn')?.addEventListener('click',()=>{$('results')?.classList.add('hidden');$('mintInput').value='';$('mintInput').focus();window.scrollTo({top:0,behavior:'smooth'});});
   $('copyCA')?.addEventListener('click',async()=>{if(!currentMint)return;try{await navigator.clipboard.writeText(currentMint);const x=$('copyCA')?.querySelector('b');if(x){const old=x.textContent;x.textContent='Copied';setTimeout(()=>x.textContent=old,1100);}}catch{}});
