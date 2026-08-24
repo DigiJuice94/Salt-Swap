@@ -418,3 +418,14 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Turns the wallet chart into a dark high-contrast tracker monitor with luminous green data line, technical grid, and compact timeframe controls.
 - Upgrades Send / Receive / Swap / More into premium command tiles and refines holdings/activity cards with glass-like depth.
 - No portfolio data logic, wallet behavior, balances, or time-range calculations were changed in this visual pass.
+
+
+## V1.10.71 — Multichain wallet transfer popover
+- Replaces the broken bottom-left SOL transfer panel with a centered, high-quality wallet popup.
+- Send / Receive now open the same polished wallet panel from Profile and Portfolio.
+- Receive supports Solana, Ethereum, Base, BNB Chain, and Robinhood Chain.
+- Shows the full wallet address and a scannable QR code for the selected network.
+- Solana uses the connected Solana wallet; Ethereum/Base/BNB/Robinhood use the connected EVM wallet address.
+- Receive is designed for any token on the selected network; the UI warns users to match the sending network exactly.
+- Native-asset sending is supported from the popup: SOL on Solana, ETH on Ethereum/Base/Robinhood, and BNB on BNB Chain.
+- No seed phrase or private key is ever requested.
