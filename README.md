@@ -1,8 +1,8 @@
-# Salt Swap V1.10.34 — Crypto News Feed
+# Salt Swap V1.10.35 — Crypto News Feed
 
 Adds a live crypto-only news front page to Social → Feed, directly below the market ticker. One lead story is centered with four smaller supporting stories, sourced server-side from crypto RSS feeds. Headlines link to the original publisher. News is cached and deduplicated so failures do not break the social feed.
 
-# Salt Swap V1.10.34
+# Salt Swap V1.10.35
 
 - Removed duplicate Followers and Following rows from Profile Stats.
 - Banner images now persist to the Salt profile backend (Redis/KV), rather than only browser storage.
@@ -243,3 +243,9 @@ V1.10.34 fixes: real full-width white Social canvas; hides floating background a
 - The checker receive-token selector immediately uses the same token image when available instead of reverting to initials.
 - Existing checker-side logo enrichment remains as a fallback if the ticker logo is missing or fails to load.
 - Preserves V1.10.34 feed routing, CA-only custom tickers, auto-scroll, and all prior Social/profile behavior.
+
+
+## V1.10.35 — Parachute meme coin background
+- Replaces the static floating-coin feel with parachuting meme coins that drift down separately from the trench background.
+- Parachutes live in the background layer, so the battlefield art stays independent and the UI remains on top.
+- Keeps the trench hero theme, original coins, and all existing swap/social functionality intact.
