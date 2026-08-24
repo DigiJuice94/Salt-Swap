@@ -298,3 +298,10 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Watch List CA lookup now checks Robinhood Chain in addition to Ethereum, BNB Chain, Base, and Solana.
 - Fixes valid Robinhood Chain contracts incorrectly showing ‘Could not verify live market data for that CA.’
 - Existing Watch List behavior and all V1.10.52 features are preserved.
+
+
+## V1.10.54 — Community Score confidence gate
+- Adds a Community Score card directly to the token scan result.
+- Community Score is shown only after at least 20 verified Trenches ratings.
+- Below 20 ratings, the card says NOT ENOUGH RATINGS and shows progress (for example 7/20).
+- Community Score remains separate from the Salt Risk Score and never changes the safety score.
