@@ -496,3 +496,9 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Uses market artwork as a fallback when Helius metadata artwork is stale or unavailable.
 - Cycles through available icon sources in the browser before falling back to a clean Trenches token-initial badge.
 - Applies the same resilient icon behavior to Portfolio token rows.
+
+
+## V1.10.81 — Aggressive real token artwork
+- Profile Holdings and Portfolio now try real Solana token artwork from on-chain/off-chain Helius metadata, Jupiter token metadata, DEX Screener, Pump.fun, IPFS gateway variants, and Trust Wallet assets before using a letter fallback.
+- Broken image URLs automatically advance through the source list.
+- No fake token art is generated; initials are used only when every real artwork source fails.

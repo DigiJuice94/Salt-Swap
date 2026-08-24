@@ -429,7 +429,64 @@ async function heliusIconFallback(list){const missing=list.filter(x=>x?.id&&!x.i
 async function dexIconFallback(list){const missing=list.filter(x=>x?.id&&!x.icon).slice(0,30);if(!missing.length)return;try{const ds=await fetchJson(`https://api.dexscreener.com/tokens/v1/solana/${missing.map(x=>encodeURIComponent(x.id)).join(',')}`,{headers:{accept:'application/json'}},8000);for(const row of missing){const pairs=(Array.isArray(ds)?ds:[]).filter(x=>String(x?.baseToken?.address||'')===row.id||String(x?.quoteToken?.address||'')===row.id).sort((a,b)=>(Number(b?.liquidity?.usd)||0)-(Number(a?.liquidity?.usd)||0));const img=normalizeTokenIcon(pairs.find(x=>x?.info?.imageUrl)?.info?.imageUrl);if(img)row.icon=img}}catch(e){console.warn('DexScreener icon fallback:',errorText(e))}}
 async function pumpIconFallback(list){const missing=list.filter(x=>x?.id&&!x.icon&&String(x.id).toLowerCase().endsWith('pump')).slice(0,12);if(!missing.length)return;await Promise.allSettled(missing.map(async row=>{try{const j=await fetchJson(`https://frontend-api-v3.pump.fun/coins-v2/${encodeURIComponent(row.id)}`,{headers:{accept:'application/json'}},5000),d=j?.data??j,img=normalizeTokenIcon(d?.image_uri||d?.imageUri||d?.image);if(img)row.icon=img}catch{}}))}
 async function enrichSolIcons(rows){const list=(rows||[]).filter(x=>x?.id);if(!list.length)return rows;for(const row of list)row.icon=normalizeTokenIcon(row.icon);await heliusIconFallback(list);await dexIconFallback(list);await pumpIconFallback(list);return rows}
-async function enrichHoldingImages(rows){const list=(rows||[]).filter(x=>x?.mint).slice(0,30).map(x=>({id:String(x.mint),icon:null}));if(!list.length)return rows;await dexIconFallback(list);await pumpIconFallback(list);const byId=new Map(list.map(x=>[x.id,normalizeTokenIcon(x.icon)]));for(const row of (rows||[])){const helius=normalizeTokenIcon(row.image),market=byId.get(String(row.mint||''))||null,candidates=[market,helius].filter((v,i,a)=>v&&a.indexOf(v)===i);row.image=candidates[0]||null;row.imageFallbacks=candidates.slice(1)}return rows}
+
+function tokenIconVariants(uri){
+  const normalized=normalizeTokenIcon(uri);if(!normalized)return[];
+  const out=[normalized],seen=new Set(out),add=u=>{u=normalizeTokenIcon(u);if(u&&!seen.has(u)){seen.add(u);out.push(u)}};
+  let cidPath='';
+  if(String(uri||'').startsWith('ipfs://'))cidPath=String(uri).slice(7).replace(/^ipfs\//,'');
+  else {const m=normalized.match(/\/ipfs\/([^?#]+)/i);if(m)cidPath=m[1]}
+  if(cidPath){add(`https://ipfs.io/ipfs/${cidPath}`);add(`https://dweb.link/ipfs/${cidPath}`);add(`https://cloudflare-ipfs.com/ipfs/${cidPath}`)}
+  return out
+}
+function heliusAssetImageCandidates(asset){
+  const links=asset?.content?.links||{},files=Array.isArray(asset?.content?.files)?asset.content.files:[],out=[];
+  const add=u=>{for(const v of tokenIconVariants(u))if(!out.includes(v))out.push(v)};
+  add(links.image);for(const f of files){if(String(f?.mime||f?.mimeType||'').startsWith('image/')||looksLikeImage(f?.uri,f?.mime||f?.mimeType))add(f?.uri)}
+  return out
+}
+async function holdingHeliusImageMap(mints){
+  const out=new Map(),key=process.env.HELIUS_API_KEY;if(!key||!mints.length)return out;
+  try{
+    const j=await fetchJson(`https://mainnet.helius-rpc.com/?api-key=${encodeURIComponent(key)}`,{method:'POST',headers:{'content-type':'application/json',accept:'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:'trenches-holding-art',method:'getAssetBatch',params:{ids:mints}})},10000),assets=Array.isArray(j?.result)?j.result:[];
+    for(const asset of assets){const id=String(asset?.id||'');if(!id)continue;const urls=heliusAssetImageCandidates(asset);if(urls.length)out.set(id,urls)}
+    const metadataJobs=assets.filter(a=>a?.id&&!out.get(String(a.id))?.length).slice(0,12).map(async asset=>{
+      const id=String(asset.id),metaUri=normalizeMediaUri(asset?.content?.json_uri||asset?.content?.jsonUri||asset?.content?.metadata?.uri);if(!metaUri||!/^https?:\/\//i.test(metaUri))return;
+      try{const meta=await fetchJson(metaUri,{headers:{accept:'application/json'}},4500),urls=[];const add=u=>{for(const v of tokenIconVariants(u))if(!urls.includes(v))urls.push(v)};add(meta?.image||meta?.image_uri||meta?.imageUrl||meta?.image_url);if(Array.isArray(meta?.properties?.files))for(const f of meta.properties.files){if(looksLikeImage(f?.uri,f?.type||f?.mime))add(f?.uri)}if(urls.length)out.set(id,urls)}catch{}
+    });
+    await Promise.allSettled(metadataJobs)
+  }catch(e){console.warn('Helius holdings artwork:',errorText(e))}
+  return out
+}
+async function holdingJupiterImageMap(mints){
+  const out=new Map();if(!mints.length)return out;
+  try{
+    for(let i=0;i<mints.length;i+=8){const chunk=mints.slice(i,i+8),arr=await jupiterTokens('/search?query='+encodeURIComponent(chunk.join(','))).catch(()=>[]);for(const t of (Array.isArray(arr)?arr:[])){const id=String(t?.id||'');if(!chunk.includes(id))continue;const urls=tokenIconVariants(t?.icon);if(urls.length)out.set(id,urls)}}
+    const missing=mints.filter(id=>!out.has(id)).slice(0,10);
+    await Promise.allSettled(missing.map(async id=>{const arr=await jupiterTokens('/search?query='+encodeURIComponent(id)).catch(()=>[]),hit=(Array.isArray(arr)?arr:[]).find(t=>String(t?.id||'')===id),urls=tokenIconVariants(hit?.icon);if(urls.length)out.set(id,urls)}))
+  }catch(e){console.warn('Jupiter holdings artwork:',errorText(e))}
+  return out
+}
+async function holdingDexImageMap(mints){
+  const out=new Map();if(!mints.length)return out;
+  try{const ds=await fetchJson(`https://api.dexscreener.com/tokens/v1/solana/${mints.map(x=>encodeURIComponent(x)).join(',')}`,{headers:{accept:'application/json'}},8000);for(const id of mints){const pairs=(Array.isArray(ds)?ds:[]).filter(x=>String(x?.baseToken?.address||'')===id||String(x?.quoteToken?.address||'')===id).sort((a,b)=>(Number(b?.liquidity?.usd)||0)-(Number(a?.liquidity?.usd)||0)),urls=[];for(const pair of pairs){for(const v of tokenIconVariants(pair?.info?.imageUrl))if(!urls.includes(v))urls.push(v)}if(urls.length)out.set(id,urls)}}catch(e){console.warn('DexScreener holdings artwork:',errorText(e))}
+  return out
+}
+async function holdingPumpImageMap(mints){
+  const out=new Map(),pump=mints.filter(x=>String(x).toLowerCase().endsWith('pump')).slice(0,12);await Promise.allSettled(pump.map(async id=>{try{const j=await fetchJson(`https://frontend-api-v3.pump.fun/coins-v2/${encodeURIComponent(id)}`,{headers:{accept:'application/json'}},5000),d=j?.data??j,urls=tokenIconVariants(d?.image_uri||d?.imageUri||d?.image);if(urls.length)out.set(id,urls)}catch{}}));return out
+}
+async function enrichHoldingImages(rows){
+  const target=(rows||[]).filter(x=>x?.mint&&x.mint!=='SOL').slice(0,30),mints=[...new Set(target.map(x=>String(x.mint)))];if(!mints.length)return rows;
+  const [helius,jupiter,dex,pump]=await Promise.all([holdingHeliusImageMap(mints),holdingJupiterImageMap(mints),holdingDexImageMap(mints),holdingPumpImageMap(mints)]);
+  for(const row of (rows||[])){
+    const id=String(row?.mint||'');if(!id||id==='SOL')continue;const candidates=[],add=u=>{for(const v of tokenIconVariants(u))if(!candidates.includes(v))candidates.push(v)},addAll=a=>{for(const u of (a||[]))add(u)};
+    addAll(helius.get(id));addAll(jupiter.get(id));addAll(dex.get(id));addAll(pump.get(id));add(row.image);
+    // Trust Wallet's public asset repo is a final real-logo attempt before the UI falls back to initials.
+    add(`https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/solana/assets/${encodeURIComponent(id)}/logo.png`);
+    row.image=candidates[0]||null;row.imageFallbacks=candidates.slice(1)
+  }
+  return rows
+}
 async function jupiterTokens(path){const key=jupiterKey();return fetchJson(`${JUPITER_TOKENS_BASE}${path}`,{headers:{accept:'application/json','x-api-key':key}},10000)}
 async function tokensHandler(req,res){
   res.setHeader('Cache-Control','public, max-age=30, s-maxage=60');
