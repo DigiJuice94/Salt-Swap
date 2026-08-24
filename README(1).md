@@ -552,3 +552,10 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Older posts that never stored a historical posting price now show a clearly-labelled **Current price** when live market data is available. They are never falsely given a made-up historical price.
 - New theses continue storing the real price snapshot at posting time.
 - If every metadata source is temporarily unavailable, the card shows the shortened contract instead of a meaningless generic `Token` label.
+
+## V1.10.88 — Wallet chooser auto-close
+- The Connect a Wallet chooser now closes immediately after the selected provider actually returns a connected wallet address.
+- It no longer stays on screen while profile loading, Social session checks, or Portfolio refreshes continue in the background.
+- Applies to Trust Wallet, Solflare, Phantom, MetaMask, Coinbase Wallet, Binance Wallet, and detected browser wallets.
+- Social onboarding also closes the wallet chooser first, then continues profile lookup/onboarding.
+- Header/account-change refreshes include a safety close so asynchronous provider events cannot leave the chooser stuck open.
