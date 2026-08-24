@@ -53,6 +53,10 @@
       "dest": "/api.mjs?route=social-auth"
     },
     {
+      "src": "/api/portfolio",
+      "dest": "/api.mjs?route=portfolio"
+    },
+    {
       "src": "/api/social-profile",
       "dest": "/api.mjs?route=social-profile"
     },

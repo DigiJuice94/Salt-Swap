@@ -393,3 +393,13 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - The remaining legacy `Latest reviews` card is now hard-hidden directly by its unique `.socialFeedCard` class.
 - Modern Feed thesis posts are unaffected because they use `.saltFeedPost`, not `.socialFeedCard`.
 - The hidden legacy DOM hooks remain available so Community Score/review data code does not break.
+
+
+## V1.10.68 — Portfolio
+- Portfolio is now a real primary navigation tab instead of a roadmap placeholder.
+- Adds an Uniswap-inspired portfolio structure while retaining The Trenches cream/olive visual system.
+- Live Solana wallet value and fungible holdings come from Helius DAS; unknown token prices remain unknown instead of being guessed.
+- Adds wallet-owned NFT view and recent Solana activity.
+- Adds real browser-local portfolio value snapshots so the chart builds from actual observed wallet values over time rather than fabricated historical data.
+- Send / Receive reuse the existing Solana transfer flow, Swap returns to the scanner/swap tab, and Refresh updates on-chain data.
+- Viewing the portfolio only needs a wallet connection/address; no Social message signature is required.
