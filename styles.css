@@ -1413,3 +1413,45 @@ body.salt-social-active .feedSupportLink{
   height:100% !important;
   object-fit:contain !important;
 }
+
+
+/* V1.10.44 — finish off-white Social/Profile surfaces */
+body.salt-social-active .socialSubNav{
+  background:#f7f1e3 !important;
+  border-bottom-color:#d8c8a8 !important;
+}
+
+body.salt-social-active .socialTabView{
+  background:#f7f1e3 !important;
+}
+
+body.salt-social-active .saltProfileFeed,
+body.salt-social-active .saltProfileTheses,
+body.salt-social-active .saltProfileTheses .emptyReviews,
+body.salt-social-active .socialTimelineEmpty{
+  background:#fbf7ee !important;
+  border-color:#d8c8a8 !important;
+}
+
+body.salt-social-active .saltProfileFeed{
+  box-shadow:0 8px 24px rgba(72,57,27,.06) !important;
+}
+
+body.salt-social-active .saltProfileTheses .emptyReviews{
+  color:#74715f !important;
+}
+
+body.salt-social-active .socialSubNav button{
+  color:#676452 !important;
+}
+
+body.salt-social-active .socialSubNav button:hover{
+  background:#efe5d1 !important;
+  color:#34362d !important;
+}
+
+body.salt-social-active .socialSubNav button.active{
+  background:#eadfbe !important;
+  color:#34362d !important;
+  box-shadow:inset 0 0 0 1px #d8c8a8 !important;
+}
