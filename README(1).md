@@ -332,3 +332,9 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Social profile cache lookups are keyed by the profile's Solana wallet instead of the currently selected trading chain wallet.
 - Robinhood/Ethereum/Base/BNB scans can keep the connected Trenches Social identity visible while trading-wallet state changes.
 - Profile picture, @username, and wallet pill update without requiring a rescan or page reload.
+
+
+## V1.10.59 — Scan analysis one-bubble layout
+- Restores the left scan analysis area as one unified rounded card/bubble.
+- Keeps Salt Risk Score, Community Score, Salt's Take, and quick checks inside that single bubble.
+- Leaves the separate thesis composer card unchanged.

@@ -1772,3 +1772,32 @@ body.salt-social-active .watchListCard{padding:18px!important}
 @media(max-width:520px){
   .results .scanThesisCard{padding:17px!important;border-radius:19px!important}
 }
+
+/* V1.10.59 — scan analysis in one unified bubble */
+.results .mainAnalysis{
+  background:rgba(255,255,255,.94)!important;
+  border:1px solid #d9eaf4!important;
+  border-radius:24px!important;
+  box-shadow:0 16px 50px rgba(47,114,153,.08)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  padding:24px!important;
+}
+.results .scoreBox,
+.results .scanCommunityCard,
+.results .takeCard,
+.results .quickCard{
+  box-shadow:none!important;
+}
+.results .scanCommunityCard{
+  margin-top:14px!important;
+}
+.results .quickGrid{
+  margin-top:13px!important;
+}
+@media(max-width:520px){
+  .results .mainAnalysis{
+    padding:17px!important;
+    border-radius:19px!important;
+  }
+}
