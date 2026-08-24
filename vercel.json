@@ -49,6 +49,18 @@
       "dest": "/api.mjs?route=evm-tokens"
     },
     {
+      "src": "/api/quick-swap-quote",
+      "dest": "/api.mjs?route=quick-swap-quote"
+    },
+    {
+      "src": "/api/quick-swap-sol-submit",
+      "dest": "/api.mjs?route=quick-swap-sol-submit"
+    },
+    {
+      "src": "/api/quick-swap-status",
+      "dest": "/api.mjs?route=quick-swap-status"
+    },
+    {
       "src": "/api/social-auth",
       "dest": "/api.mjs?route=social-auth"
     },

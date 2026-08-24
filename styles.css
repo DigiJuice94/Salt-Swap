@@ -2488,3 +2488,35 @@ body.wallet-account-menu-open .walletAccountMenu{
 
 /* V1.10.80 — resilient token artwork in profile holdings and Portfolio */
 .holdingIconFallback,.portfolioAssetIcon .holdingIconFallback{width:100%;height:100%;display:grid;place-items:center;border-radius:inherit;background:linear-gradient(145deg,#eef3df,#dfe9c9);color:#425138;font-weight:900;font-size:13px;letter-spacing:.02em}.holdingIconFallback.hidden,.portfolioAssetIcon .holdingIconFallback.hidden{display:none}.holdingIcon img,.portfolioAssetIcon img{display:block;width:100%;height:100%;object-fit:cover}.holdingIcon{border:1px solid rgba(111,126,83,.16);background:#f2f4e8}.portfolioAssetIcon{overflow:hidden}
+
+
+/* V1.10.82 — Quick Swap major-chain router */
+.quickSwapOpen{width:100%;margin:10px 0 2px;border:1px solid rgba(92,96,64,.28);border-radius:14px;background:linear-gradient(135deg,rgba(75,84,57,.10),rgba(255,255,255,.52));display:flex;align-items:center;gap:10px;padding:10px 12px;color:#274354;cursor:pointer;box-shadow:0 5px 18px rgba(64,62,42,.05);text-align:left}
+.quickSwapOpen:hover{border-color:#7e8259;transform:translateY(-1px)}
+.quickSwapBolt{width:31px;height:31px;border-radius:10px;display:grid;place-items:center;background:#454e35;color:#fff0a5;font-size:18px;font-weight:900}
+.quickSwapOpenCopy{display:grid;gap:1px}.quickSwapOpenCopy b{font-size:12px}.quickSwapOpenCopy small{font-size:9px;color:#778a94}
+.quickSwapMajors{display:flex;gap:4px;margin-left:auto}.quickSwapMajors i{font-style:normal;font-size:8px;font-weight:900;color:#556146;background:#f5edda;border:1px solid #d9cba7;border-radius:999px;padding:4px 6px}
+.quickSwapOpen>strong{font-size:10px;color:#375f78;margin-left:7px}
+
+.quickSwapModal{position:fixed;inset:0;z-index:26000;display:grid;place-items:center;padding:18px}
+.quickSwapModal.hidden{display:none}
+.quickSwapBackdrop{position:absolute;inset:0;background:rgba(26,29,23,.48);backdrop-filter:blur(8px)}
+.quickSwapPanel{position:relative;z-index:1;width:min(520px,calc(100vw - 28px));max-height:calc(100vh - 34px);overflow:auto;border:1px solid #cfc19d;border-radius:24px;background:#f8f2e4;box-shadow:0 30px 100px rgba(28,33,25,.30);padding:22px;color:#183447}
+.quickSwapHead{display:flex;gap:18px;justify-content:space-between;align-items:flex-start}.quickSwapHead small{font-size:9px;font-weight:900;letter-spacing:.16em;color:#73806b}.quickSwapHead h2{margin:4px 0 3px;font-size:25px}.quickSwapHead p{margin:0;color:#6e818a;font-size:11px;line-height:1.45;max-width:390px}
+.quickSwapClose{width:34px;height:34px;border-radius:50%;border:1px solid #d3c8aa;background:#fffaf0;color:#556146;font-size:20px;cursor:pointer}
+.quickSwapFlow{display:grid;grid-template-columns:1fr auto 1fr;gap:9px;align-items:center;margin-top:19px}
+.quickSwapAssetBox{border:1px solid #d9ccb0;border-radius:18px;background:rgba(255,255,255,.62);padding:12px}
+.quickSwapAssetBox>label,.quickSwapRecipient>label{display:block;font-size:8px;font-weight:900;letter-spacing:.12em;color:#7a8c94;margin-bottom:7px}
+.quickSwapAssetSelect{display:flex;align-items:center;gap:8px}.quickSwapAssetSelect select{width:100%;min-width:0;border:0;background:transparent;color:#1b394c;font-weight:900;font-size:12px;outline:0}
+.quickSwapCoinIcon{width:34px;height:34px;flex:0 0 34px;border-radius:50%;display:grid;place-items:center;background:#e9efdc;overflow:hidden;position:relative;border:1px solid rgba(75,84,57,.14)}
+.quickSwapCoinIcon img{width:100%;height:100%;object-fit:cover;position:relative;z-index:2}.quickSwapCoinIcon i{font-style:normal;font-size:11px;font-weight:900;color:#526043}
+.quickSwapAmountRow{display:flex;align-items:end;gap:6px;margin-top:10px}.quickSwapAmountRow input{width:100%;min-width:0;border:0;border-top:1px solid #e0d6be;background:transparent;padding:10px 0 0;font-size:23px;color:#17384e;outline:0}.quickSwapAmountRow span{font-size:10px;font-weight:900;color:#60756f;padding-bottom:3px}
+.quickSwapEstimate{display:flex;align-items:baseline;gap:5px;margin-top:13px;padding-top:10px;border-top:1px solid #e0d6be}.quickSwapEstimate strong{font-size:23px;min-width:0;overflow:hidden;text-overflow:ellipsis}.quickSwapEstimate span{font-size:10px;font-weight:900;color:#60756f}
+.quickSwapFlip{width:34px;height:34px;border-radius:11px;border:1px solid #cdbf99;background:#4a5438;color:#fff1a6;font-size:17px;cursor:pointer}
+.quickSwapRecipient{margin-top:11px;border:1px solid #d9ccb0;border-radius:15px;background:rgba(255,255,255,.48);padding:11px}.quickSwapRecipient>div{display:flex;gap:7px}.quickSwapRecipient input{flex:1;min-width:0;border:1px solid #dfd5bd;border-radius:10px;background:#fffaf1;padding:9px 10px;color:#17384e;font-size:10px;outline:0}.quickSwapRecipient button{border:1px solid #cbbb91;border-radius:10px;background:#efe5cc;color:#48553d;font-weight:850;font-size:9px;padding:0 10px;cursor:pointer}.quickSwapRecipient small{display:block;margin-top:6px;color:#84959d;font-size:8px}
+.quickSwapRoute{display:grid;grid-template-columns:1.3fr .8fr 1fr;gap:7px;margin-top:11px}.quickSwapRoute>div{padding:10px;border:1px solid #dfd4ba;border-radius:12px;background:#fffaf1}.quickSwapRoute small{display:block;font-size:7px;letter-spacing:.1em;color:#82939a;font-weight:900}.quickSwapRoute strong{display:block;margin-top:4px;font-size:10px;color:#28485a}
+.quickSwapNotice{margin-top:10px;border-radius:11px;padding:9px 10px;background:#edf5f4;border:1px solid #d6e6e4;color:#627c85;font-size:9px;line-height:1.45}.quickSwapNotice.good{background:#edf6ed;border-color:#cfe1cf;color:#4d7058}.quickSwapNotice.warn{background:#fff7df;border-color:#ead8a9;color:#856e3c}.quickSwapNotice.bad{background:#fff0ec;border-color:#e7c5bb;color:#925a4d}
+.quickSwapAction{width:100%;margin-top:10px;border:0;border-radius:13px;background:#4b5438;color:#fff8dd;font-weight:900;font-size:13px;padding:13px;cursor:pointer;box-shadow:0 10px 24px rgba(65,72,46,.16)}.quickSwapAction:disabled{opacity:.5;cursor:not-allowed}
+.quickSwapConnect{width:100%;margin-top:7px;border:1px solid #d0c39e;border-radius:12px;background:#fff9ec;color:#526042;font-weight:850;font-size:10px;padding:10px;cursor:pointer}
+.quickSwapFoot{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-top:11px;color:#8a989d;font-size:8px}
+@media(max-width:620px){.quickSwapMajors{display:none}.quickSwapFlow{grid-template-columns:1fr}.quickSwapFlip{margin:auto;transform:rotate(90deg)}.quickSwapRoute{grid-template-columns:1fr}.quickSwapPanel{padding:17px}}

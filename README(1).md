@@ -502,3 +502,12 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Profile Holdings and Portfolio now try real Solana token artwork from on-chain/off-chain Helius metadata, Jupiter token metadata, DEX Screener, Pump.fun, IPFS gateway variants, and Trust Wallet assets before using a letter fallback.
 - Broken image URLs automatically advance through the source list.
 - No fake token art is generated; initials are used only when every real artwork source fails.
+
+## V1.10.82 — Quick Swap
+- Adds a Quick Swap shortcut directly under the scanner.
+- Supports native-asset cross-chain routes between Solana (SOL), Ethereum (ETH), Base (ETH), and BNB Chain (BNB).
+- Uses live LI.FI route quotes and wallet-signed source-chain transactions; no custodial deposits or fake quotes.
+- Auto-fills the destination address from the wallet already known to The Trenches when possible, while still allowing an explicit destination address.
+- Tracks cross-chain settlement after the source transaction is sent.
+- Robinhood Chain remains visible in the selector, but cross-chain routing is disabled until the bridge provider supports that chain. The existing Robinhood same-chain 0x swap remains unchanged.
+- Public LI.FI rate limits work without a key; `LIFI_API_KEY` is optional for higher throughput.

@@ -508,6 +508,58 @@ async function evmQuoteHandler(req,res){res.setHeader('Cache-Control','no-store'
 async function evmTokensHandler(req,res){res.setHeader('Cache-Control','public, max-age=30, s-maxage=60');if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});try{const chain=String(req.query.chain||'').toLowerCase(),q=String(req.query.q||'').trim();if(!['ethereum','base','bnb','robinhood'].includes(chain)||!q)return res.status(200).json([]);const dsChain=chain==='ethereum'?'ethereum':chain==='base'?'base':chain==='robinhood'?'robinhood':'bsc',j=await fetchJson(`https://api.dexscreener.com/latest/dex/search?q=${encodeURIComponent(q)}`,{headers:{accept:'application/json'}},9000),seen=new Set(),rows=[];for(const pair of (j?.pairs||[])){if(String(pair?.chainId)!==dsChain)continue;for(const t of [pair?.baseToken,pair?.quoteToken]){const id=String(t?.address||'').toLowerCase();if(!validEvmAddress(id)||seen.has(id))continue;seen.add(id);rows.push({id,name:String(t?.name||'Unknown token'),symbol:String(t?.symbol||'TOKEN'),icon:pair?.info?.imageUrl||null,decimals:null,chain,liquidityUsd:number(pair?.liquidity?.usd)})}}rows.sort((a,b)=>(b.liquidityUsd||0)-(a.liquidityUsd||0));return res.status(200).json(rows.slice(0,20))}catch(e){return res.status(500).json({error:errorText(e)})}}
 
 
+
+// V1.10.82 — Quick Swap cross-chain native-asset routing via LI.FI public API.
+const QUICK_SWAP_CHAINS={
+  solana:{id:'1151111081099710',kind:'solana',token:'11111111111111111111111111111111',symbol:'SOL',decimals:9},
+  ethereum:{id:'1',kind:'evm',token:'0x0000000000000000000000000000000000000000',symbol:'ETH',decimals:18},
+  base:{id:'8453',kind:'evm',token:'0x0000000000000000000000000000000000000000',symbol:'ETH',decimals:18},
+  bnb:{id:'56',kind:'evm',token:'0x0000000000000000000000000000000000000000',symbol:'BNB',decimals:18}
+};
+function lifiHeaders(){const h={accept:'application/json'};if(process.env.LIFI_API_KEY)h['x-lifi-api-key']=process.env.LIFI_API_KEY;return h}
+function validQuickAddress(chain,address){const c=QUICK_SWAP_CHAINS[chain];return c?.kind==='solana'?validSolAddress(address):validEvmAddress(address)}
+async function quickSwapQuoteHandler(req,res){
+  res.setHeader('Cache-Control','no-store');
+  if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});
+  try{
+    const from=String(req.query.from||'').toLowerCase(),to=String(req.query.to||'').toLowerCase(),amount=String(req.query.amount||''),fromAddress=String(req.query.fromAddress||'').trim(),toAddress=String(req.query.toAddress||'').trim();
+    const a=QUICK_SWAP_CHAINS[from],b=QUICK_SWAP_CHAINS[to];
+    if(!a||!b)return res.status(400).json({error:'That Quick Swap network is not supported by the cross-chain router yet.'});
+    if(from===to)return res.status(400).json({error:'Choose two different networks.'});
+    if(!validPositiveInteger(amount))return res.status(400).json({error:'Quick Swap amount must be positive.'});
+    if(!validQuickAddress(from,fromAddress))return res.status(400).json({error:'Valid source-wallet address required.'});
+    if(!validQuickAddress(to,toAddress))return res.status(400).json({error:'Valid destination-wallet address required.'});
+    const q=new URLSearchParams({fromChain:a.id,toChain:b.id,fromToken:a.token,toToken:b.token,fromAmount:amount,fromAddress,toAddress,slippage:'0.01'});
+    const quote=await fetchJson(`https://li.quest/v1/quote?${q.toString()}`,{headers:lifiHeaders()},20000);
+    if(!quote?.estimate?.toAmount)throw Object.assign(new Error('No live cross-chain route was returned for that amount.'),{status:422});
+    return res.status(200).json(quote);
+  }catch(e){console.error('Trenches Quick Swap quote:',e);return res.status(Number(e?.status)||500).json({error:errorText(e)})}
+}
+async function quickSwapSolSubmitHandler(req,res){
+  res.setHeader('Cache-Control','no-store');
+  if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});
+  try{
+    const body=typeof req.body==='string'?JSON.parse(req.body||'{}'):(req.body||{}),signedTransaction=String(body.signedTransaction||'').trim(),key=process.env.HELIUS_API_KEY;
+    if(!signedTransaction)return res.status(400).json({error:'Signed Solana transaction required.'});
+    if(!key)return res.status(503).json({error:'HELIUS_API_KEY is required to broadcast this Solana Quick Swap.'});
+    const j=await fetchJson(`https://mainnet.helius-rpc.com/?api-key=${encodeURIComponent(key)}`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:'trenches-quick-swap',method:'sendTransaction',params:[signedTransaction,{encoding:'base64',skipPreflight:false,maxRetries:3}]})},20000);
+    if(j?.error)throw new Error(j.error.message||'Solana broadcast failed.');
+    const signature=String(j?.result||'');if(!signature)throw new Error('Solana RPC did not return a transaction signature.');
+    return res.status(200).json({signature});
+  }catch(e){console.error('Trenches Quick Swap Solana broadcast:',e);return res.status(Number(e?.status)||500).json({error:errorText(e)})}
+}
+async function quickSwapStatusHandler(req,res){
+  res.setHeader('Cache-Control','no-store');
+  if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});
+  try{
+    const txHash=String(req.query.txHash||'').trim(),fromChain=String(req.query.fromChain||'').trim(),toChain=String(req.query.toChain||'').trim(),bridge=String(req.query.bridge||'').trim();
+    if(!txHash)return res.status(400).json({error:'Transaction hash required.'});
+    const q=new URLSearchParams({txHash});if(fromChain)q.set('fromChain',fromChain);if(toChain)q.set('toChain',toChain);if(bridge)q.set('bridge',bridge);
+    const j=await fetchJson(`https://li.quest/v1/status?${q.toString()}`,{headers:lifiHeaders()},12000);
+    return res.status(200).json(j);
+  }catch(e){return res.status(Number(e?.status)||500).json({error:errorText(e)})}
+}
+
 // V1.9.0 Salt Social — Upstash Redis REST persistence + Solana wallet signature verification.
 const SOCIAL_URL=()=>String(process.env.UPSTASH_REDIS_REST_URL||'').replace(/\/$/,'');
 const SOCIAL_TOKEN=()=>String(process.env.UPSTASH_REDIS_REST_TOKEN||'');
@@ -639,6 +691,9 @@ export default async function handler(req,res){
     if(route==='tokens')return tokensHandler(req,res);
     if(route==='evm-quote')return evmQuoteHandler(req,res);
     if(route==='evm-tokens')return evmTokensHandler(req,res);
+    if(route==='quick-swap-quote')return quickSwapQuoteHandler(req,res);
+    if(route==='quick-swap-sol-submit')return quickSwapSolSubmitHandler(req,res);
+    if(route==='quick-swap-status')return quickSwapStatusHandler(req,res);
     if(route==='social-auth')return socialAuthHandler(req,res);
     if(route==='social-profile')return socialProfileHandler(req,res);
     if(route==='social-nfts')return socialNftsHandler(req,res);
