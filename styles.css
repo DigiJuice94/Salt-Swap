@@ -1817,3 +1817,105 @@ body.salt-social-active .watchListCard{padding:18px!important}
 
 /* V1.10.63 — profile join date */
 .saltProfileJoined{white-space:nowrap}
+
+
+/* V1.10.64 — cleaner Community Score card */
+.results .scanCommunityCard{
+  display:grid!important;
+  grid-template-columns:42px minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:13px!important;
+  margin:14px 0!important;
+  padding:15px 17px!important;
+  border:1px solid #dfeaf1!important;
+  border-radius:16px!important;
+  background:#f8fbfd!important;
+  box-shadow:none!important;
+}
+.results .scanCommunityIcon{
+  width:38px!important;
+  height:38px!important;
+  border-radius:50%!important;
+  background:#eef5f8!important;
+  color:#55798e!important;
+  font-size:16px!important;
+}
+.results .scanCommunityWords{min-width:0!important}
+.results .scanCommunityWords small{
+  margin:0 0 3px!important;
+  color:#7891a1!important;
+  font-size:9px!important;
+  font-weight:900!important;
+  letter-spacing:.12em!important;
+}
+.results .scanCommunityValueRow{
+  display:flex!important;
+  align-items:baseline!important;
+  gap:5px!important;
+  margin:0!important;
+}
+.results .scanCommunityValueRow strong{
+  color:#1b3d53!important;
+  font-size:23px!important;
+  line-height:1.05!important;
+  font-weight:850!important;
+  letter-spacing:-.02em!important;
+}
+.results .scanCommunityCard.insufficient .scanCommunityValueRow strong{
+  font-size:16px!important;
+  letter-spacing:0!important;
+  text-transform:none!important;
+}
+.results .scanCommunityValueRow span{
+  color:#8296a3!important;
+  font-size:11px!important;
+  font-weight:800!important;
+}
+.results .scanCommunityWords p{
+  margin:4px 0 0!important;
+  color:#718897!important;
+  font-size:11px!important;
+  line-height:1.35!important;
+}
+.results .scanCommunityCount{
+  min-width:72px!important;
+  padding:8px 10px!important;
+  text-align:center!important;
+  border:1px solid #e1eaf0!important;
+  border-radius:12px!important;
+  background:#fff!important;
+}
+.results .scanCommunityCount strong{
+  display:block!important;
+  color:#1c4158!important;
+  font-size:15px!important;
+  line-height:1.1!important;
+  white-space:nowrap!important;
+}
+.results .scanCommunityCount small{
+  display:block!important;
+  margin-top:3px!important;
+  color:#8a9ca7!important;
+  font-size:8px!important;
+  font-weight:800!important;
+  letter-spacing:.1em!important;
+  text-transform:uppercase!important;
+}
+.results .scanCommunityCard.insufficient{
+  border-color:#e5e5dc!important;
+  background:#fbfbf7!important;
+}
+.results .scanCommunityCard.insufficient .scanCommunityIcon{
+  background:#f1f1e9!important;
+}
+.results .scanCommunityCard.qualified{
+  border-color:#d7ebe0!important;
+  background:#f5fbf7!important;
+}
+.results .scanCommunityCard.qualified .scanCommunityIcon{
+  background:#e7f5ec!important;
+}
+@media(max-width:700px){
+  .results .scanCommunityCard{grid-template-columns:38px minmax(0,1fr)!important;padding:14px!important}
+  .results .scanCommunityCount{grid-column:2!important;justify-self:start!important;display:inline-block!important;margin-top:4px!important}
+}

@@ -368,3 +368,10 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Adds `Joined The Trenches` to the Social profile header.
 - Uses the profile's original server-side `createdAt` date, so the join date is tied to when that Trenches profile was created.
 - Existing profile, Social, thesis, session-auth, verified-badge, scan, and swap behavior is preserved.
+
+
+## V1.10.64 — Cleaner Community Score
+- Simplifies the Community Score card into a compact aligned layout.
+- Removes the cluttered all-caps insufficient-score treatment.
+- Shows a clean `0 / 20` ratings progress pill until the score unlocks.
+- Keeps the 20-rating requirement and Community Score logic unchanged.
