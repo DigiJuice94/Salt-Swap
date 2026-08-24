@@ -2072,3 +2072,235 @@ body.portfolio-active main{width:100%!important;max-width:none!important;margin:
   .portfolioRangeTabs button{min-width:0;flex:1;padding-left:5px;padding-right:5px}
   .portfolioQuickActions{grid-template-columns:1fr 1fr}
 }
+
+/* V1.10.70 — futuristic high-quality portfolio tracker visual pass */
+body.portfolio-active{
+  background:#eee7d7!important;
+  background-image:
+    radial-gradient(circle at 14% 10%,rgba(91,145,117,.16),transparent 29%),
+    radial-gradient(circle at 88% 18%,rgba(73,128,151,.12),transparent 28%),
+    linear-gradient(rgba(42,66,72,.045) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(42,66,72,.045) 1px,transparent 1px)!important;
+  background-size:auto,auto,32px 32px,32px 32px!important;
+}
+.portfolioPage{
+  position:relative;
+  isolation:isolate;
+  background:linear-gradient(180deg,rgba(248,244,233,.92),rgba(239,232,215,.94))!important;
+}
+.portfolioPage:before{
+  content:"";
+  position:fixed;
+  inset:72px 0 0;
+  pointer-events:none;
+  z-index:-1;
+  background:
+    linear-gradient(90deg,transparent 49.8%,rgba(72,105,106,.04) 50%,transparent 50.2%),
+    linear-gradient(transparent 49.8%,rgba(72,105,106,.04) 50%,transparent 50.2%);
+  background-size:160px 160px;
+  mask-image:linear-gradient(to bottom,rgba(0,0,0,.8),transparent 90%);
+}
+.portfolioDashboard{
+  position:relative;
+  padding:22px 24px 30px;
+  border:1px solid rgba(100,119,105,.22);
+  border-radius:28px;
+  background:rgba(248,245,235,.62);
+  box-shadow:0 28px 80px rgba(44,55,47,.10),inset 0 1px 0 rgba(255,255,255,.72);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+}
+.portfolioDashboard:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  border-radius:inherit;
+  background:linear-gradient(135deg,rgba(255,255,255,.38),transparent 28%,transparent 70%,rgba(87,132,117,.055));
+}
+.portfolioDashboard>*{position:relative;z-index:1}
+.portfolioHeaderRow{
+  padding:12px 14px;
+  border:1px solid rgba(101,123,110,.18);
+  border-radius:18px;
+  background:rgba(255,255,255,.42);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.75);
+}
+.portfolioAvatar{
+  border-color:#f5f1e7!important;
+  box-shadow:0 0 0 1px rgba(84,113,103,.4),0 0 24px rgba(79,151,121,.12)!important;
+}
+.portfolioWalletIdentity b{letter-spacing:-.02em}
+.portfolioWalletIdentity button{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.03em}
+.portfolioNetworkPill{
+  border-color:rgba(74,127,107,.28)!important;
+  background:rgba(242,250,245,.72)!important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.5) inset,0 8px 24px rgba(49,91,75,.08);
+}
+.portfolioNetworkPill:before{content:"●";color:#47a66e;font-size:9px;text-shadow:0 0 9px rgba(71,166,110,.55)}
+.portfolioTabs{
+  gap:8px!important;
+  border:0!important;
+  padding:5px;
+  width:max-content;
+  max-width:100%;
+  margin:18px 0 26px!important;
+  border-radius:14px;
+  background:rgba(46,64,59,.07);
+  box-shadow:inset 0 0 0 1px rgba(74,96,86,.10);
+}
+.portfolioTabs button{
+  padding:9px 14px!important;
+  border-radius:10px!important;
+  color:#74827f!important;
+  transition:.18s ease!important;
+}
+.portfolioTabs button.active{
+  color:#173247!important;
+  background:rgba(255,255,255,.75)!important;
+  box-shadow:0 5px 16px rgba(46,61,55,.08),inset 0 0 0 1px rgba(78,105,94,.12)!important;
+}
+.portfolioTabs button.active:after{display:none!important}
+.portfolioBalanceLine{margin:4px 0 22px!important}
+.portfolioBalanceLine small{color:#72847e!important;letter-spacing:.16em!important}
+.portfolioBalanceLine strong{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:48px!important;
+  font-weight:800;
+  letter-spacing:-.055em!important;
+  color:#142f3c;
+  font-variant-numeric:tabular-nums;
+  text-shadow:0 1px 0 rgba(255,255,255,.6);
+}
+.portfolioRangeChange{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
+.portfolioUpdated{
+  padding:7px 10px;
+  border:1px solid rgba(80,117,103,.16);
+  border-radius:999px;
+  background:rgba(255,255,255,.42);
+}
+.portfolioLiveDot{box-shadow:0 0 0 4px rgba(78,138,91,.12),0 0 12px rgba(78,138,91,.55)!important}
+
+/* dark tracker monitor */
+.portfolioChartCard{
+  position:relative;
+  overflow:hidden;
+  min-height:390px!important;
+  padding:18px 20px 14px!important;
+  border:1px solid rgba(91,132,121,.42)!important;
+  border-radius:22px!important;
+  background:
+    radial-gradient(circle at 78% 0%,rgba(59,131,102,.18),transparent 35%),
+    linear-gradient(145deg,#101b1d 0%,#142323 60%,#16271f 100%)!important;
+  box-shadow:0 22px 48px rgba(24,38,34,.18),inset 0 1px 0 rgba(255,255,255,.06),inset 0 0 0 1px rgba(115,186,151,.035)!important;
+}
+.portfolioChartCard:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  opacity:.22;
+  background-image:linear-gradient(rgba(123,198,164,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(123,198,164,.08) 1px,transparent 1px);
+  background-size:24px 24px;
+  mask-image:linear-gradient(to bottom,rgba(0,0,0,.8),transparent 90%);
+}
+.portfolioChartCard>*{position:relative;z-index:1}
+.portfolioChartHead b{color:#e9f2eb!important;font-size:12px!important;letter-spacing:.02em}
+.portfolioChartHead small{color:#7f9b92!important;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.portfolioChartHead button{
+  color:#bcd2c8!important;
+  border-color:rgba(142,183,165,.20)!important;
+  background:rgba(255,255,255,.04)!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.02);
+}
+.portfolioChartHead button:hover{background:rgba(107,173,143,.10)!important}
+.portfolioChart{height:300px!important}
+.portfolioChartGrid line{stroke:#719488!important;opacity:.26!important;stroke-dasharray:2 8!important}
+.portfolioChart svg path[stroke]{stroke:#69d59a!important;filter:drop-shadow(0 0 5px rgba(105,213,154,.28))}
+.portfolioChart svg circle{fill:#81e5aa!important;filter:drop-shadow(0 0 6px rgba(129,229,170,.55))}
+.portfolioChart svg stop:first-child{stop-color:#59c987!important;stop-opacity:.28!important}
+.portfolioAxisText{fill:#78948b!important;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace!important;font-size:8.5px!important}
+.portfolioValueAxis{fill:#9bc1b2!important;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace!important}
+.portfolioChartEmpty{color:#79948a!important}
+.portfolioChartEmpty b{color:#c8ddd4!important}
+.portfolioRangeTabs{
+  border-color:rgba(137,180,161,.18)!important;
+  background:rgba(255,255,255,.035)!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.025)!important;
+}
+.portfolioRangeTabs button{color:#7e9a8f!important;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.portfolioRangeTabs button.active{
+  background:linear-gradient(180deg,#7bd6a1,#55b87d)!important;
+  color:#10251b!important;
+  box-shadow:0 0 18px rgba(83,188,127,.20)!important;
+}
+.portfolioRangeTabs button:hover:not(.active){background:rgba(110,169,144,.10)!important}
+
+/* compact command tiles */
+.portfolioQuickActions{gap:12px!important}
+.portfolioQuickActions button{
+  position:relative;
+  overflow:hidden;
+  min-height:128px!important;
+  border:1px solid rgba(98,128,111,.36)!important;
+  border-radius:18px!important;
+  background:linear-gradient(145deg,#26342c,#35432f)!important;
+  box-shadow:0 16px 32px rgba(39,51,43,.15),inset 0 1px 0 rgba(255,255,255,.07)!important;
+}
+.portfolioQuickActions button:before{
+  content:"";
+  position:absolute;
+  left:0;top:0;width:100%;height:2px;
+  background:linear-gradient(90deg,transparent,#a5e6b6,transparent);
+  opacity:.45;
+}
+.portfolioQuickActions button:hover{
+  transform:translateY(-3px)!important;
+  background:linear-gradient(145deg,#2e4135,#40533a)!important;
+  border-color:rgba(123,185,150,.55)!important;
+  box-shadow:0 20px 38px rgba(39,51,43,.19),0 0 26px rgba(91,166,126,.08)!important;
+}
+.portfolioQuickActions span{color:#bce89c!important;text-shadow:0 0 12px rgba(172,230,151,.22)}
+.portfolioQuickActions b{letter-spacing:-.01em}
+.portfolioQuickActions small{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#91a397!important}
+
+.portfolioSectionHead small{color:#70847e!important;letter-spacing:.16em!important}
+.portfolioSectionHead h2{letter-spacing:-.03em}
+.portfolioSectionHead>button,.portfolioSectionHead>span{
+  padding:6px 9px;
+  border-radius:999px;
+  background:rgba(255,255,255,.4);
+  box-shadow:inset 0 0 0 1px rgba(84,107,98,.10);
+}
+.portfolioTokenList,.portfolioActivityList,.portfolioNft{
+  border-color:rgba(104,124,105,.24)!important;
+  background:rgba(255,255,255,.48)!important;
+  box-shadow:0 14px 34px rgba(48,58,51,.06),inset 0 1px 0 rgba(255,255,255,.72)!important;
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+}
+.portfolioTokenRow{border-bottom-color:rgba(106,122,104,.13)!important}
+.portfolioTokenRow:hover{background:rgba(100,148,119,.075)!important}
+.portfolioAssetIcon{box-shadow:0 0 0 1px rgba(89,116,102,.16),0 6px 16px rgba(60,78,67,.08)}
+.portfolioAssetIdentity small,.portfolioBalance small,.portfolioValue small,.portfolioActivityRow small{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.portfolioPrice,.portfolioBalance,.portfolioValue{font-variant-numeric:tabular-nums}
+.portfolioEmpty{
+  min-height:74px;
+  place-content:center;
+  background-image:linear-gradient(90deg,transparent,rgba(98,133,113,.035),transparent);
+}
+
+@media(max-width:860px){
+  .portfolioDashboard{padding:16px}
+  .portfolioChartCard{min-height:350px!important}
+  .portfolioQuickActions button{min-height:100px!important}
+}
+@media(max-width:620px){
+  .portfolioDashboard{border-radius:20px;padding:12px}
+  .portfolioHeaderRow{padding:10px}
+  .portfolioTabs{width:100%;overflow:auto}
+  .portfolioTabs button{padding:8px 11px!important}
+  .portfolioBalanceLine strong{font-size:39px!important}
+  .portfolioChartCard{padding:14px!important;border-radius:18px!important}
+  .portfolioChart{height:255px!important}
+}

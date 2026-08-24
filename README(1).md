@@ -411,3 +411,10 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - An empty wallet now shows `$0.00`, a flat `$0` chart line, and `0.00%` change instead of a blank chart.
 - Wallets with assets but unavailable USD pricing still show pricing as unavailable rather than falsely displaying zero.
 - The chart continues to use real wallet snapshots stored by The Trenches; no fake historical portfolio data is generated.
+
+## V1.10.70 — Futuristic Portfolio visual pass
+- Restyles the Portfolio tab to feel like a premium live crypto tracker while preserving The Trenches palette and existing functionality.
+- Adds a subtle technical grid/radial background, frosted dashboard shell, command-style tabs, stronger live-status treatment, and tabular numeric typography.
+- Turns the wallet chart into a dark high-contrast tracker monitor with luminous green data line, technical grid, and compact timeframe controls.
+- Upgrades Send / Receive / Swap / More into premium command tiles and refines holdings/activity cards with glass-like depth.
+- No portfolio data logic, wallet behavior, balances, or time-range calculations were changed in this visual pass.
