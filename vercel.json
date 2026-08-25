@@ -29,6 +29,10 @@
       "dest": "/api.mjs?route=scan"
     },
     {
+      "src": "/api/scan-chart",
+      "dest": "/api.mjs?route=scan-chart"
+    },
+    {
       "src": "/api/quote",
       "dest": "/api.mjs?route=quote"
     },

@@ -364,6 +364,97 @@ async function scanEvm(address,pref){
     duplicates:metric('Needs identity graph','unknown','Official contract matching is a later Trenches intelligence layer.','Trenches Engine'),creatorHistory:metric('Needs history','unknown','Deployer history is a later Trenches intelligence layer.','Trenches Engine')};
 }
 
+
+const SCAN_CHART_NETWORKS={
+  solana:{dex:'solana',gecko:'solana'},
+  ethereum:{dex:'ethereum',gecko:'eth'},
+  base:{dex:'base',gecko:'base'},
+  bnb:{dex:'bsc',gecko:'bsc'},
+  robinhood:{dex:'robinhood',gecko:null}
+};
+const SCAN_CHART_RANGES={
+  '5m':{timeframe:'minute',aggregate:1,limit:12,cutoff:5*60},
+  '1h':{timeframe:'minute',aggregate:5,limit:20,cutoff:60*60},
+  '6h':{timeframe:'minute',aggregate:15,limit:30,cutoff:6*60*60},
+  '24h':{timeframe:'hour',aggregate:1,limit:30,cutoff:24*60*60},
+  '7d':{timeframe:'hour',aggregate:4,limit:50,cutoff:7*24*60*60}
+};
+async function resolveScanChartPair(mint,chain){
+  const cfg=SCAN_CHART_NETWORKS[chain];if(!cfg)return null;
+  try{
+    const rows=await fetchJson(`https://api.dexscreener.com/token-pairs/v1/${cfg.dex}/${encodeURIComponent(mint)}`,{headers:{accept:'application/json'}},9000),
+      pairs=Array.isArray(rows)?rows:[],target=String(mint).toLowerCase();
+    const candidates=pairs.filter(p=>{
+      const b=String(p?.baseToken?.address||'').toLowerCase(),q=String(p?.quoteToken?.address||'').toLowerCase();
+      return b===target||q===target
+    }).sort((a,b)=>(number(b?.liquidity?.usd)||0)-(number(a?.liquidity?.usd)||0));
+    const pair=candidates[0]||pairs[0];if(!pair)return null;
+    const side=String(pair?.baseToken?.address||'').toLowerCase()===target?'base':'quote';
+    return{
+      pairAddress:String(pair?.pairAddress||''),
+      dexId:String(pair?.dexId||''),
+      side,
+      priceUsd:number(pair?.priceUsd),
+      change24h:number(pair?.priceChange?.h24),
+      volume24h:number(pair?.volume?.h24),
+      liquidityUsd:number(pair?.liquidity?.usd),
+      marketCap:number(pair?.marketCap)??number(pair?.fdv),
+      pairUrl:String(pair?.url||'')
+    }
+  }catch(e){
+    console.warn('Scan chart pair resolve:',chain,errorText(e));return null
+  }
+}
+async function scanChartHandler(req,res){
+  res.setHeader('Cache-Control','public, max-age=12, s-maxage=20');
+  try{
+    if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});
+    const mint=String(req.query.mint||'').trim(),chain=String(req.query.chain||'').toLowerCase(),range=String(req.query.range||'1h').toLowerCase(),
+      cfg=SCAN_CHART_NETWORKS[chain],rc=SCAN_CHART_RANGES[range];
+    if(!mint||!cfg)return res.status(400).json({error:'Valid scanned token and chain are required.'});
+    if(!rc)return res.status(400).json({error:'Unsupported chart timeframe.'});
+    const pair=await resolveScanChartPair(mint,chain);
+    if(!pair?.pairAddress)return res.status(200).json({mint,chain,range,candles:[],pair:null,source:'No indexed DEX pool yet',dexUrl:''});
+
+    const dexUrl=pair.pairUrl||`https://dexscreener.com/${encodeURIComponent(cfg.dex)}/${encodeURIComponent(pair.pairAddress)}`;
+    if(!cfg.gecko){
+      return res.status(200).json({mint,chain,range,candles:[],pair,source:'DEX Screener live market',dexUrl})
+    }
+
+    let candles=[];
+    try{
+      const q=new URLSearchParams({
+        aggregate:String(rc.aggregate),
+        limit:String(rc.limit),
+        currency:'usd',
+        token:pair.side
+      });
+      const j=await fetchJson(
+        `https://api.geckoterminal.com/api/v2/networks/${encodeURIComponent(cfg.gecko)}/pools/${encodeURIComponent(pair.pairAddress)}/ohlcv/${encodeURIComponent(rc.timeframe)}?${q.toString()}`,
+        {headers:{accept:'application/json;version=20230203','user-agent':'The-Trenches/1.10.98'}},
+        10000
+      );
+      const rows=Array.isArray(j?.data?.attributes?.ohlcv_list)?j.data.attributes.ohlcv_list:[],
+        cutoff=Math.floor(Date.now()/1000)-rc.cutoff;
+      candles=rows.map(x=>Array.isArray(x)?x.slice(0,6).map(Number):[])
+        .filter(x=>x.length===6&&x.every(Number.isFinite))
+        .sort((a,b)=>a[0]-b[0]);
+      const filtered=candles.filter(x=>x[0]>=cutoff);
+      if(filtered.length>=2)candles=filtered
+    }catch(e){
+      console.warn('Scan chart OHLCV:',chain,range,errorText(e))
+    }
+    return res.status(200).json({
+      mint,chain,range,candles,pair,
+      source:candles.length?'GeckoTerminal OHLCV + DEX Screener market':'DEX Screener live market',
+      dexUrl
+    })
+  }catch(e){
+    console.error('Trenches scan chart:',e);
+    return res.status(Number(e?.status)||500).json({error:errorText(e)})
+  }
+}
+
 async function scanHandler(req,res){
   res.setHeader('Cache-Control','no-store');
   if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});
@@ -1153,6 +1244,7 @@ export default async function handler(req,res){
     const route=String(req.query?.route||'').toLowerCase();
     if(route==='health')return healthHandler(req,res);
     if(route==='scan')return scanHandler(req,res);
+    if(route==='scan-chart')return scanChartHandler(req,res);
     if(route==='quote')return quoteHandler(req,res);
     if(route==='execute')return executeHandler(req,res);
     if(route==='tokens')return tokensHandler(req,res);

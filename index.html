@@ -649,6 +649,52 @@
         </aside>
       </div>
 
+      <section id="scanChartCard" class="scanChartCard hidden" aria-label="Live token chart">
+        <div class="scanChartHead">
+          <div class="scanChartTitle">
+            <span class="scanChartLiveDot"></span>
+            <div>
+              <small>LIVE MARKET CHART</small>
+              <h3><span id="scanChartName">Token</span> <em id="scanChartSymbol">$TOKEN</em></h3>
+            </div>
+          </div>
+          <div class="scanChartHeadRight">
+            <div class="scanChartPriceBlock">
+              <small>CURRENT PRICE</small>
+              <strong id="scanChartPrice">—</strong>
+              <span id="scanChartChange" class="neutral">—</span>
+            </div>
+            <a id="scanChartDexLink" class="scanChartDexLink hidden" href="#" target="_blank" rel="noopener noreferrer">Open market ↗</a>
+          </div>
+        </div>
+
+        <div class="scanChartToolbar">
+          <div class="scanChartRanges" aria-label="Chart timeframe">
+            <button type="button" data-scan-chart-range="5m">5M</button>
+            <button type="button" data-scan-chart-range="1h" class="active">1H</button>
+            <button type="button" data-scan-chart-range="6h">6H</button>
+            <button type="button" data-scan-chart-range="24h">24H</button>
+            <button type="button" data-scan-chart-range="7d">7D</button>
+          </div>
+          <span id="scanChartStatus">Loading live candles…</span>
+        </div>
+
+        <div id="scanChartCanvas" class="scanChartCanvas">
+          <div class="scanChartLoading">
+            <span></span>
+            <b>Building live chart…</b>
+          </div>
+        </div>
+
+        <div class="scanChartStats">
+          <div><small>HIGH</small><strong id="scanChartHigh">—</strong></div>
+          <div><small>LOW</small><strong id="scanChartLow">—</strong></div>
+          <div><small>VOLUME</small><strong id="scanChartVolume">—</strong></div>
+          <div><small>LIQUIDITY</small><strong id="scanChartLiquidity">—</strong></div>
+          <div><small>DEX / POOL</small><strong id="scanChartPool">—</strong></div>
+        </div>
+      </section>
+
       <section id="scanThesisCard" class="scanThesisCard" aria-label="Share your thesis">
         <div class="scanThesisHead">
           <div>
@@ -813,7 +859,166 @@ async function enrichAutoSelectedTokenImage(data){
 function applyHeaderTokenImage(candidates,symbol){const icon=$('tokenIcon');if(!icon)return;const urls=(Array.isArray(candidates)?candidates:[candidates]).filter((v,i,a)=>v&&a.indexOf(v)===i);icon.textContent=String(symbol||'TOKEN').slice(0,2).toUpperCase();icon.style.backgroundImage='';icon.classList.remove('hasImage');let ix=0;const tryLogo=()=>{if(ix>=urls.length)return;const src=urls[ix++],img=new Image();img.onload=()=>{icon.style.backgroundImage=`url("${String(src).replace(/"/g,'%22')}")`;icon.classList.add('hasImage');icon.textContent='';};img.onerror=tryLogo;img.src=src;};tryLogo();}
 function formatTokenPrice(v){const n=Number(v);if(!Number.isFinite(n)||n<=0)return '—';if(n>=1000)return '$'+n.toLocaleString('en-US',{maximumFractionDigits:2});if(n>=1)return '$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:6});if(n>=0.01)return '$'+n.toLocaleString('en-US',{minimumFractionDigits:4,maximumFractionDigits:8});if(n>=0.000001)return '$'+n.toLocaleString('en-US',{minimumSignificantDigits:3,maximumSignificantDigits:6});return '$'+n.toExponential(3);}
 function formatMarketCap(v){const n=Number(v);if(!Number.isFinite(n)||n<=0)return '—';const units=[[1e12,'T'],[1e9,'B'],[1e6,'M'],[1e3,'K']];for(const [d,s] of units)if(n>=d)return '$'+(n/d).toLocaleString('en-US',{maximumFractionDigits:n/d>=100?0:n/d>=10?1:2})+s;return '$'+n.toLocaleString('en-US',{maximumFractionDigits:0});}
-function render(data){const symbol=data.symbol||'TOKEN';currentMint=data.mint||'';currentChain=data.chain||'';currentSymbol=symbol;currentDecimals=Number(data.decimals??0);const picked=pendingReceiveToken&&pendingReceiveToken.id===data.mint?pendingReceiveToken:null;outputToken=normalizeClientToken({...(picked||{}),id:data.mint,name:data.name||picked?.name||'Unknown token',symbol,decimals:currentDecimals,icon:picked?.icon||data.logoUri||null,iconFallbacks:[picked?.icon,data.logoUri,...(Array.isArray(data.logoUris)?data.logoUris:[])].filter((v,i,a)=>v&&a.indexOf(v)===i),chain:data.chain||picked?.chain||'solana'});pendingReceiveToken=null;currentRiskLabel=data.label||'PRELIMINARY';lastQuote=null;applyHeaderTokenImage([...(picked?.icon?[picked.icon]:[]),...(Array.isArray(picked?.iconFallbacks)?picked.iconFallbacks:[]),...(Array.isArray(data.logoUris)?data.logoUris:[]),data.logoUri].filter(Boolean),symbol); $('tokenName').textContent=data.name||'Unknown token';$('tokenSymbol').textContent='$'+symbol;setTokenButton('receiveSymbol',outputToken);$('tokenCA').textContent=data.mint?`${data.mint.slice(0,12)}…${data.mint.slice(-8)}`:'Unknown contract';$('tokenPrice').textContent=formatTokenPrice(data.priceUsd);const isStockToken=data.assetType==='robinhood_stock_token';const tokenMarketCap=isStockToken&&Number(data.tokenizedMarketValueUsd)>0?Number(data.tokenizedMarketValueUsd):Number(data.marketCapUsd);$('tokenMarketCapLabel').textContent='Market Cap';$('tokenMarketCap').textContent=formatMarketCap(tokenMarketCap);const showCompanyCap=isStockToken&&Number(data.marketCapUsd)>0;$('companyMarketCapSep').classList.toggle('hidden',!showCompanyCap);$('companyMarketCapStat').classList.toggle('hidden',!showCompanyCap);$('companyMarketCapLabel').textContent=data.marketCapLabel||'Company Market Cap';$('companyMarketCap').textContent=showCompanyCap?formatMarketCap(data.marketCapUsd):'—';$('marketIdentity').classList.toggle('partial',!(Number(data.priceUsd)>0&&tokenMarketCap>0));$('verifiedBadge').classList.toggle('hidden',!data.verified);const nb=$('networkBadge');nb.textContent=chainName(data.chain);nb.className=`networkBadge ${data.chain||''}`;if(data.chain==='solana'){if(inputToken.chain!=='solana')inputToken={id:SOL_MINT,name:'Solana',symbol:'SOL',decimals:9,icon:SOL_ICON,chain:'solana'};}else{inputToken=EVM_POPULAR[data.chain][0];walletAddress='';walletProvider=null;walletKind='';$('walletBtn').textContent='Connect Wallet';}$('quoteStatus').textContent=data.chain==='solana'?'Live via Jupiter':'Live via 0x';setTokenButton('paySymbol',inputToken);$('scoreBox').className=`scoreBox ${data.tone||'unknown'}`;$('scoreNum').textContent=data.score??'—';$('scoreLabel').textContent=data.label||'PRELIMINARY';$('swapLabel').textContent=data.label||'PRELIMINARY';$('scoreHint').textContent=data.hardRiskOverride?`Hard risk override: ${(data.hardRiskReasons||[]).join('; ')}.`:data.confidence<45?'Salt needs more verified checks before treating this score as conclusive.':data.tone==='good'?'No major warning in the checks Salt could verify.':data.tone==='warn'?'There are risks worth reviewing before you trade.':data.tone==='bad'?'Serious warning signs were detected.':'Score based only on checks The Trenches can actually verify.';$('confidenceNum').textContent=`${data.confidence??0}%`;$('confidenceFill').style.width=`${Math.max(0,Math.min(100,data.confidence??0))}%`;$('confidenceChecks').textContent=`${data.checksCompleted??0}/${data.checksTotal??0} core checks completed`;$('summaryText').textContent=data.summary||'The Trenches does not have enough verified data to summarize this token yet.';$('qAuthenticity').textContent=data.authenticity?.value||'Unknown';$('qOwnership').textContent=data.top10?.value||'Unknown';$('qBundles').textContent=data.bundled?.value||'Needs wallet graph';$('qLiquidity').textContent=data.liquidity?.value||'Unknown';$('metrics').innerHTML=Object.keys(labels).filter(k=>data[k]).map(k=>{const v=data[k];const icon=v.status==='good'?'✓':v.status==='bad'?'!':v.status==='warn'?'⚠':'?';return `<div class="metric ${esc(v.status||'unknown')}"><div class="metricTop"><span>${icon}</span><span class="metricLabel">${esc(labels[k])}</span><strong>${esc(v.value)}</strong></div><p>${esc(v.detail)}</p>${explain[k]?`<small><b>Why it matters:</b> ${esc(explain[k])}</small>`:''}${v.source?`<small class="metricSource">Source: ${esc(String(v.source).replace(/^Salt$/,'Trenches Engine').replace(/^Salt \+/,'Trenches Engine +').replace(/^Salt launch bundle analysis$/,'Trenches Bundle Analysis'))}</small>`:''}</div>`}).join('');$('results').classList.remove('hidden');$('receiveAmount').value='';$('payAmount').value='';$('quoteDetails').classList.add('hidden');setSwapError('');updateSwapButton();startQuoteRefresh();enrichAutoSelectedTokenImage(data);updateScanThesisComposer();loadReviews();renderProfile();setTimeout(()=>$('results').scrollIntoView({behavior:'smooth',block:'start'}),70)}
+
+let scanChartState={
+  mint:'',chain:'',name:'',symbol:'TOKEN',range:'1h',
+  data:null,loading:false,timer:null,requestSeq:0
+};
+
+function scanChartMoney(v){
+  v=Number(v);
+  if(!Number.isFinite(v))return '—';
+  if(Math.abs(v)>=1e9)return '$'+(v/1e9).toFixed(2)+'B';
+  if(Math.abs(v)>=1e6)return '$'+(v/1e6).toFixed(2)+'M';
+  if(Math.abs(v)>=1e3)return '$'+(v/1e3).toFixed(1)+'K';
+  if(Math.abs(v)>=1)return '$'+v.toLocaleString(undefined,{maximumFractionDigits:4});
+  if(Math.abs(v)>=.01)return '$'+v.toFixed(4);
+  if(Math.abs(v)>=.000001)return '$'+v.toFixed(8).replace(/0+$/,'');
+  return '$'+v.toExponential(3)
+}
+function scanChartPct(v){
+  v=Number(v);if(!Number.isFinite(v))return '—';
+  return `${v>0?'+':''}${v.toFixed(Math.abs(v)>=100?1:2)}%`
+}
+function scanChartTime(ts,range){
+  const d=new Date(Number(ts)*1000);
+  if(range==='5m'||range==='1h'||range==='6h')return d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
+  if(range==='24h')return d.toLocaleTimeString([], {hour:'numeric'});
+  return d.toLocaleDateString([], {month:'short',day:'numeric'})
+}
+function stopScanChart(){
+  if(scanChartState.timer){clearInterval(scanChartState.timer);scanChartState.timer=null}
+  scanChartState.requestSeq++;
+}
+function startScanChart(data){
+  stopScanChart();
+  scanChartState={
+    ...scanChartState,
+    mint:String(data?.mint||''),
+    chain:String(data?.chain||''),
+    name:String(data?.name||'Token'),
+    symbol:String(data?.symbol||'TOKEN'),
+    range:'1h',
+    data:null,
+    loading:false
+  };
+  $('scanChartCard')?.classList.remove('hidden');
+  $('scanChartName').textContent=scanChartState.name;
+  $('scanChartSymbol').textContent='$'+scanChartState.symbol;
+  document.querySelectorAll('[data-scan-chart-range]').forEach(b=>b.classList.toggle('active',b.dataset.scanChartRange==='1h'));
+  loadScanChart('1h');
+  scanChartState.timer=setInterval(()=>{
+    if(!document.hidden&&!$('results')?.classList.contains('hidden'))loadScanChart(scanChartState.range,true)
+  },30000)
+}
+async function loadScanChart(range=scanChartState.range,silent=false){
+  if(!scanChartState.mint||!scanChartState.chain)return;
+  const seq=++scanChartState.requestSeq;
+  scanChartState.range=range;
+  document.querySelectorAll('[data-scan-chart-range]').forEach(b=>b.classList.toggle('active',b.dataset.scanChartRange===range));
+  if(!silent){
+    $('scanChartStatus').textContent='Loading live candles…';
+    $('scanChartCanvas').innerHTML='<div class="scanChartLoading"><span></span><b>Building live chart…</b></div>'
+  }
+  scanChartState.loading=true;
+  try{
+    const q=new URLSearchParams({mint:scanChartState.mint,chain:scanChartState.chain,range});
+    const r=await fetch('/api/scan-chart?'+q.toString(),{headers:{accept:'application/json'},cache:'no-store'});
+    const text=await r.text();let j;try{j=text?JSON.parse(text):{}}catch{j={error:text||`HTTP ${r.status}`}}
+    if(seq!==scanChartState.requestSeq)return;
+    if(!r.ok)throw new Error(readableError(j?.error??j));
+    scanChartState.data=j;
+    renderScanChart(j)
+  }catch(e){
+    if(seq!==scanChartState.requestSeq)return;
+    const el=$('scanChartCanvas');
+    if(el)el.innerHTML=`<div class="scanChartUnavailable"><b>Chart temporarily unavailable.</b><span>${socialEsc(readableError(e))}</span></div>`;
+    $('scanChartStatus').textContent='Live chart unavailable'
+  }finally{
+    if(seq===scanChartState.requestSeq)scanChartState.loading=false
+  }
+}
+function renderScanChart(j){
+  const candles=(Array.isArray(j?.candles)?j.candles:[])
+    .map(x=>Array.isArray(x)?x.map(Number):[])
+    .filter(x=>x.length>=6&&x.slice(0,6).every(Number.isFinite))
+    .sort((a,b)=>a[0]-b[0]);
+  const pair=j?.pair||{},dexLink=$('scanChartDexLink');
+  $('scanChartName').textContent=scanChartState.name;
+  $('scanChartSymbol').textContent='$'+scanChartState.symbol;
+  if(dexLink){
+    dexLink.classList.toggle('hidden',!j?.dexUrl);
+    if(j?.dexUrl)dexLink.href=j.dexUrl
+  }
+  $('scanChartLiquidity').textContent=scanChartMoney(pair?.liquidityUsd);
+  $('scanChartPool').textContent=[pair?.dexId,pair?.pairAddress?String(pair.pairAddress).slice(0,6)+'…'+String(pair.pairAddress).slice(-4):''].filter(Boolean).join(' · ')||'—';
+
+  if(!candles.length){
+    $('scanChartPrice').textContent=scanChartMoney(pair?.priceUsd);
+    $('scanChartChange').textContent=Number.isFinite(Number(pair?.change24h))?scanChartPct(pair.change24h):'—';
+    $('scanChartChange').className=Number(pair?.change24h)>0?'up':Number(pair?.change24h)<0?'down':'neutral';
+    $('scanChartHigh').textContent='—';$('scanChartLow').textContent='—';$('scanChartVolume').textContent=scanChartMoney(pair?.volume24h);
+    $('scanChartCanvas').innerHTML=`<div class="scanChartUnavailable"><b>Not enough candle history yet.</b><span>${j?.dexUrl?'This pool is live. Use Open market for the external chart while history builds.':'Market candles are not available for this pool yet.'}</span></div>`;
+    $('scanChartStatus').textContent=j?.source||'Market data';
+    return
+  }
+
+  const first=candles[0],last=candles[candles.length-1],
+    highs=candles.map(x=>x[2]),lows=candles.map(x=>x[3]),volumes=candles.map(x=>x[5]),
+    high=Math.max(...highs),low=Math.min(...lows),lastPrice=last[4],
+    startPrice=first[1],change=startPrice?((lastPrice-startPrice)/startPrice)*100:null,
+    volume=volumes.reduce((a,b)=>a+b,0);
+
+  $('scanChartPrice').textContent=scanChartMoney(lastPrice);
+  $('scanChartChange').textContent=scanChartPct(change);
+  $('scanChartChange').className=change>0?'up':change<0?'down':'neutral';
+  $('scanChartHigh').textContent=scanChartMoney(high);
+  $('scanChartLow').textContent=scanChartMoney(low);
+  $('scanChartVolume').textContent=scanChartMoney(volume);
+  $('scanChartStatus').textContent=`${candles.length} live candles · ${j?.source||'market feed'} · updated ${new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit',second:'2-digit'})}`;
+
+  const w=1100,h=390,left=18,right=90,top=18,priceBottom=292,volumeTop=314,volumeBottom=360,
+    plotW=w-left-right,priceH=priceBottom-top,
+    rawSpan=Math.max(0,high-low),floor=Math.max(Math.abs(lastPrice)*.001,.000000000001),
+    span=Math.max(rawSpan,floor),pad=span*.08,minY=low-pad,maxY=high+pad,
+    maxVol=Math.max(...volumes,1),slot=plotW/Math.max(candles.length,1),bodyW=Math.max(2,Math.min(12,slot*.58));
+
+  const xAt=i=>left+slot*(i+.5);
+  const yAt=v=>top+(maxY-v)/(maxY-minY)*priceH;
+  let candleSvg='',volumeSvg='';
+  candles.forEach((c,i)=>{
+    const [ts,o,hi,lo,cl,v]=c,x=xAt(i),up=cl>=o,yO=yAt(o),yC=yAt(cl),yH=yAt(hi),yL=yAt(lo),
+      bodyY=Math.min(yO,yC),bodyH=Math.max(1.2,Math.abs(yC-yO)),
+      cls=up?'chartUp':'chartDown',
+      vh=Math.max(1,(v/maxVol)*(volumeBottom-volumeTop));
+    candleSvg+=`<line class="${cls}" x1="${x.toFixed(2)}" x2="${x.toFixed(2)}" y1="${yH.toFixed(2)}" y2="${yL.toFixed(2)}"/><rect class="${cls}" x="${(x-bodyW/2).toFixed(2)}" y="${bodyY.toFixed(2)}" width="${bodyW.toFixed(2)}" height="${bodyH.toFixed(2)}" rx="1"/>`;
+    volumeSvg+=`<rect class="${cls} volume" x="${(x-bodyW/2).toFixed(2)}" y="${(volumeBottom-vh).toFixed(2)}" width="${bodyW.toFixed(2)}" height="${vh.toFixed(2)}" rx="1"/>`
+  });
+
+  let grid='',priceLabels='';
+  for(let i=0;i<5;i++){
+    const pct=i/4,y=top+priceH*pct,val=maxY-(maxY-minY)*pct;
+    grid+=`<line x1="${left}" x2="${w-right}" y1="${y.toFixed(2)}" y2="${y.toFixed(2)}"/>`;
+    priceLabels+=`<text x="${w-8}" y="${(y+4).toFixed(2)}" text-anchor="end">${socialEsc(scanChartMoney(val))}</text>`
+  }
+  const timeCount=Math.min(6,candles.length),timeLabels=Array.from({length:timeCount},(_,i)=>{
+    const idx=Math.round((candles.length-1)*(i/Math.max(1,timeCount-1))),x=xAt(idx),anchor=i===0?'start':i===timeCount-1?'end':'middle';
+    return `<text x="${x.toFixed(2)}" y="${h-7}" text-anchor="${anchor}">${socialEsc(scanChartTime(candles[idx][0],scanChartState.range))}</text>`
+  }).join('');
+  const lastY=yAt(lastPrice),lastColor=change>=0?'#83e5a1':'#ff8178';
+
+  $('scanChartCanvas').innerHTML=`<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${socialEsc(scanChartState.name)} live candlestick chart">
+    <g class="scanChartGrid">${grid}</g>
+    <g class="scanChartCandles">${candleSvg}</g>
+    <g class="scanChartVolumes">${volumeSvg}</g>
+    <line class="scanChartLastLine" x1="${left}" x2="${w-right}" y1="${lastY.toFixed(2)}" y2="${lastY.toFixed(2)}" style="stroke:${lastColor}"/>
+    <circle class="scanChartLastPulse" cx="${(w-right).toFixed(2)}" cy="${lastY.toFixed(2)}" r="5" style="fill:${lastColor}"/>
+    <g class="scanChartAxis">${priceLabels}${timeLabels}</g>
+    <text x="${left}" y="${volumeTop-6}" class="scanChartVolumeLabel">VOLUME</text>
+  </svg>`
+}
+
+function render(data){const symbol=data.symbol||'TOKEN';currentMint=data.mint||'';currentChain=data.chain||'';currentSymbol=symbol;currentDecimals=Number(data.decimals??0);const picked=pendingReceiveToken&&pendingReceiveToken.id===data.mint?pendingReceiveToken:null;outputToken=normalizeClientToken({...(picked||{}),id:data.mint,name:data.name||picked?.name||'Unknown token',symbol,decimals:currentDecimals,icon:picked?.icon||data.logoUri||null,iconFallbacks:[picked?.icon,data.logoUri,...(Array.isArray(data.logoUris)?data.logoUris:[])].filter((v,i,a)=>v&&a.indexOf(v)===i),chain:data.chain||picked?.chain||'solana'});pendingReceiveToken=null;currentRiskLabel=data.label||'PRELIMINARY';lastQuote=null;applyHeaderTokenImage([...(picked?.icon?[picked.icon]:[]),...(Array.isArray(picked?.iconFallbacks)?picked.iconFallbacks:[]),...(Array.isArray(data.logoUris)?data.logoUris:[]),data.logoUri].filter(Boolean),symbol); $('tokenName').textContent=data.name||'Unknown token';$('tokenSymbol').textContent='$'+symbol;setTokenButton('receiveSymbol',outputToken);$('tokenCA').textContent=data.mint?`${data.mint.slice(0,12)}…${data.mint.slice(-8)}`:'Unknown contract';$('tokenPrice').textContent=formatTokenPrice(data.priceUsd);const isStockToken=data.assetType==='robinhood_stock_token';const tokenMarketCap=isStockToken&&Number(data.tokenizedMarketValueUsd)>0?Number(data.tokenizedMarketValueUsd):Number(data.marketCapUsd);$('tokenMarketCapLabel').textContent='Market Cap';$('tokenMarketCap').textContent=formatMarketCap(tokenMarketCap);const showCompanyCap=isStockToken&&Number(data.marketCapUsd)>0;$('companyMarketCapSep').classList.toggle('hidden',!showCompanyCap);$('companyMarketCapStat').classList.toggle('hidden',!showCompanyCap);$('companyMarketCapLabel').textContent=data.marketCapLabel||'Company Market Cap';$('companyMarketCap').textContent=showCompanyCap?formatMarketCap(data.marketCapUsd):'—';$('marketIdentity').classList.toggle('partial',!(Number(data.priceUsd)>0&&tokenMarketCap>0));$('verifiedBadge').classList.toggle('hidden',!data.verified);const nb=$('networkBadge');nb.textContent=chainName(data.chain);nb.className=`networkBadge ${data.chain||''}`;if(data.chain==='solana'){if(inputToken.chain!=='solana')inputToken={id:SOL_MINT,name:'Solana',symbol:'SOL',decimals:9,icon:SOL_ICON,chain:'solana'};}else{inputToken=EVM_POPULAR[data.chain][0];walletAddress='';walletProvider=null;walletKind='';$('walletBtn').textContent='Connect Wallet';}$('quoteStatus').textContent=data.chain==='solana'?'Live via Jupiter':'Live via 0x';setTokenButton('paySymbol',inputToken);$('scoreBox').className=`scoreBox ${data.tone||'unknown'}`;$('scoreNum').textContent=data.score??'—';$('scoreLabel').textContent=data.label||'PRELIMINARY';$('swapLabel').textContent=data.label||'PRELIMINARY';$('scoreHint').textContent=data.hardRiskOverride?`Hard risk override: ${(data.hardRiskReasons||[]).join('; ')}.`:data.confidence<45?'The Trenches needs more verified checks before treating this score as conclusive.':data.tone==='good'?'No major warning in the checks The Trenches could verify.':data.tone==='warn'?'There are risks worth reviewing before you trade.':data.tone==='bad'?'Serious warning signs were detected.':'Score based only on checks The Trenches can actually verify.';$('confidenceNum').textContent=`${data.confidence??0}%`;$('confidenceFill').style.width=`${Math.max(0,Math.min(100,data.confidence??0))}%`;$('confidenceChecks').textContent=`${data.checksCompleted??0}/${data.checksTotal??0} core checks completed`;$('summaryText').textContent=data.summary||'The Trenches does not have enough verified data to summarize this token yet.';$('qAuthenticity').textContent=data.authenticity?.value||'Unknown';$('qOwnership').textContent=data.top10?.value||'Unknown';$('qBundles').textContent=data.bundled?.value||'Needs wallet graph';$('qLiquidity').textContent=data.liquidity?.value||'Unknown';$('metrics').innerHTML=Object.keys(labels).filter(k=>data[k]).map(k=>{const v=data[k];const icon=v.status==='good'?'✓':v.status==='bad'?'!':v.status==='warn'?'⚠':'?';return `<div class="metric ${esc(v.status||'unknown')}"><div class="metricTop"><span>${icon}</span><span class="metricLabel">${esc(labels[k])}</span><strong>${esc(v.value)}</strong></div><p>${esc(v.detail)}</p>${explain[k]?`<small><b>Why it matters:</b> ${esc(explain[k])}</small>`:''}${v.source?`<small class="metricSource">Source: ${esc(String(v.source).replace(/^Salt$/,'Trenches Engine').replace(/^Salt \+/,'Trenches Engine +').replace(/^Salt launch bundle analysis$/,'Trenches Bundle Analysis'))}</small>`:''}</div>`}).join('');$('results').classList.remove('hidden');$('receiveAmount').value='';$('payAmount').value='';$('quoteDetails').classList.add('hidden');setSwapError('');updateSwapButton();startQuoteRefresh();enrichAutoSelectedTokenImage(data);startScanChart(data);updateScanThesisComposer();loadReviews();renderProfile();setTimeout(()=>$('results').scrollIntoView({behavior:'smooth',block:'start'}),70)}
 function readableError(value){if(value==null)return 'Scan failed.';if(typeof value==='string')return value;if(value instanceof Error)return readableError(value.message);if(typeof value==='object'){const preferred=value.message??value.error?.message??value.error?.detail??value.error?.reason??value.error??value.details?.message??value.details??value.reason??value.statusText;if(preferred!=null&&preferred!==value)return readableError(preferred);try{const s=JSON.stringify(value);return s&&s!=='{}'?s:'Scan failed.'}catch{return 'Scan failed.'}}return String(value)}
 function showError(message){const e=$('error');if(!e)return;e.textContent=readableError(message);e.classList.remove('hidden')}function clearError(){const e=$('error');if(e)e.classList.add('hidden')}
 async function scan(){
@@ -835,7 +1040,7 @@ async function scan(){
     render(data);
   }catch(e){
     if(e?.name==='AbortError')showError('The Salt scanner timed out. Try again.');
-    else if(String(e?.message||'').includes('Failed to fetch'))showError('Salt could not reach its scanner backend. Make sure the api folder is present in GitHub and Vercel redeployed it.');
+    else if(String(e?.message||'').includes('Failed to fetch'))showError('The Trenches could not reach its scanner backend. Make sure the API route is deployed, then try again.');
     else showError(e);
   }finally{btn.disabled=false;btn.textContent='Scan Token';}
 }
@@ -1876,7 +2081,8 @@ function initSalt(){
   $('mintInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();scan();}});
   $('quickSwapOpen')?.addEventListener('click',openQuickSwap);$('quickSwapClose')?.addEventListener('click',closeQuickSwap);document.querySelectorAll('[data-close-quick-swap]').forEach(x=>x.addEventListener('click',closeQuickSwap));$('quickSwapFrom')?.addEventListener('change',()=>renderQuickSwap({resetRecipient:false}));$('quickSwapTo')?.addEventListener('change',()=>{quickSwapRecipientTouched=false;renderQuickSwap({resetRecipient:true})});$('quickSwapAmount')?.addEventListener('input',()=>{quickSwapResetQuote();scheduleQuickSwapPreview()});$('quickSwapMax')?.addEventListener('click',useQuickSwapMax);$('quickSwapFlip')?.addEventListener('click',()=>{const a=$('quickSwapFrom').value,b=$('quickSwapTo').value;$('quickSwapFrom').value=b;$('quickSwapTo').value=a;quickSwapRecipientTouched=false;renderQuickSwap({resetRecipient:true})});$('quickSwapConnect')?.addEventListener('click',()=>openWalletConnectModal('general'));$('quickSwapAction')?.addEventListener('click',handleQuickSwapAction);
   $('walletBtn')?.addEventListener('click',walletAction);$('switchWalletBtn')?.addEventListener('click',openWalletProviderChoices);$('disconnectWalletBtn')?.addEventListener('click',disconnectActiveWallet);$('walletConnectClose')?.addEventListener('click',closeWalletConnectModal);document.querySelectorAll('[data-close-wallet-connect]').forEach(x=>x.addEventListener('click',closeWalletConnectModal));$('walletOtherToggle')?.addEventListener('click',()=>{walletOtherOpen=!walletOtherOpen;renderWalletConnectModal()});document.addEventListener('click',e=>{const shell=e.target.closest?.('.headerWalletShell');if(!shell&&!$('walletAccountMenu')?.classList.contains('hidden'))closeWalletAccountMenu()});$('swapWalletBtn')?.addEventListener('click',executeSwap);$('swapMaxBtn')?.addEventListener('click',useSwapMax);$('payAmount')?.addEventListener('input',()=>{scheduleQuote();updateSwapButton()});$('paySymbol')?.addEventListener('click',()=>openTokenPicker('pay'));$('receiveSymbol')?.addEventListener('click',()=>openTokenPicker('receive'));$('closeTokenModal')?.addEventListener('click',closeTokenPicker);document.querySelectorAll('[data-close-token-modal]').forEach(x=>x.addEventListener('click',closeTokenPicker));document.querySelectorAll('[data-picker-chain]').forEach(x=>x.addEventListener('click',()=>setPickerChain(x.dataset.pickerChain)));$('clearRecent')?.addEventListener('click',()=>{try{localStorage.removeItem('salt:recentTokens')}catch{}renderRecent()});$('tokenSearchInput')?.addEventListener('input',e=>{clearTimeout(tokenSearchTimer);tokenSearchTimer=setTimeout(()=>searchTokens(e.target.value),250)});
-  $('newScanBtn')?.addEventListener('click',()=>{$('results')?.classList.add('hidden');$('mintInput').value='';$('mintInput').focus();window.scrollTo({top:0,behavior:'smooth'});});
+  document.querySelectorAll('[data-scan-chart-range]').forEach(b=>b.addEventListener('click',()=>loadScanChart(b.dataset.scanChartRange||'1h')));
+  $('newScanBtn')?.addEventListener('click',()=>{stopScanChart();$('scanChartCard')?.classList.add('hidden');$('results')?.classList.add('hidden');$('mintInput').value='';$('mintInput').focus();window.scrollTo({top:0,behavior:'smooth'});});
   $('copyCA')?.addEventListener('click',async()=>{if(!currentMint)return;try{await navigator.clipboard.writeText(currentMint);const x=$('copyCA')?.querySelector('b');if(x){const old=x.textContent;x.textContent='Copied';setTimeout(()=>x.textContent=old,1100);}}catch{}});
   document.querySelectorAll('[data-trending-mode]').forEach(b=>b.addEventListener('click',()=>{trendingState.mode=b.dataset.trendingMode||'hot';renderTrendingPage()}));
   document.querySelectorAll('[data-trending-chain]').forEach(b=>b.addEventListener('click',()=>{trendingState.chain=b.dataset.trendingChain||'all';renderTrendingPage()}));

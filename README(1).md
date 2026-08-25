@@ -661,3 +661,13 @@ This update rebuilds the Portfolio information architecture around the current C
 - Scanner-generated `Source: Salt` labels now display as `Source: Trenches Engine`, with the launch-bundle source shown as `Trenches Bundle Analysis`.
 - Rewrites score hints, analysis summaries, swap-route notes, DEX-paid checks, holder intelligence and identity-analysis copy to speak as The Trenches.
 - Keeps legacy `Salt Swap ...` wallet-signature payloads, Redis keys and internal compatibility identifiers unchanged so existing Social profiles/sessions are not broken.
+
+## V1.10.98 — Live Token Chart After Scan
+- Every successful Trenches scan now automatically opens a full-width live token chart directly below the risk score / swap area and above the thesis section.
+- Adds native Trenches candlesticks and volume bars with 5M / 1H / 6H / 24H / 7D timeframes.
+- Shows current price, selected-range change, high, low, volume, liquidity, DEX and shortened pool address.
+- Refreshes the active chart every 30 seconds while the scanned result is visible.
+- Uses DEX Screener to resolve the token's highest-liquidity pool and GeckoTerminal OHLCV for candle history on Solana, Ethereum, Base and BNB Chain.
+- Robinhood Chain keeps live DEX market information and an external market link when OHLCV is unavailable.
+- New / extremely fresh pools gracefully show a market-history-building state rather than inventing candle data.
+- Also removes the remaining visible scanner phrases that still said `Salt could verify`.

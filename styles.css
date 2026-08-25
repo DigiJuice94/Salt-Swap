@@ -2992,3 +2992,113 @@ body.trending-active::before{opacity:.045!important}
   font-weight:750!important;
   letter-spacing:.015em;
 }
+
+
+/* V1.10.98 — live post-scan token chart */
+.scanChartCard{
+  width:100%;
+  box-sizing:border-box;
+  margin-top:14px;
+  border:1px solid rgba(102,141,113,.28);
+  border-radius:24px;
+  background:
+    radial-gradient(circle at 87% 5%,rgba(77,131,91,.15),transparent 31%),
+    linear-gradient(145deg,#10231d,#0b1915);
+  box-shadow:0 24px 60px rgba(31,42,33,.14),inset 0 1px 0 rgba(255,255,255,.035);
+  padding:19px;
+  color:#dce9df;
+  overflow:hidden;
+}
+.scanChartHead{
+  display:flex;align-items:center;justify-content:space-between;gap:18px;
+  padding:2px 4px 15px;
+}
+.scanChartTitle{display:flex;align-items:center;gap:10px}
+.scanChartLiveDot{
+  width:10px;height:10px;border-radius:50%;background:#7de49c;
+  box-shadow:0 0 0 5px rgba(125,228,156,.08),0 0 18px rgba(125,228,156,.38);
+  animation:scanChartPulse 1.9s ease-in-out infinite
+}
+@keyframes scanChartPulse{0%,100%{box-shadow:0 0 0 4px rgba(125,228,156,.08),0 0 12px rgba(125,228,156,.35)}50%{box-shadow:0 0 0 8px rgba(125,228,156,0),0 0 23px rgba(125,228,156,.53)}}
+.scanChartTitle>div{display:grid;gap:2px}
+.scanChartTitle small,.scanChartPriceBlock small{
+  font-size:8px;font-weight:950;letter-spacing:.14em;color:#6f9380
+}
+.scanChartTitle h3{margin:0;font-size:18px;color:#eef2e8;letter-spacing:-.02em}
+.scanChartTitle h3 em{font-style:normal;color:#8db69b;font-size:11px;margin-left:5px}
+.scanChartHeadRight{display:flex;align-items:center;gap:12px}
+.scanChartPriceBlock{display:grid;grid-template-columns:auto auto;column-gap:8px;align-items:baseline;text-align:right}
+.scanChartPriceBlock small{grid-column:1/-1}
+.scanChartPriceBlock strong{font-size:22px;color:#eff4ea;font-variant-numeric:tabular-nums}
+.scanChartPriceBlock span{font-size:10px;font-weight:900}.scanChartPriceBlock span.up{color:#77e397}.scanChartPriceBlock span.down{color:#ff8078}.scanChartPriceBlock span.neutral{color:#799287}
+.scanChartDexLink{
+  border:1px solid rgba(127,165,132,.22);border-radius:10px;background:#193027;
+  color:#a8cdb0;text-decoration:none;font-size:9px;font-weight:850;padding:9px 11px
+}
+.scanChartDexLink:hover{border-color:#709b77;color:#d8ecd9}
+
+.scanChartToolbar{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  border-top:1px solid rgba(119,153,123,.09);
+  padding:12px 3px 10px
+}
+.scanChartRanges{display:flex;align-items:center;gap:5px}
+.scanChartRanges button{
+  border:1px solid rgba(127,162,130,.13);border-radius:9px;background:#132720;color:#698577;
+  min-width:46px;padding:7px 9px;font-size:8px;font-weight:900;cursor:pointer
+}
+.scanChartRanges button.active{background:#354f3b;color:#d8edd9;border-color:#688f6e}
+#scanChartStatus{color:#5f7d6e;font-size:8px;text-align:right}
+
+.scanChartCanvas{
+  position:relative;min-height:390px;border:1px solid rgba(110,147,117,.11);
+  border-radius:17px;background:
+    linear-gradient(rgba(255,255,255,.009),rgba(255,255,255,.009)),
+    #0a1713;
+  overflow:hidden
+}
+.scanChartCanvas svg{display:block;width:100%;height:auto;min-height:390px}
+.scanChartGrid line{stroke:#264037;stroke-width:1;stroke-dasharray:3 7;opacity:.55}
+.scanChartCandles line{stroke-width:1.2}.scanChartCandles rect{stroke-width:.5}
+.scanChartCandles .chartUp{stroke:#78dc98;fill:#5fc982}
+.scanChartCandles .chartDown{stroke:#fb756f;fill:#d95f5b}
+.scanChartVolumes .chartUp{fill:#4d9f6a;opacity:.28}.scanChartVolumes .chartDown{fill:#b8504e;opacity:.25}
+.scanChartLastLine{stroke-width:1;stroke-dasharray:4 6;opacity:.48}
+.scanChartLastPulse{filter:drop-shadow(0 0 6px currentColor);animation:scanLastPulse 1.8s ease-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes scanLastPulse{0%{opacity:1;transform:scale(.72)}65%{opacity:.2;transform:scale(2.05)}100%{opacity:0;transform:scale(2.35)}}
+.scanChartAxis text{fill:#5e7a6c;font-size:9px;font-family:inherit}
+.scanChartVolumeLabel{fill:#49675a;font-size:8px;font-weight:900;letter-spacing:.08em}
+.scanChartLoading,.scanChartUnavailable{
+  min-height:390px;display:grid;place-content:center;justify-items:center;text-align:center;gap:8px;color:#698678
+}
+.scanChartLoading span{width:23px;height:23px;border:2px solid #29483a;border-top-color:#78d995;border-radius:50%;animation:scanChartSpin .8s linear infinite}
+@keyframes scanChartSpin{to{transform:rotate(360deg)}}
+.scanChartLoading b,.scanChartUnavailable b{font-size:12px;color:#afc7b7}
+.scanChartUnavailable span{max-width:560px;font-size:9px;line-height:1.55}
+
+.scanChartStats{
+  display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:8px
+}
+.scanChartStats>div{
+  min-width:0;display:grid;gap:3px;padding:9px 11px;border:1px solid rgba(117,153,121,.10);
+  border-radius:11px;background:rgba(255,255,255,.018)
+}
+.scanChartStats small{font-size:7px;color:#577466;font-weight:900;letter-spacing:.10em}
+.scanChartStats strong{font-size:9px;color:#aac0b2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+
+@media(max-width:760px){
+  .scanChartCard{padding:13px;border-radius:19px}
+  .scanChartHead{align-items:flex-start;flex-direction:column}
+  .scanChartHeadRight{width:100%;justify-content:space-between}
+  .scanChartPriceBlock{text-align:left}
+  .scanChartToolbar{align-items:flex-start;flex-direction:column}
+  #scanChartStatus{text-align:left}
+  .scanChartRanges{width:100%;overflow:auto;scrollbar-width:none}
+  .scanChartRanges button{flex:1}
+  .scanChartCanvas,.scanChartCanvas svg,.scanChartLoading,.scanChartUnavailable{min-height:310px}
+  .scanChartStats{grid-template-columns:1fr 1fr}
+  .scanChartStats>div:last-child{grid-column:1/-1}
+}
+@media(prefers-reduced-motion:reduce){
+  .scanChartLiveDot,.scanChartLastPulse{animation:none}
+}
