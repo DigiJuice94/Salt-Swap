@@ -756,3 +756,8 @@ This update rebuilds the Portfolio information architecture around the current C
 - Adds only the missing Social Feed helpers.
 - Adds only the chart cursor-to-dot alignment fix.
 - Leaves the original V1.11.07 `vercel.json` untouched.
+
+## V1.11.19 — Clickable Feed Profiles
+- Makes the username on Social Feed posts clickable.
+- Clicking a username such as `@TrenchReady` opens that wallet/user's Social Profile.
+- Keeps the V1.11.18 restored visual build, Feed fix, chart cursor fix, and original deployment configuration unchanged.
