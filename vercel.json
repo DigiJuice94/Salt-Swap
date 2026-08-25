@@ -17,62 +17,6 @@
     {
       "src": "assets/**",
       "use": "@vercel/static"
-    },
-    {
-      "src": "favicon.ico",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "favicon.png",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "apple-touch-icon.png",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "site.webmanifest",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "the-trenches-logo-exact-cropped.png",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "trenches-sheep-social.png",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "trenches-sheep.png",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "trench-parachute.png",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "trenches-bg.jpg",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "polaroid-frame-texture.png",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "polaroid-paper-texture.png",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "verified-badge.png",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "app-icon-192.png",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "app-icon-512.png",
-      "use": "@vercel/static"
     }
   ],
   "routes": [

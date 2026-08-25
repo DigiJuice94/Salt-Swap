@@ -705,3 +705,54 @@ This update rebuilds the Portfolio information architecture around the current C
 - Replaces the blue / purple post-scan line with the Trenches army-green palette.
 - Updates the chart fill, current-value guide, endpoint pulse, right-side current-value tag, hover dot and chart metric accent to matching army green.
 - Keeps the off-white Swap chart background and green/red volume bars unchanged.
+
+## V1.11.03 — Force Army-green Chart
+- Fixes the Swap chart still appearing purple/blue after V1.11.02.
+- Adds the army-green stroke directly to the generated SVG path instead of relying only on CSS.
+- Adds explicit army-green SVG colors for the current-value guide, endpoint pulse and right-side value tag.
+- Adds a version query to `styles.css` so browsers/Vercel clients do not keep using the older cached chart stylesheet.
+- Adds a final high-specificity CSS override as a second safeguard.
+
+## V1.11.04 — Hard-lock Army Green Chart
+- Fixes the line still rendering blue/purple in deployment.
+- Removes the `fomo` class from the actual history line and endpoint.
+- Writes the army-green stroke directly into the SVG `style` attribute with `!important`, so older Fomo CSS cannot override it.
+- Cache-busts `styles.css` again and adds `Cache-Control: no-store` for the homepage and stylesheet in Vercel.
+- Keeps the off-white chart, green/red volume bars, and army-green current-value marker.
+
+## V1.11.05 — Army-green History Line Only
+- Clarifies the intended chart styling.
+- The **main wavy historical market-cap line** is now hard-locked to Trenches army green.
+- The soft fill underneath the history line is also army green.
+- The **blue current-value box on the right stays blue**, matching the Fomo reference the user liked.
+- The horizontal dotted current-value guide and endpoint pulse also stay blue so they visually belong to the current-value marker.
+- No purple / blue gradient remains on the actual historical line.
+
+## V1.11.06 — All-Green Swap Chart
+- Removes the remaining blue accents from the Swap-page chart.
+- Main history line: army green.
+- Current-value dotted guide: army green.
+- Current-value box on the right: army green.
+- Endpoint pulse: army green.
+- Hover dot / hover guide: army green.
+- Market-cap accent text: army green.
+- Chart tooltip accent: army green.
+- No blue Fomo-era chart accents remain.
+
+## V1.11.07 — Deployment-proof Green Chart
+- Fixes the recurring issue where the deployed Swap chart could still render the old blue/purple Fomo line.
+- Army green is now applied in THREE independent layers:
+  1. directly in the generated SVG,
+  2. directly to the real rendered DOM through JavaScript using `style.setProperty(..., 'important')`,
+  3. final high-specificity CSS.
+- A MutationObserver automatically reapplies the Trenches colors whenever the chart SVG is redrawn.
+- The main history line, horizontal current-value guide, endpoint pulse, hover accents and right-side current-value tag are all army green.
+- Adds HTML meta no-cache controls, a new stylesheet version, and Vercel `no-store` headers for `/`, `/index.html` and `/styles.css`.
+- The chart DOM carries `data-build="1.11.07"` for deployment verification without adding visible UI clutter.
+
+## V1.11.18 — Restore Last Good Build
+- Restored directly from V1.11.07, before the later cleanup/deployment experiments.
+- Preserves the complete visual and asset structure from that last-good build.
+- Adds only the missing Social Feed helpers.
+- Adds only the chart cursor-to-dot alignment fix.
+- Leaves the original V1.11.07 `vercel.json` untouched.
