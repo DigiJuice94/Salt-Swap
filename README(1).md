@@ -897,3 +897,9 @@ This update rebuilds the Portfolio information architecture around the current C
 - All status/count/filter/history pills now use dark green backgrounds, white text, subtle green borders, and rounded pill geometry.
 - Removes the remaining gray utility badges across Portfolio tabs.
 - Vercel configuration unchanged.
+
+## V1.11.40 — Allocation Ring
+- Changes the Analytics allocation circle from a filled cream disc to a transparent ring.
+- Uses the light-green Portfolio accent for the outline.
+- Keeps center text readable.
+- Vercel configuration unchanged.
