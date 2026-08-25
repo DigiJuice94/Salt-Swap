@@ -871,3 +871,16 @@ This update rebuilds the Portfolio information architecture around the current C
 - Forces only the `$0.00` balance number to light green.
 - Removes any text-fill, text-stroke, shadow, opacity, or filter that could keep it dark.
 - Vercel configuration unchanged.
+
+## V1.11.36 — Dark Green Portfolio Badges
+- Changes the Portfolio LIVE/time pill to dark green with white text.
+- Changes the NFT count pill to dark green with white text.
+- Keeps the live status dot green.
+- Vercel configuration unchanged.
+
+## V1.11.37 — White Portfolio Text
+- Changes remaining dark-blue Portfolio text to white.
+- Asset names, amounts, prices, totals, table values, action labels, and primary UI text are now white.
+- Secondary labels are softened to light gray-green.
+- Green/red gain-loss colors remain unchanged.
+- Vercel configuration unchanged.

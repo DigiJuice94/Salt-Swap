@@ -3913,3 +3913,93 @@ body:has(.portfolioPage:not(.hidden)){
 .portfolioPage #portfolioCoverage{
   -webkit-text-fill-color:currentColor !important;
 }
+
+/* V1.11.36 — Dark green Portfolio badges */
+
+/* LIVE timestamp pill */
+.portfolioPage .portfolioUpdated,
+.portfolioPage .portfolioLive,
+.portfolioPage #portfolioUpdatedAt{
+  background:#173623 !important;
+  color:#ffffff !important;
+  -webkit-text-fill-color:#ffffff !important;
+  border-color:rgba(121,223,152,.20) !important;
+  box-shadow:none !important;
+}
+
+/* Keep the live dot green */
+.portfolioPage .portfolioLiveDot{
+  background:#50c878 !important;
+  box-shadow:0 0 8px rgba(80,200,120,.35) !important;
+}
+
+/* NFT count pill */
+.portfolioPage .portfolioNftCount,
+.portfolioPage [id*="NftCount"],
+.portfolioPage [id*="NFTCount"],
+.portfolioPage .portfolioSectionHead .portfolioCount,
+.portfolioPage .portfolioSectionHead [class*="Count"]{
+  background:#173623 !important;
+  color:#ffffff !important;
+  -webkit-text-fill-color:#ffffff !important;
+  border:1px solid rgba(121,223,152,.20) !important;
+  box-shadow:none !important;
+}
+
+/* V1.11.37 — White Portfolio text cleanup */
+
+/* Primary asset/table text that was still dark blue */
+.portfolioPage .portfolioTokenRow,
+.portfolioPage .portfolioTokenRow b,
+.portfolioPage .portfolioTokenRow strong,
+.portfolioPage .portfolioTokenRow .portfolioTokenName,
+.portfolioPage .portfolioTokenRow .portfolioTokenSymbol,
+.portfolioPage .portfolioTokenRow .portfolioBalance,
+.portfolioPage .portfolioTokenRow .portfolioPrice,
+.portfolioPage .portfolioTokenRow .portfolioValue,
+.portfolioPage .portfolioTokenRow .portfolioPnl,
+.portfolioPage .portfolioTokenRow span:not(.up):not(.down):not(.positive):not(.negative),
+.portfolioPage .portfolioAssetTable td,
+.portfolioPage .portfolioAssetTable td b,
+.portfolioPage .portfolioAssetTable td strong,
+.portfolioPage .portfolioAssetTable td span:not(.up):not(.down):not(.positive):not(.negative){
+  color:#ffffff !important;
+  -webkit-text-fill-color:#ffffff !important;
+}
+
+/* Keep smaller secondary labels readable but slightly softer */
+.portfolioPage .portfolioTokenRow small,
+.portfolioPage .portfolioAssetTable td small{
+  color:#c8d4ca !important;
+  -webkit-text-fill-color:#c8d4ca !important;
+}
+
+/* Other dark-blue UI text inside Portfolio should be white too */
+.portfolioPage .portfolioWalletIdentity b,
+.portfolioPage .portfolioChartCard b,
+.portfolioPage .portfolioChartCard strong,
+.portfolioPage .portfolioSectionHead h2,
+.portfolioPage .portfolioMiniHead b,
+.portfolioPage .portfolioActivityRow b,
+.portfolioPage .portfolioActivityRow strong,
+.portfolioPage .portfolioNft b,
+.portfolioPage .portfolioNft strong,
+.portfolioPage .polyQuickActions button,
+.portfolioPage .polyPortfolioTabs button.active,
+.portfolioPage .portfolioHeaderActions button,
+.portfolioPage .portfolioNetworkPill{
+  color:#ffffff !important;
+  -webkit-text-fill-color:#ffffff !important;
+}
+
+/* Do NOT override meaningful green/red market colors */
+.portfolioPage .up,
+.portfolioPage .positive{
+  color:#79df98 !important;
+  -webkit-text-fill-color:#79df98 !important;
+}
+.portfolioPage .down,
+.portfolioPage .negative{
+  color:#ee9186 !important;
+  -webkit-text-fill-color:#ee9186 !important;
+}
