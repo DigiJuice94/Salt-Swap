@@ -1,0 +1,17 @@
+HELIUS_API_KEY=your_helius_key_here
+BIRDEYE_API_KEY=your_birdeye_key_here
+
+JUPITER_API_KEY=
+
+ZEROX_API_KEY=
+
+# Salt Social persistent storage (Upstash Redis REST)
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
+
+# Optional but recommended: random 32+ character secret for 7-day Social login cookies.
+# If omitted, the existing Upstash REST token is used as the signing secret.
+SOCIAL_SESSION_SECRET=
+
+# Optional: higher LI.FI Quick Swap rate limits (public routing works without it)
+LIFI_API_KEY=

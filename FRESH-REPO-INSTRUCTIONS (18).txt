@@ -1,0 +1,33 @@
+THE TRENCHES V1.11.12 — FRESH GITHUB ROOT
+
+THIS FOLDER IS THE COMPLETE REPOSITORY CONTENT.
+AFTER YOU WIPE THE OLD GITHUB WORKING TREE, COPY EVERYTHING INSIDE THIS FOLDER
+TO THE ROOT OF THE REPOSITORY.
+
+VERCEL:
+- Root Directory MUST BE BLANK.
+- Production Branch: main.
+- Redeploy after the fresh commit.
+
+VERIFY:
+Open /api/health after deployment.
+It MUST show:
+  "version":"1.11.12"
+  "build":"fresh-github-root"
+
+DO NOT PUT OLD FILES BACK:
+api.js
+health.js
+scan.js
+app.js
+index.js
+main.jsx
+vite.config.js
+styles (2).css
+index (1).html
+old Salt Swap ZIP files
+old salt-logo.png
+old duplicate coin images
+
+FUTURE UPDATES:
+Replace/update ONLY the files in this clean repository.

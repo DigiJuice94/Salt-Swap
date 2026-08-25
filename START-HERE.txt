@@ -1,0 +1,65 @@
+THE TRENCHES V1.11.14 — CLEAN GITHUB RESET
+
+YES — the duplicate GitHub files are the problem.
+This package gives you ONE automated cleanup so you do not have to manually delete dozens of files.
+
+EASIEST METHOD (WINDOWS + GITHUB DESKTOP)
+
+1. Download and unzip this package.
+
+2. Open your Salt-Swap repo in GitHub Desktop.
+
+3. In GitHub Desktop click:
+      Repository -> Show in Explorer
+
+4. Copy the full folder path from Windows Explorer.
+
+5. Right-click:
+      RESET-GITHUB-REPO.ps1
+   and choose:
+      Run with PowerShell
+
+6. Paste the repo folder path when asked.
+
+7. Type:
+      YES
+
+The script will:
+- KEEP your .git history.
+- DELETE the old mixed Salt Swap / Trenches working files.
+- COPY in only the current V1.11.14 production files.
+- COMMIT the cleanup.
+- PUSH it to main.
+
+VERCEL AFTER THE SCRIPT:
+- Settings -> Build and Deployment
+- Root Directory must be COMPLETELY BLANK.
+- Save.
+- Let the new main commit deploy.
+
+VERIFY:
+Open:
+  /api/health
+
+It MUST contain:
+  "version":"1.11.14"
+  "build":"clean-repo-reset"
+
+WHAT THE CLEAN REPO KEEPS:
+- index.html
+- styles.css
+- api.mjs
+- vercel.json
+- site.webmanifest
+- current Trenches assets
+- current assets/ folder
+- README.md
+- .gitignore
+
+WHAT IT REMOVES:
+- old api.js / health.js / scan.js / [mint].js
+- old app.js / index.js / main.jsx / vite.config.js
+- duplicate index (1).html / styles (2).css / README(1).md
+- old Salt Swap ZIP files
+- duplicate old logos / coin images / salt-logo.png
+- stale files that were making Vercel deploy the wrong backend
