@@ -4127,3 +4127,141 @@ body:has(.portfolioPage:not(.hidden)){
 .portfolioPage [data-portfolio-panel="assets"] [style*="background"]{
   background-color:#0f1b15 !important;
 }
+
+/* ==========================================================
+   V1.11.39 — Unified Portfolio badges
+   Dashboard pill style used everywhere.
+   ========================================================== */
+
+.portfolioPage{
+  --portfolio-pill-bg:#173623;
+  --portfolio-pill-bg-hover:#1d442c;
+  --portfolio-pill-border:rgba(121,223,152,.22);
+  --portfolio-pill-text:#ffffff;
+  --portfolio-pill-dot:#50c878;
+}
+
+/* Dashboard reference */
+.portfolioPage .portfolioUpdated{
+  background:var(--portfolio-pill-bg)!important;
+  color:var(--portfolio-pill-text)!important;
+  -webkit-text-fill-color:var(--portfolio-pill-text)!important;
+  border:1px solid var(--portfolio-pill-border)!important;
+  box-shadow:none!important;
+}
+
+/* ANALYTICS */
+.portfolioPage [data-portfolio-panel="analytics"] .portfolioBadge,
+.portfolioPage [data-portfolio-panel="analytics"] .portfolioCount,
+.portfolioPage [data-portfolio-panel="analytics"] [class*="Badge"],
+.portfolioPage [data-portfolio-panel="analytics"] [class*="badge"],
+.portfolioPage [data-portfolio-panel="analytics"] [class*="Pill"],
+.portfolioPage [data-portfolio-panel="analytics"] [class*="pill"],
+.portfolioPage [data-portfolio-panel="analytics"] .portfolioSectionHead > button,
+.portfolioPage [data-portfolio-panel="analytics"] .portfolioSectionHead > span{
+  background:var(--portfolio-pill-bg)!important;
+  color:var(--portfolio-pill-text)!important;
+  -webkit-text-fill-color:var(--portfolio-pill-text)!important;
+  border:1px solid var(--portfolio-pill-border)!important;
+  border-radius:999px!important;
+  box-shadow:none!important;
+}
+
+/* ASSETS */
+.portfolioPage [data-portfolio-panel="assets"] .portfolioBadge,
+.portfolioPage [data-portfolio-panel="assets"] .portfolioCount,
+.portfolioPage [data-portfolio-panel="assets"] [class*="Badge"],
+.portfolioPage [data-portfolio-panel="assets"] [class*="badge"],
+.portfolioPage [data-portfolio-panel="assets"] [class*="Pill"],
+.portfolioPage [data-portfolio-panel="assets"] [class*="pill"],
+.portfolioPage [data-portfolio-panel="assets"] .portfolioSectionHead > button,
+.portfolioPage [data-portfolio-panel="assets"] .portfolioSectionHead > span,
+.portfolioPage [data-portfolio-panel="assets"] .portfolioHideSmall,
+.portfolioPage [data-portfolio-panel="assets"] .portfolioSmallBalanceToggle{
+  background:var(--portfolio-pill-bg)!important;
+  color:var(--portfolio-pill-text)!important;
+  -webkit-text-fill-color:var(--portfolio-pill-text)!important;
+  border:1px solid var(--portfolio-pill-border)!important;
+  border-radius:999px!important;
+  box-shadow:none!important;
+}
+
+/* DEFI */
+.portfolioPage [data-portfolio-panel="defi"] .portfolioBadge,
+.portfolioPage [data-portfolio-panel="defi"] .portfolioCount,
+.portfolioPage [data-portfolio-panel="defi"] [class*="Badge"],
+.portfolioPage [data-portfolio-panel="defi"] [class*="badge"],
+.portfolioPage [data-portfolio-panel="defi"] [class*="Pill"],
+.portfolioPage [data-portfolio-panel="defi"] [class*="pill"],
+.portfolioPage [data-portfolio-panel="defi"] .portfolioSectionHead > button,
+.portfolioPage [data-portfolio-panel="defi"] .portfolioSectionHead > span{
+  background:var(--portfolio-pill-bg)!important;
+  color:var(--portfolio-pill-text)!important;
+  -webkit-text-fill-color:var(--portfolio-pill-text)!important;
+  border:1px solid var(--portfolio-pill-border)!important;
+  border-radius:999px!important;
+  box-shadow:none!important;
+}
+
+/* TRANSACTIONS */
+.portfolioPage [data-portfolio-panel="transactions"] .portfolioBadge,
+.portfolioPage [data-portfolio-panel="transactions"] .portfolioCount,
+.portfolioPage [data-portfolio-panel="transactions"] [class*="Badge"],
+.portfolioPage [data-portfolio-panel="transactions"] [class*="badge"],
+.portfolioPage [data-portfolio-panel="transactions"] [class*="Pill"],
+.portfolioPage [data-portfolio-panel="transactions"] [class*="pill"],
+.portfolioPage [data-portfolio-panel="transactions"] .portfolioSectionHead > button,
+.portfolioPage [data-portfolio-panel="transactions"] .portfolioSectionHead > span,
+.portfolioPage [data-portfolio-panel="transactions"] .portfolioTransactionFilter,
+.portfolioPage [data-portfolio-panel="transactions"] .portfolioActivityFilter{
+  background:var(--portfolio-pill-bg)!important;
+  color:var(--portfolio-pill-text)!important;
+  -webkit-text-fill-color:var(--portfolio-pill-text)!important;
+  border:1px solid var(--portfolio-pill-border)!important;
+  border-radius:999px!important;
+  box-shadow:none!important;
+}
+
+/* Explicitly normalize common known Portfolio utility/status pills. */
+.portfolioPage .portfolioAnalyticsBadge,
+.portfolioPage .portfolioAnalyticsCount,
+.portfolioPage .portfolioAssetCount,
+.portfolioPage .portfolioAssetsCount,
+.portfolioPage .portfolioDefiBadge,
+.portfolioPage .portfolioDefiCount,
+.portfolioPage .portfolioTransactionBadge,
+.portfolioPage .portfolioTransactionCount,
+.portfolioPage .portfolioActivityBadge,
+.portfolioPage .portfolioActivityCount{
+  background:var(--portfolio-pill-bg)!important;
+  color:var(--portfolio-pill-text)!important;
+  -webkit-text-fill-color:var(--portfolio-pill-text)!important;
+  border:1px solid var(--portfolio-pill-border)!important;
+  border-radius:999px!important;
+  box-shadow:none!important;
+}
+
+/* Hover language matches dashboard style instead of gray. */
+.portfolioPage [data-portfolio-panel="analytics"] button:hover,
+.portfolioPage [data-portfolio-panel="assets"] button:hover,
+.portfolioPage [data-portfolio-panel="defi"] button:hover,
+.portfolioPage [data-portfolio-panel="transactions"] button:hover{
+  border-color:rgba(121,223,152,.32)!important;
+}
+
+/* Pills/buttons that are explicitly utility controls get the green hover. */
+.portfolioPage [data-portfolio-panel="analytics"] .portfolioSectionHead > button:hover,
+.portfolioPage [data-portfolio-panel="assets"] .portfolioSectionHead > button:hover,
+.portfolioPage [data-portfolio-panel="defi"] .portfolioSectionHead > button:hover,
+.portfolioPage [data-portfolio-panel="transactions"] .portfolioSectionHead > button:hover,
+.portfolioPage [data-portfolio-panel="assets"] .portfolioHideSmall:hover,
+.portfolioPage [data-portfolio-panel="assets"] .portfolioSmallBalanceToggle:hover{
+  background:var(--portfolio-pill-bg-hover)!important;
+}
+
+/* Preserve the Dashboard-style green status dot anywhere a status pill has one. */
+.portfolioPage .portfolioLiveDot,
+.portfolioPage [class*="status"] i,
+.portfolioPage [class*="Status"] i{
+  background:var(--portfolio-pill-dot)!important;
+}

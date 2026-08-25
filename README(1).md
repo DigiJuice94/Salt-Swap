@@ -891,3 +891,9 @@ This update rebuilds the Portfolio information architecture around the current C
 - Darkens Assets count badges and the Hide small balances control.
 - Forces white text across Analytics/DeFi light remnants.
 - Vercel configuration unchanged.
+
+## V1.11.39 — Unified Portfolio Badges
+- Uses the Dashboard LIVE pill as the visual standard for Analytics, Assets, DeFi, and Transactions.
+- All status/count/filter/history pills now use dark green backgrounds, white text, subtle green borders, and rounded pill geometry.
+- Removes the remaining gray utility badges across Portfolio tabs.
+- Vercel configuration unchanged.
