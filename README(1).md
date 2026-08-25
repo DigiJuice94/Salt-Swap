@@ -785,3 +785,10 @@ This update rebuilds the Portfolio information architecture around the current C
 - Displays live Following and Followers counts instead of hard-coded zeros.
 - Following/follower data survives future profile edits.
 - Uses the existing `/api/social-profile` route, so `vercel.json` remains unchanged.
+
+## V1.11.23 — Stay on Followed Profile
+- Fixes Follow / Unfollow so the app stays on the profile you are viewing.
+- Removes the `cacheProfile()` call that was re-rendering your own profile after following someone.
+- Your own follow-count data is still refreshed and saved locally without changing the visible profile.
+- Keeps V1.11.22 follow persistence and all previous profile-discovery behavior.
+- Vercel configuration unchanged.

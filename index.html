@@ -2594,9 +2594,18 @@ async function toggleViewedProfileFollow(){
     btn.textContent=result.following?'Following':'Follow';
     if($('profileFollowersCount'))$('profileFollowersCount').textContent=String(Number(result.followersCount)||0);
     if(publicSocialProfile)publicSocialProfile={...publicSocialProfile,viewerFollowing:Boolean(result.following),followersCount:Number(result.followersCount)||0};
+    viewingPublicSocialProfile=true;
+    $('socialProfilePage')?.classList.remove('hidden');
+    $('socialFeedView')?.classList.add('hidden');
+    $('socialFollowingView')?.classList.add('hidden');
+    $('backToOwnProfileBtn')?.classList.remove('hidden');
     if(saltProfile&&walletAddress){
       const mine=await socialApi('/api/social-profile?wallet='+encodeURIComponent(walletAddress)).catch(()=>null);
-      if(mine){saltProfile={...saltProfile,...mine};cacheProfile(saltProfile)}
+      if(mine){
+        saltProfile={...saltProfile,...mine};
+        try{localStorage.setItem(`salt:profile:${walletAddress}`,JSON.stringify(saltProfile))}catch{}
+        updateScanThesisComposer?.();
+      }
     }
   }catch(e){
     btn.textContent=btn.classList.contains('isFollowing')?'Following':'Follow';
