@@ -2585,28 +2585,33 @@ async function toggleViewedProfileFollow(){
   try{
     btn.disabled=true;
     btn.textContent='Saving…';
-    await ensureSocialAuthSession();
+    const viewerWallet=String(walletAddress||saltProfile?.wallet||'').trim();
+    const viewerProvider=walletProvider||findSolWallet();
+    if(!viewerWallet||!viewerProvider)throw new Error('Connect your Solana wallet to follow profiles.');
+    await ensureSocialAuthSession({
+      wallet:viewerWallet,
+      provider:viewerProvider,
+      profile:saltProfile
+    });
+    const viewedWallet=String(publicSocialProfile?.wallet||target).trim();
+    if(!viewedWallet)throw new Error('That profile wallet could not be found.');
+    if(viewedWallet===viewerWallet)throw new Error('You cannot follow your own profile.');
     const result=await socialApi('/api/social-profile',{
       method:'POST',
-      body:JSON.stringify({action:'follow',wallet:target})
+      body:JSON.stringify({action:'follow',wallet:viewedWallet})
     });
     btn.classList.toggle('isFollowing',Boolean(result.following));
     btn.textContent=result.following?'Following':'Follow';
     if($('profileFollowersCount'))$('profileFollowersCount').textContent=String(Number(result.followersCount)||0);
     if(publicSocialProfile)publicSocialProfile={...publicSocialProfile,viewerFollowing:Boolean(result.following),followersCount:Number(result.followersCount)||0};
+    btn.dataset.wallet=String(publicSocialProfile?.wallet||target);
     viewingPublicSocialProfile=true;
     $('socialProfilePage')?.classList.remove('hidden');
     $('socialFeedView')?.classList.add('hidden');
     $('socialFollowingView')?.classList.add('hidden');
     $('backToOwnProfileBtn')?.classList.remove('hidden');
-    if(saltProfile&&walletAddress){
-      const mine=await socialApi('/api/social-profile?wallet='+encodeURIComponent(walletAddress)).catch(()=>null);
-      if(mine){
-        saltProfile={...saltProfile,...mine};
-        try{localStorage.setItem(`salt:profile:${walletAddress}`,JSON.stringify(saltProfile))}catch{}
-        updateScanThesisComposer?.();
-      }
-    }
+    // Keep the viewed profile on screen. Own-profile counts refresh next time
+    // the user returns to their profile instead of re-rendering during Follow.
   }catch(e){
     btn.textContent=btn.classList.contains('isFollowing')?'Following':'Follow';
     alert(readableError(e));

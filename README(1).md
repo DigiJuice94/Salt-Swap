@@ -792,3 +792,12 @@ This update rebuilds the Portfolio information architecture around the current C
 - Your own follow-count data is still refreshed and saved locally without changing the visible profile.
 - Keeps V1.11.22 follow persistence and all previous profile-discovery behavior.
 - Vercel configuration unchanged.
+
+## V1.11.24 — Follow Target / Stay Put
+- Fixes the real Follow navigation bug.
+- Follow authentication now uses the viewer's already-connected wallet/provider directly.
+- It no longer calls the generic signer flow that cached and re-rendered the viewer's own profile.
+- The follow request always targets the wallet of the public profile currently being viewed.
+- Blocks accidental self-following on both frontend and backend.
+- Follow / Unfollow updates in place and stays on the viewed profile.
+- No Vercel configuration changes.
