@@ -488,6 +488,103 @@ async function enrichHoldingImages(rows){
   return rows
 }
 async function jupiterTokens(path){const key=jupiterKey();return fetchJson(`${JUPITER_TOKENS_BASE}${path}`,{headers:{accept:'application/json','x-api-key':key}},10000)}
+
+let trendingMarketCache={at:0,items:[]};
+function trendingSupportedChain(chainId){
+  const c=String(chainId||'').toLowerCase();
+  if(c==='solana')return 'solana';
+  if(c==='ethereum')return 'ethereum';
+  if(c==='base')return 'base';
+  if(c==='bsc'||c==='bnb')return 'bnb';
+  if(c==='robinhood')return 'robinhood';
+  return null
+}
+function trendingDexChain(chain){
+  return chain==='bnb'?'bsc':chain
+}
+function trendingBestPair(pairs,address){
+  const target=String(address||'').toLowerCase();
+  return (Array.isArray(pairs)?pairs:[]).filter(p=>String(p?.baseToken?.address||'').toLowerCase()===target)
+    .sort((a,b)=>(number(b?.liquidity?.usd)||0)-(number(a?.liquidity?.usd)||0))[0]||null
+}
+function trendingPairRow(pair,seed={}){
+  if(!pair)return null;
+  const chain=trendingSupportedChain(pair?.chainId)||seed.chain,address=String(pair?.baseToken?.address||seed.address||''),boost=Number(seed.boost||0),vol=number(pair?.volume?.h24)||0,liq=number(pair?.liquidity?.usd)||0,tx=Number(pair?.txns?.h24?.buys||0)+Number(pair?.txns?.h24?.sells||0),h1=Math.abs(number(pair?.priceChange?.h1)||0),h24=Math.abs(number(pair?.priceChange?.h24)||0);
+  const heat=Math.max(0,Math.min(100,Math.round(
+    16 + Math.min(24,Math.log10(Math.max(1,vol))*3.2) + Math.min(18,Math.log10(Math.max(1,liq))*2.2) +
+    Math.min(18,Math.log10(Math.max(1,tx))*5) + Math.min(12,h1*.35) + Math.min(7,h24*.08) + Math.min(12,Math.log10(Math.max(1,boost+1))*7)
+  )));
+  return{
+    chain,address,
+    name:String(pair?.baseToken?.name||seed.name||'Unknown token').slice(0,80),
+    symbol:String(pair?.baseToken?.symbol||seed.symbol||'TOKEN').slice(0,24),
+    image:normalizeTokenIcon(pair?.info?.imageUrl)||normalizeTokenIcon(seed.image)||'',
+    priceUsd:number(pair?.priceUsd),change5m:number(pair?.priceChange?.m5),change1h:number(pair?.priceChange?.h1),change6h:number(pair?.priceChange?.h6),change24h:number(pair?.priceChange?.h24),
+    volume24h:vol,liquidityUsd:liq,marketCap:number(pair?.marketCap)??number(pair?.fdv),fdv:number(pair?.fdv),
+    buys24h:Number(pair?.txns?.h24?.buys||0),sells24h:Number(pair?.txns?.h24?.sells||0),
+    pairCreatedAt:number(pair?.pairCreatedAt),pairAddress:String(pair?.pairAddress||''),dexId:String(pair?.dexId||''),
+    boosted:boost>0,boost,heat,
+    source:seed.jupiter?'Jupiter + DEX Screener':'DEX Screener'
+  }
+}
+async function trendingPairBatch(chain,addresses){
+  const dsChain=trendingDexChain(chain),out=new Map(),uniq=[...new Set(addresses.filter(Boolean))].slice(0,30);
+  if(!uniq.length)return out;
+  try{
+    const rows=await fetchJson(`https://api.dexscreener.com/tokens/v1/${encodeURIComponent(dsChain)}/${uniq.map(x=>encodeURIComponent(x)).join(',')}`,{headers:{accept:'application/json'}},10000);
+    for(const address of uniq){const pair=trendingBestPair(rows,address);if(pair)out.set(String(address).toLowerCase(),pair)}
+  }catch(e){console.warn('Trending DexScreener batch:',chain,errorText(e))}
+  return out
+}
+async function trendingMarketHandler(req,res){
+  res.setHeader('Cache-Control','public, max-age=20, s-maxage=45');
+  try{
+    if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});
+    const force=String(req.query.refresh||'')==='1';
+    if(!force&&Date.now()-trendingMarketCache.at<25000&&trendingMarketCache.items.length)return res.status(200).json({items:trendingMarketCache.items,cached:true,updatedAt:new Date(trendingMarketCache.at).toISOString()});
+    const seedMap=new Map(),put=s=>{if(!s?.chain||!s?.address)return;const k=`${s.chain}:${String(s.address).toLowerCase()}`,old=seedMap.get(k)||{};seedMap.set(k,{...old,...s,boost:Math.max(Number(old.boost||0),Number(s.boost||0)),jupiter:Boolean(old.jupiter||s.jupiter)})};
+
+    // Cross-chain attention/boost signals.
+    const [boostTop,boostLatest]=await Promise.all([
+      fetchJson('https://api.dexscreener.com/token-boosts/top/v1',{headers:{accept:'application/json'}},8000).catch(()=>[]),
+      fetchJson('https://api.dexscreener.com/token-boosts/latest/v1',{headers:{accept:'application/json'}},8000).catch(()=>[])
+    ]);
+    for(const row of [...(Array.isArray(boostTop)?boostTop:[]),...(Array.isArray(boostLatest)?boostLatest:[])]){
+      const chain=trendingSupportedChain(row?.chainId);if(!chain)continue;
+      put({chain,address:String(row?.tokenAddress||''),image:row?.icon||'',boost:Number(row?.totalAmount||row?.amount||0),boosted:true})
+    }
+
+    // Jupiter adds organic Solana trending signal even when a token is not boosted.
+    try{
+      const arr=await jupiterTokens('/toptrending/1h?limit=30');
+      for(const t of (Array.isArray(arr)?arr:[])){
+        const x=tokenShape(t);if(!x.id)continue;
+        put({chain:'solana',address:x.id,name:x.name,symbol:x.symbol,image:x.icon,jupiter:true,boost:0})
+      }
+    }catch(e){console.warn('Trending Jupiter:',errorText(e))}
+
+    const seeds=[...seedMap.values()].slice(0,100),groups={solana:[],ethereum:[],base:[],bnb:[],robinhood:[]};
+    for(const s of seeds)groups[s.chain]?.push(s.address);
+    const batchEntries=await Promise.all(Object.entries(groups).map(async([chain,addresses])=>[chain,await trendingPairBatch(chain,addresses)]));
+    const pairMaps=Object.fromEntries(batchEntries),items=[];
+    for(const seed of seeds){
+      const pair=pairMaps[seed.chain]?.get(String(seed.address).toLowerCase()),row=trendingPairRow(pair,seed);
+      if(row&&row.priceUsd!=null)items.push(row)
+    }
+
+    // Dedupe and require at least basic tradable liquidity. Robinhood can have sparse DEX data,
+    // so it remains supported but may have no entries until DexScreener lists an active pair.
+    const seen=new Set(),clean=[];
+    for(const row of items.sort((a,b)=>(b.heat||0)-(a.heat||0))){
+      const k=`${row.chain}:${String(row.address).toLowerCase()}`;if(seen.has(k))continue;seen.add(k);
+      if((number(row.liquidityUsd)||0)<500&&row.chain!=='robinhood')continue;
+      clean.push(row)
+    }
+    trendingMarketCache={at:Date.now(),items:clean.slice(0,80)};
+    return res.status(200).json({items:trendingMarketCache.items,cached:false,updatedAt:new Date(trendingMarketCache.at).toISOString()})
+  }catch(e){console.error('Trenches trending market:',e);return res.status(Number(e?.status)||500).json({error:errorText(e)})}
+}
+
 async function tokensHandler(req,res){
   res.setHeader('Cache-Control','public, max-age=30, s-maxage=60');
   if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});
@@ -906,6 +1003,7 @@ export default async function handler(req,res){
     if(route==='quote')return quoteHandler(req,res);
     if(route==='execute')return executeHandler(req,res);
     if(route==='tokens')return tokensHandler(req,res);
+    if(route==='trending-market')return trendingMarketHandler(req,res);
     if(route==='evm-quote')return evmQuoteHandler(req,res);
     if(route==='evm-tokens')return evmTokensHandler(req,res);
     if(route==='quick-swap-preview')return quickSwapPreviewHandler(req,res);

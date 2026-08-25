@@ -41,6 +41,10 @@
       "dest": "/api.mjs?route=tokens"
     },
     {
+      "src": "/api/trending-market",
+      "dest": "/api.mjs?route=trending-market"
+    },
+    {
       "src": "/api/evm-quote",
       "dest": "/api.mjs?route=evm-quote"
     },

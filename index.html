@@ -42,7 +42,7 @@
       <button id="swapNavBtn" class="active" type="button">Swap</button>
       <button id="socialNavBtn" type="button">Social</button>
       <button id="portfolioNavBtn" type="button">Portfolio</button>
-      <button data-coming="Trending" type="button">Trending</button>
+      <button id="trendingNavBtn" type="button">Trending</button>
     </nav>
 
     <div class="headerWalletShell">
@@ -465,6 +465,100 @@
           <div class="portfolioSectionHead"><div><small>TRANSACTIONS</small><h2>Wallet Activity</h2></div><span>Newest first</span></div>
           <div class="portfolioTransactionHead"><span>Type</span><span>Transaction</span><span>Date</span></div>
           <div id="portfolioActivity" class="portfolioActivityList coinstatsTransactions"><div class="portfolioEmpty">Loading activity…</div></div>
+        </div>
+      </div>
+    </section>
+
+
+    <section id="trendingPage" class="trendingPage hidden" aria-label="Trending crypto">
+      <div class="trendingTerminal">
+        <div class="trendingHero">
+          <div class="trendingHeroCopy">
+            <small>THE TRENCHES · LIVE MARKET INTELLIGENCE</small>
+            <h1>What’s moving <span>right now.</span></h1>
+            <p>Live momentum across Solana, Ethereum, Base, BNB Chain and Robinhood Chain. Trending is market activity — not a safety endorsement.</p>
+          </div>
+          <div class="trendingHeroStatus">
+            <span class="trendingLiveDot"></span>
+            <div><b>LIVE FEED</b><small id="trendingLastUpdated">Waiting for data…</small></div>
+            <button id="trendingRefreshBtn" type="button">↻ Refresh</button>
+          </div>
+        </div>
+
+        <div class="trendingPulseGrid">
+          <article>
+            <small>HOTTEST NOW</small>
+            <div id="trendingHottest" class="trendingPulseValue"><b>—</b><span>Loading</span></div>
+          </article>
+          <article>
+            <small>BIGGEST 24H MOVE</small>
+            <div id="trendingBiggestMove" class="trendingPulseValue"><b>—</b><span>Loading</span></div>
+          </article>
+          <article>
+            <small>24H VOLUME</small>
+            <div id="trendingVolumeTotal" class="trendingPulseValue"><b>—</b><span>Tracked set</span></div>
+          </article>
+          <article>
+            <small>LIVE TOKENS</small>
+            <div id="trendingTokenCount" class="trendingPulseValue"><b>—</b><span>Across supported chains</span></div>
+          </article>
+        </div>
+
+        <div class="trendingControls">
+          <div class="trendingModeTabs" role="tablist" aria-label="Trending sort">
+            <button class="active" type="button" data-trending-mode="hot">🔥 Hot</button>
+            <button type="button" data-trending-mode="gainers">↗ Gainers</button>
+            <button type="button" data-trending-mode="volume">◫ Volume</button>
+            <button type="button" data-trending-mode="new">✦ New</button>
+            <button type="button" data-trending-mode="watchlist">★ Watchlist</button>
+          </div>
+          <label class="trendingSearch">
+            <span>⌕</span>
+            <input id="trendingSearchInput" type="search" placeholder="Search name, ticker or contract" autocomplete="off" />
+          </label>
+        </div>
+
+        <div class="trendingChainTabs" aria-label="Chain filters">
+          <button class="active" type="button" data-trending-chain="all">All Chains</button>
+          <button type="button" data-trending-chain="solana"><span class="chainOrb solana"></span>Solana</button>
+          <button type="button" data-trending-chain="ethereum"><span class="chainOrb ethereum"></span>Ethereum</button>
+          <button type="button" data-trending-chain="base"><span class="chainOrb base"></span>Base</button>
+          <button type="button" data-trending-chain="bnb"><span class="chainOrb bnb"></span>BNB Chain</button>
+          <button type="button" data-trending-chain="robinhood"><span class="chainOrb robinhood"></span>Robinhood</button>
+        </div>
+
+        <div id="trendingSpotlight" class="trendingSpotlight">
+          <div class="trendingSpotlightLoading">Scanning the market…</div>
+        </div>
+
+        <div class="trendingTableShell">
+          <div class="trendingTableHead">
+            <span># / TOKEN</span>
+            <span>PRICE</span>
+            <span>1H</span>
+            <span>24H</span>
+            <span>24H VOLUME</span>
+            <span>LIQUIDITY</span>
+            <span>MARKET CAP</span>
+            <span>HEAT</span>
+            <span></span>
+          </div>
+          <div id="trendingRows" class="trendingRows">
+            <div class="trendingLoadingRows">
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="trendingBottomGrid">
+          <article class="trendingInfoCard">
+            <div class="trendingInfoIcon">◎</div>
+            <div><b>Trending ≠ Safe</b><p>A token can trend because of volume, momentum, promotion, or attention. Open any token in Salt Check before trading it.</p></div>
+          </article>
+          <article class="trendingInfoCard">
+            <div class="trendingInfoIcon">↻</div>
+            <div><b>Live refresh</b><p>The page refreshes automatically while it is open. Stars are saved locally to your Trenches watchlist.</p></div>
+          </article>
         </div>
       </div>
     </section>
@@ -1563,6 +1657,163 @@ async function loadPortfolioTimeMachine(date){
   }catch(e){if(status)status.textContent=readableError(e)}
 }
 
+
+let trendingState={
+  rows:[],mode:'hot',chain:'all',query:'',loading:false,lastUpdated:0,timer:null
+};
+function trendingWatchKey(){return 'trenches:trending:watchlist:v1'}
+function getTrendingWatchlist(){try{const x=JSON.parse(localStorage.getItem(trendingWatchKey())||'[]');return Array.isArray(x)?x:[]}catch{return[]}}
+function setTrendingWatchlist(rows){try{localStorage.setItem(trendingWatchKey(),JSON.stringify([...new Set(rows)].slice(0,200)))}catch{}}
+function trendingRowKey(r){return `${String(r.chain||'').toLowerCase()}:${String(r.address||'').toLowerCase()}`}
+function isTrendingWatched(r){return getTrendingWatchlist().includes(trendingRowKey(r))}
+function toggleTrendingWatch(r){
+  const key=trendingRowKey(r),rows=getTrendingWatchlist(),i=rows.indexOf(key);
+  if(i>=0)rows.splice(i,1);else rows.unshift(key);
+  setTrendingWatchlist(rows);renderTrendingPage()
+}
+function trendingChainLabel(chain){return({solana:'Solana',ethereum:'Ethereum',base:'Base',bnb:'BNB Chain',robinhood:'Robinhood'})[String(chain||'').toLowerCase()]||String(chain||'Chain')}
+function trendingMoney(v){
+  v=Number(v);if(!Number.isFinite(v))return '—';
+  if(Math.abs(v)>=1e12)return '$'+(v/1e12).toFixed(2)+'T';
+  if(Math.abs(v)>=1e9)return '$'+(v/1e9).toFixed(2)+'B';
+  if(Math.abs(v)>=1e6)return '$'+(v/1e6).toFixed(2)+'M';
+  if(Math.abs(v)>=1e3)return '$'+(v/1e3).toFixed(1)+'K';
+  if(Math.abs(v)>=1)return '$'+v.toLocaleString(undefined,{maximumFractionDigits:2});
+  if(Math.abs(v)>=.01)return '$'+v.toFixed(4);
+  return '$'+v.toPrecision(4)
+}
+function trendingPct(v){
+  v=Number(v);if(!Number.isFinite(v))return '—';
+  return `${v>0?'+':''}${v.toFixed(Math.abs(v)>=100?0:2)}%`
+}
+function trendingPctClass(v){v=Number(v);return Number.isFinite(v)?(v>0?'up':v<0?'down':'neutral'):'neutral'}
+function trendingAge(ts){
+  ts=Number(ts);if(!Number.isFinite(ts)||!ts)return '—';
+  const ms=Math.max(0,Date.now()-ts),m=Math.floor(ms/60000);
+  if(m<60)return `${Math.max(1,m)}m`;
+  const h=Math.floor(m/60);if(h<48)return `${h}h`;
+  return `${Math.floor(h/24)}d`
+}
+function trendingTokenIcon(r,cls=''){
+  const letter=String(r.symbol||r.name||'?').replace(/^\$/,'').slice(0,1).toUpperCase()||'?';
+  return r.image
+    ?`<span class="trendingTokenIcon ${cls}"><img src="${socialEsc(r.image)}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><i style="display:none">${socialEsc(letter)}</i></span>`
+    :`<span class="trendingTokenIcon ${cls}"><i>${socialEsc(letter)}</i></span>`
+}
+function trendingSort(rows){
+  const mode=trendingState.mode;
+  rows=[...rows];
+  if(mode==='gainers')rows.sort((a,b)=>(Number(b.change24h)||-999999)-(Number(a.change24h)||-999999));
+  else if(mode==='volume')rows.sort((a,b)=>(Number(b.volume24h)||0)-(Number(a.volume24h)||0));
+  else if(mode==='new')rows.sort((a,b)=>(Number(b.pairCreatedAt)||0)-(Number(a.pairCreatedAt)||0));
+  else rows.sort((a,b)=>(Number(b.heat)||0)-(Number(a.heat)||0));
+  return rows
+}
+function filteredTrendingRows(){
+  let rows=Array.isArray(trendingState.rows)?trendingState.rows:[];
+  if(trendingState.mode==='watchlist'){const watch=new Set(getTrendingWatchlist());rows=rows.filter(r=>watch.has(trendingRowKey(r)))}
+  if(trendingState.chain!=='all')rows=rows.filter(r=>r.chain===trendingState.chain);
+  const q=trendingState.query.trim().toLowerCase();
+  if(q)rows=rows.filter(r=>`${r.name||''} ${r.symbol||''} ${r.address||''}`.toLowerCase().includes(q));
+  return trendingSort(rows)
+}
+function trendingOpenToken(r){
+  if(!r?.address)return;
+  $('mintInput').value=r.address;
+  if($('chainSelect'))$('chainSelect').value=r.chain||'auto';
+  showMainPageGlobal?.('swap');
+  setTimeout(()=>scan(),30)
+}
+function trendingMiniStat(label,value){return `<span><small>${socialEsc(label)}</small><b>${socialEsc(value)}</b></span>`}
+function renderTrendingSpotlight(rows){
+  const el=$('trendingSpotlight');if(!el)return;
+  const hot=rows.slice(0,3);
+  if(!hot.length){el.innerHTML='<div class="trendingEmpty"><b>No tokens match this view.</b><span>Try another chain or clear your search.</span></div>';return}
+  el.innerHTML=hot.map((r,i)=>`<button class="trendingSpotCard ${i===0?'hero':''}" type="button" data-trending-open="${socialEsc(trendingRowKey(r))}">
+    <div class="trendingSpotTop">
+      ${trendingTokenIcon(r,'large')}
+      <div class="trendingSpotIdentity"><span>${socialEsc(r.name||'Unknown')}</span><b>$${socialEsc(r.symbol||'TOKEN')}</b><small><i class="chainOrb ${socialEsc(r.chain)}"></i>${socialEsc(trendingChainLabel(r.chain))}${r.boosted?' · Boosted':''}</small></div>
+      <strong class="trendingHeatBadge">🔥 ${Math.round(Number(r.heat)||0)}</strong>
+    </div>
+    <div class="trendingSpotPrice">${socialEsc(trendingMoney(r.priceUsd))}<span class="${trendingPctClass(r.change24h)}">${socialEsc(trendingPct(r.change24h))} 24H</span></div>
+    <div class="trendingSpotStats">
+      ${trendingMiniStat('24H VOL',trendingMoney(r.volume24h))}
+      ${trendingMiniStat('LIQ',trendingMoney(r.liquidityUsd))}
+      ${trendingMiniStat('MCAP',trendingMoney(r.marketCap))}
+    </div>
+  </button>`).join('')
+}
+function renderTrendingRows(rows){
+  const el=$('trendingRows');if(!el)return;
+  if(!rows.length){
+    const copy=trendingState.mode==='watchlist'?'Star tokens from Trending to build your watchlist.':'No trending tokens match these filters.';
+    el.innerHTML=`<div class="trendingEmpty table"><b>Nothing here yet.</b><span>${socialEsc(copy)}</span></div>`;return
+  }
+  el.innerHTML=rows.map((r,i)=>{
+    const watched=isTrendingWatched(r),tx=Number(r.buys24h||0)+Number(r.sells24h||0);
+    return `<article class="trendingRow">
+      <button class="trendingRankToken" type="button" data-trending-open="${socialEsc(trendingRowKey(r))}">
+        <span class="trendingRank">${i+1}</span>
+        ${trendingTokenIcon(r)}
+        <span class="trendingIdentity"><b>${socialEsc(r.name||'Unknown')}</b><small>$${socialEsc(r.symbol||'TOKEN')} · ${socialEsc(trendingChainLabel(r.chain))}${r.pairCreatedAt?` · ${socialEsc(trendingAge(r.pairCreatedAt))} old`:''}</small></span>
+      </button>
+      <div class="trendingCell price"><b>${socialEsc(trendingMoney(r.priceUsd))}</b><small>${tx?`${tx.toLocaleString()} txns`:''}</small></div>
+      <div class="trendingCell ${trendingPctClass(r.change1h)}">${socialEsc(trendingPct(r.change1h))}</div>
+      <div class="trendingCell ${trendingPctClass(r.change24h)}">${socialEsc(trendingPct(r.change24h))}</div>
+      <div class="trendingCell">${socialEsc(trendingMoney(r.volume24h))}</div>
+      <div class="trendingCell">${socialEsc(trendingMoney(r.liquidityUsd))}</div>
+      <div class="trendingCell">${socialEsc(trendingMoney(r.marketCap))}</div>
+      <div class="trendingCell heat"><span style="--heat:${Math.max(4,Math.min(100,Number(r.heat)||0))}%"><i></i></span><b>${Math.round(Number(r.heat)||0)}</b></div>
+      <button class="trendingWatchBtn ${watched?'active':''}" type="button" data-trending-watch="${socialEsc(trendingRowKey(r))}" aria-label="${watched?'Remove from':'Add to'} watchlist">${watched?'★':'☆'}</button>
+    </article>`
+  }).join('')
+}
+function renderTrendingPulse(){
+  const rows=Array.isArray(trendingState.rows)?trendingState.rows:[],hot=[...rows].sort((a,b)=>(Number(b.heat)||0)-(Number(a.heat)||0))[0],mover=[...rows].filter(x=>Number.isFinite(Number(x.change24h))).sort((a,b)=>Math.abs(Number(b.change24h))-Math.abs(Number(a.change24h)))[0],volume=rows.reduce((s,x)=>s+(Number(x.volume24h)||0),0);
+  if($('trendingHottest'))$('trendingHottest').innerHTML=hot?`<b>$${socialEsc(hot.symbol||'TOKEN')}</b><span>${socialEsc(trendingChainLabel(hot.chain))} · Heat ${Math.round(Number(hot.heat)||0)}</span>`:'<b>—</b><span>No data</span>';
+  if($('trendingBiggestMove'))$('trendingBiggestMove').innerHTML=mover?`<b class="${trendingPctClass(mover.change24h)}">${socialEsc(trendingPct(mover.change24h))}</b><span>$${socialEsc(mover.symbol||'TOKEN')}</span>`:'<b>—</b><span>No data</span>';
+  if($('trendingVolumeTotal'))$('trendingVolumeTotal').innerHTML=`<b>${socialEsc(trendingMoney(volume))}</b><span>Tracked 24H volume</span>`;
+  if($('trendingTokenCount'))$('trendingTokenCount').innerHTML=`<b>${rows.length}</b><span>Across supported chains</span>`
+}
+function bindTrendingRows(rows){
+  const byKey=new Map((trendingState.rows||[]).map(r=>[trendingRowKey(r),r]));
+  document.querySelectorAll('[data-trending-open]').forEach(b=>b.addEventListener('click',()=>{const r=byKey.get(b.dataset.trendingOpen);if(r)trendingOpenToken(r)}));
+  document.querySelectorAll('[data-trending-watch]').forEach(b=>b.addEventListener('click',()=>{const r=byKey.get(b.dataset.trendingWatch);if(r)toggleTrendingWatch(r)}))
+}
+function renderTrendingPage(){
+  const rows=filteredTrendingRows();
+  document.querySelectorAll('[data-trending-mode]').forEach(b=>b.classList.toggle('active',b.dataset.trendingMode===trendingState.mode));
+  document.querySelectorAll('[data-trending-chain]').forEach(b=>b.classList.toggle('active',b.dataset.trendingChain===trendingState.chain));
+  renderTrendingPulse();
+  renderTrendingSpotlight(rows);
+  renderTrendingRows(rows);
+  bindTrendingRows(rows)
+}
+async function loadTrending(force=false){
+  if(trendingState.loading&&!force)return;
+  trendingState.loading=true;
+  $('trendingRefreshBtn')?.classList.add('loading');
+  try{
+    const r=await fetch('/api/trending-market'+(force?'?refresh=1':''),{headers:{accept:'application/json'},cache:'no-store'}),j=await r.json();
+    if(!r.ok)throw new Error(readableError(j?.error??j));
+    trendingState.rows=Array.isArray(j?.items)?j.items:[];
+    trendingState.lastUpdated=Date.now();
+    if($('trendingLastUpdated'))$('trendingLastUpdated').textContent=`Updated ${new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}`;
+    renderTrendingPage()
+  }catch(e){
+    const el=$('trendingRows');if(el)el.innerHTML=`<div class="trendingEmpty table"><b>Market feed unavailable.</b><span>${socialEsc(readableError(e))}</span></div>`;
+    if($('trendingLastUpdated'))$('trendingLastUpdated').textContent='Refresh failed'
+  }finally{
+    trendingState.loading=false;$('trendingRefreshBtn')?.classList.remove('loading')
+  }
+}
+function setTrendingLive(active){
+  if(trendingState.timer){clearInterval(trendingState.timer);trendingState.timer=null}
+  if(!active)return;
+  if(!trendingState.rows.length||Date.now()-trendingState.lastUpdated>45000)loadTrending();
+  trendingState.timer=setInterval(()=>{if(!document.hidden)loadTrending(true)},60000)
+}
+
 function initSalt(){
   $('refreshCryptoNews')?.addEventListener('click',()=>loadCryptoNews(true));$('cryptoNewsPrev')?.addEventListener('click',()=>{const n=Math.min(4,Math.ceil(cryptoNewsArticles.length/5));if(n>1){cryptoNewsPage=(cryptoNewsPage-1+n)%n;renderCryptoNewsPage()}});$('cryptoNewsNext')?.addEventListener('click',()=>{const n=Math.min(4,Math.ceil(cryptoNewsArticles.length/5));if(n>1){cryptoNewsPage=(cryptoNewsPage+1)%n;renderCryptoNewsPage()}});$('addTickerBtn')?.addEventListener('click',()=>{$('addTickerPanel')?.classList.toggle('hidden');$('addTickerSearch')?.focus()});$('profileWatchAddBtn')?.addEventListener('click',addProfileWatchTicker);$('profileWatchInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addProfileWatchTicker()}});let tickerTimer;$('addTickerSearch')?.addEventListener('input',e=>{clearTimeout(tickerTimer);tickerTimer=setTimeout(()=>searchTicker(e.target.value),250)});$('feedComposer')?.addEventListener('submit',submitFeedThesis);document.querySelectorAll('[data-feed-filter]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-feed-filter]').forEach(x=>x.classList.toggle('active',x===b));if(b.dataset.feedFilter==='following')showSocialTab('following');else loadCommunityFeed()}));
   $('portfolioConnectBtn')?.addEventListener('click',async()=>{const b=$('portfolioConnectBtn'),st=$('portfolioConnectStatus');try{b.disabled=true;b.textContent='Connecting…';st.textContent='Approve the wallet connection. No message signature is required to view your portfolio.';await connectPortfolioWallet();await loadPortfolio(true)}catch(e){st.textContent=readableError(e)}finally{b.disabled=false;b.textContent='Connect Solana Wallet'}});
@@ -1590,8 +1841,8 @@ function initSalt(){
   $('profilePictureBtn')?.addEventListener('click',()=>$('profilePictureInput')?.click());
   $('profilePictureInput')?.addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;const st=$('profileCreateStatus');try{st.textContent='Preparing picture…';pendingProfileAvatar=await prepareProfilePicture(f);$('profilePicturePreview').innerHTML=`<img src="${socialEsc(pendingProfileAvatar)}" alt="" />`;st.textContent='Picture ready. Continue to save your profile.';st.className='profileCreateStatus'}catch(err){st.textContent=readableError(err);st.className='profileCreateStatus errorState';e.target.value=''}});
   document.querySelectorAll('#socialSubNav [data-social-tab]').forEach(b=>b.addEventListener('click',()=>showSocialTab(b.dataset.socialTab)));
-   const showMainPage=(page)=>{const social=$('saltSocial'),portfolio=$('portfolioPage'),home=$('home'),results=$('results'),swapBtn=$('swapNavBtn'),socialBtn=$('socialNavBtn'),portfolioBtn=$('portfolioNavBtn');document.body.classList.toggle('salt-social-active',page==='social');document.body.classList.toggle('portfolio-active',page==='portfolio');social?.classList.toggle('hidden',page!=='social');portfolio?.classList.toggle('hidden',page!=='portfolio');home?.classList.toggle('hidden',page!=='swap');if(results)results.classList.toggle('hidden',page!=='swap'||!currentMint);swapBtn?.classList.toggle('active',page==='swap');socialBtn?.classList.toggle('active',page==='social');portfolioBtn?.classList.toggle('active',page==='portfolio');setPortfolioLiveTracker(page==='portfolio');if(page==='portfolio')loadPortfolio();window.scrollTo({top:0,behavior:'smooth'});};
-  $('socialNavBtn')?.addEventListener('click',async()=>{showMainPage('social');if(walletAddress&&walletKind==='solana'){const p=activeWalletProfile();if(!p||p.wallet!==walletAddress)await loadSaltProfile();else renderProfile()}else renderProfile()});$('swapNavBtn')?.addEventListener('click',()=>showMainPage('swap'));$('portfolioNavBtn')?.addEventListener('click',()=>showMainPage('portfolio'));
+   const showMainPage=(page)=>{const social=$('saltSocial'),portfolio=$('portfolioPage'),trending=$('trendingPage'),home=$('home'),results=$('results'),swapBtn=$('swapNavBtn'),socialBtn=$('socialNavBtn'),portfolioBtn=$('portfolioNavBtn'),trendingBtn=$('trendingNavBtn');document.body.classList.toggle('salt-social-active',page==='social');document.body.classList.toggle('portfolio-active',page==='portfolio');document.body.classList.toggle('trending-active',page==='trending');social?.classList.toggle('hidden',page!=='social');portfolio?.classList.toggle('hidden',page!=='portfolio');trending?.classList.toggle('hidden',page!=='trending');home?.classList.toggle('hidden',page!=='swap');if(results)results.classList.toggle('hidden',page!=='swap'||!currentMint);swapBtn?.classList.toggle('active',page==='swap');socialBtn?.classList.toggle('active',page==='social');portfolioBtn?.classList.toggle('active',page==='portfolio');trendingBtn?.classList.toggle('active',page==='trending');setPortfolioLiveTracker(page==='portfolio');setTrendingLive(page==='trending');if(page==='portfolio')loadPortfolio();if(page==='trending')loadTrending();window.scrollTo({top:0,behavior:'smooth'});};window.showMainPageGlobal=showMainPage;
+  $('socialNavBtn')?.addEventListener('click',async()=>{showMainPage('social');if(walletAddress&&walletKind==='solana'){const p=activeWalletProfile();if(!p||p.wallet!==walletAddress)await loadSaltProfile();else renderProfile()}else renderProfile()});$('swapNavBtn')?.addEventListener('click',()=>showMainPage('swap'));$('portfolioNavBtn')?.addEventListener('click',()=>showMainPage('portfolio'));$('trendingNavBtn')?.addEventListener('click',()=>showMainPage('trending'));
   $('shareTokenBtn')?.addEventListener('click',()=>{$('socialSearchInput')?.focus()});$('socialSearchInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const q=e.target.value.trim();if(q){$('mintInput').value=q;showMainPage('swap');scan();}}});
    $('socialOnboardingConnectBtn')?.addEventListener('click',()=>openWalletConnectModal('social'));$('profileContinueBtn')?.addEventListener('click',createSaltProfile);$('closeProfileModal')?.addEventListener('click',closeProfileModal);document.querySelectorAll('[data-close-profile-modal]').forEach(x=>x.addEventListener('click',closeProfileModal));$('profileUsernameInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();createSaltProfile()}});$('reviewForm')?.addEventListener('submit',submitSaltReview);$('refreshReviewsBtn')?.addEventListener('click',loadReviews);$('ratingInput')?.addEventListener('input',e=>$('ratingValue').textContent=`${e.target.value}/10`);$('scanThesisForm')?.addEventListener('submit',submitScanThesis);$('scanThesisRating')?.addEventListener('input',e=>$('scanThesisRatingValue').textContent=`${e.target.value}/10`);
   $('sendSolBtn')?.addEventListener('click',()=>openSolTransfer('send'));$('receiveSolBtn')?.addEventListener('click',()=>openSolTransfer('receive'));$('closeSolModal')?.addEventListener('click',closeSolTransfer);document.querySelectorAll('[data-close-sol-modal]').forEach(x=>x.addEventListener('click',closeSolTransfer));document.querySelectorAll('[data-transfer-mode]').forEach(x=>x.addEventListener('click',()=>{transferMode=x.dataset.transferMode||'receive';renderWalletTransfer()}));document.querySelectorAll('[data-transfer-chain]').forEach(x=>x.addEventListener('click',()=>{transferChain=x.dataset.transferChain||'solana';renderWalletTransfer()}));$('connectTransferWalletBtn')?.addEventListener('click',connectTransferWallet);$('copyReceiveSolBtn')?.addEventListener('click',copyReceiveSol);$('confirmSendSolBtn')?.addEventListener('click',sendProfileSol);
@@ -1627,6 +1878,10 @@ function initSalt(){
   $('walletBtn')?.addEventListener('click',walletAction);$('switchWalletBtn')?.addEventListener('click',openWalletProviderChoices);$('disconnectWalletBtn')?.addEventListener('click',disconnectActiveWallet);$('walletConnectClose')?.addEventListener('click',closeWalletConnectModal);document.querySelectorAll('[data-close-wallet-connect]').forEach(x=>x.addEventListener('click',closeWalletConnectModal));$('walletOtherToggle')?.addEventListener('click',()=>{walletOtherOpen=!walletOtherOpen;renderWalletConnectModal()});document.addEventListener('click',e=>{const shell=e.target.closest?.('.headerWalletShell');if(!shell&&!$('walletAccountMenu')?.classList.contains('hidden'))closeWalletAccountMenu()});$('swapWalletBtn')?.addEventListener('click',executeSwap);$('swapMaxBtn')?.addEventListener('click',useSwapMax);$('payAmount')?.addEventListener('input',()=>{scheduleQuote();updateSwapButton()});$('paySymbol')?.addEventListener('click',()=>openTokenPicker('pay'));$('receiveSymbol')?.addEventListener('click',()=>openTokenPicker('receive'));$('closeTokenModal')?.addEventListener('click',closeTokenPicker);document.querySelectorAll('[data-close-token-modal]').forEach(x=>x.addEventListener('click',closeTokenPicker));document.querySelectorAll('[data-picker-chain]').forEach(x=>x.addEventListener('click',()=>setPickerChain(x.dataset.pickerChain)));$('clearRecent')?.addEventListener('click',()=>{try{localStorage.removeItem('salt:recentTokens')}catch{}renderRecent()});$('tokenSearchInput')?.addEventListener('input',e=>{clearTimeout(tokenSearchTimer);tokenSearchTimer=setTimeout(()=>searchTokens(e.target.value),250)});
   $('newScanBtn')?.addEventListener('click',()=>{$('results')?.classList.add('hidden');$('mintInput').value='';$('mintInput').focus();window.scrollTo({top:0,behavior:'smooth'});});
   $('copyCA')?.addEventListener('click',async()=>{if(!currentMint)return;try{await navigator.clipboard.writeText(currentMint);const x=$('copyCA')?.querySelector('b');if(x){const old=x.textContent;x.textContent='Copied';setTimeout(()=>x.textContent=old,1100);}}catch{}});
+  document.querySelectorAll('[data-trending-mode]').forEach(b=>b.addEventListener('click',()=>{trendingState.mode=b.dataset.trendingMode||'hot';renderTrendingPage()}));
+  document.querySelectorAll('[data-trending-chain]').forEach(b=>b.addEventListener('click',()=>{trendingState.chain=b.dataset.trendingChain||'all';renderTrendingPage()}));
+  $('trendingSearchInput')?.addEventListener('input',e=>{trendingState.query=String(e.target.value||'');renderTrendingPage()});
+  $('trendingRefreshBtn')?.addEventListener('click',()=>loadTrending(true));
   document.querySelectorAll('[data-coming]').forEach(btn=>btn.addEventListener('click',()=>alert(`${btn.dataset.coming} is on the Salt Swap roadmap.`)));
   window.saltScan=scan;
 }

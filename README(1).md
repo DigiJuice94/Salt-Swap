@@ -614,10 +614,14 @@ This update rebuilds the Portfolio information architecture around the current C
 - Avg Buy / realized / unrealized P&L are intentionally left blank until verifiable cost basis can be reconstructed. The Trenches does not fabricate purchase prices.
 - DeFi positions are not inferred from normal token balances.
 
-## V1.10.93 — Complete dark-green Portfolio redesign
-- Keeps the main site/top navigation bar in the existing cream/off-white theme.
-- Redesigns the entire Portfolio experience underneath it into a dark military-green / high-end trading-terminal interface.
-- Removes the large cream portfolio shell so the portfolio feels like a full-screen professional tracker rather than a light card sitting on the page.
-- Dark redesign covers Dashboard, Analytics, Assets, DeFi, Transactions, Time Machine, NFT cards, asset tables, activity, filters, empty states and wallet connection state.
-- Adds brighter live-green data accents, deeper layered greens, terminal grid texture, subtle glow, sharper dividers, darker CoinStats-style ledgers, and premium action modules.
-- Portfolio behavior/data from V1.10.92 is unchanged; this is a visual redesign only.
+## V1.10.93 — Trending Terminal
+- Turns the former placeholder Trending navigation item into a full live market page.
+- Uses a dark-green Trenches market-terminal design while keeping the main site header unchanged.
+- Supports Solana, Ethereum, Base, BNB Chain, and Robinhood Chain filters.
+- Combines Jupiter's organic Solana trending feed with DEX Screener cross-chain attention/boost signals.
+- Enriches tokens with live price, 1h / 24h movement, 24h volume, liquidity, market cap, transaction counts, pair age and a transparent Trenches heat score.
+- Adds Hot / Gainers / Volume / New sorting.
+- Adds a local Watchlist with star controls.
+- Clicking a token routes directly into Salt Check using the contract and detected chain.
+- Auto-refreshes every 60 seconds while Trending is open.
+- Trending is explicitly treated as attention/momentum, not a safety endorsement.
