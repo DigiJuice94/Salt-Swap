@@ -3880,3 +3880,19 @@ body:has(.portfolioPage:not(.hidden)){
     font-size:46px !important;
   }
 }
+
+/* V1.11.34 — Balance number only */
+.portfolioPage #portfolioTotalValue,
+.portfolioPage .portfolioTotalValue{
+  color:#9ff0b1 !important;
+  -webkit-text-fill-color:#9ff0b1 !important;
+  text-shadow:none !important;
+}
+
+/* Keep the TOTAL WORTH / PORTFOLIO BALANCE labels muted */
+.portfolioPage .portfolioValueBlock::before,
+.portfolioPage .portfolioValueBlock > small,
+.portfolioPage .portfolioValueBlock > em{
+  color:#8ea494 !important;
+  -webkit-text-fill-color:currentColor !important;
+}

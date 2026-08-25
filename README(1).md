@@ -860,3 +860,8 @@ This update rebuilds the Portfolio information architecture around the current C
 - Improves muted text contrast for easier reading.
 - Keeps V1.11.32 Polyfolio-inspired layout and all app behavior intact.
 - Vercel configuration unchanged.
+
+## V1.11.34 — Light Green Balance
+- Changes only the Portfolio balance number to light green.
+- Keeps `TOTAL WORTH`, `PORTFOLIO BALANCE`, and supporting text muted.
+- Vercel configuration unchanged.
