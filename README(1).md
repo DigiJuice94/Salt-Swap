@@ -763,3 +763,14 @@ Maintenance cleanup only — no intended feature redesign.
 - Removed runtime-unused duplicate top-level image assets: the-trenches-logo.png, trenches-logo.png, the-trenches-full-logo.png, the-trenches-exact-logo.png, verified-badge.png.
 - Updated the visible/current build identity to V1.11.08.
 - Preserved the current Swap, Social, Portfolio, Trending, wallet, scanner, chart, thesis, news and API behavior.
+
+## V1.11.09 — Social Feed Repair
+- Fixes the Social Feed error: `meaningfulSocialTokenName is not defined`.
+- Restores the complete helper layer required by Community Feed and Profile Feed enrichment.
+- Adds `meaningfulSocialTokenName` and `meaningfulSocialTokenSymbol`.
+- Adds the shared live-token snapshot cache.
+- Adds `applySocialPairSnapshot` for DEX Screener token metadata / price enrichment.
+- Adds `socialPostId` and `parseSocialPostId`, used by Like / Reply / Quote interactions.
+- Adds `cleanSocialComment`, used when posting replies and quotes.
+- Protects quote-token feed cards from incorrectly using a base-token image and derives quote USD pricing when possible.
+- Existing stored thesis/feed data and Redis keys are unchanged.
