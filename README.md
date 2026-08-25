@@ -805,3 +805,11 @@ Maintenance cleanup only — no intended feature redesign.
 - Keeps Like / Reply / Quote post IDs compatible with existing stored social data.
 - Fixes the Swap chart hover math so the mouse/crosshair snaps to the actual plotted green dot instead of appearing offset to the side.
 - No Vercel/root-directory restructuring in this update.
+
+## V1.11.16 — Restore Site Deployment
+- Restores the exact Vercel static build/routing pattern used before the recent deployment break.
+- Re-adds explicit static builds for `index.html`, `styles.css`, and `assets/**`.
+- Restores explicit `/` -> `/index.html`, `/styles.css`, and `/assets/*` routes.
+- Keeps the V1.11.15 Social Feed fix.
+- Keeps the V1.11.15 chart cursor alignment fix.
+- No Root Directory changes and no repo restructuring.
