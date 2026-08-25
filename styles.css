@@ -4283,3 +4283,149 @@ body.trending-active::before{opacity:.045!important}
   backdrop-filter:none !important;
   -webkit-backdrop-filter:none !important;
 }
+
+/* V1.11.29 — Remove final light Portfolio surfaces */
+
+/* Top identity/header strip */
+.portfolioPage .portfolioTopbar,
+.portfolioPage .portfolioHeader{
+  background:#121c17 !important;
+  border:1px solid rgba(145,192,129,.10) !important;
+  color:#edf3e9 !important;
+  box-shadow:none !important;
+}
+
+.portfolioPage .portfolioWalletIdentity,
+.portfolioPage .portfolioWalletIdentity > div,
+.portfolioPage .portfolioWalletIdentity button{
+  background:transparent !important;
+  color:#dfe9de !important;
+}
+
+.portfolioPage .portfolioWalletIdentity b{
+  color:#f1f6ef !important;
+}
+
+.portfolioPage .portfolioWalletIdentity button{
+  color:#93a996 !important;
+}
+
+/* Avatar ring was still light */
+.portfolioPage .portfolioAvatar{
+  border-color:#25372c !important;
+  box-shadow:0 0 0 1px rgba(143,190,129,.14) !important;
+  background:#1c2c23 !important;
+}
+
+/* Top controls */
+.portfolioPage .portfolioHeaderActions button,
+.portfolioPage .portfolioTopbar button,
+.portfolioPage .portfolioNetworkPill,
+.portfolioPage .portfolioSyncBtn,
+.portfolioPage .portfolioTimeMachineBtn{
+  background:#1a2921 !important;
+  color:#dbe6da !important;
+  border:1px solid rgba(144,193,130,.12) !important;
+  box-shadow:none !important;
+}
+
+.portfolioPage .portfolioHeaderActions button:hover,
+.portfolioPage .portfolioTopbar button:hover,
+.portfolioPage .portfolioNetworkPill:hover{
+  background:#21342a !important;
+}
+
+.portfolioPage .portfolioNetworkPill small{
+  background:#233a2d !important;
+  color:#9ed7a6 !important;
+}
+
+/* Remove old glossy/white inset from header controls */
+.portfolioPage .portfolioHeaderActions *,
+.portfolioPage .portfolioTopbar *,
+.portfolioPage .portfolioNetworkPill{
+  box-shadow:none !important;
+}
+
+/* Dashboard nav active/inactive */
+.portfolioPage .portfolioTabs,
+.portfolioPage .portfolioNav{
+  background:#101a16 !important;
+  border:1px solid rgba(144,193,130,.10) !important;
+}
+.portfolioPage .portfolioTabs button,
+.portfolioPage .portfolioNav button{
+  background:transparent !important;
+  color:#9fb19f !important;
+  border:1px solid transparent !important;
+}
+.portfolioPage .portfolioTabs button.active,
+.portfolioPage .portfolioNav button.active{
+  background:#1e3026 !important;
+  color:#f2f6ef !important;
+  border-color:rgba(144,193,130,.12) !important;
+}
+
+/* Live badge */
+.portfolioPage .portfolioLive,
+.portfolioPage .liveBadge,
+.portfolioPage .portfolioStatus{
+  background:#1a2a21 !important;
+  color:#9ed8a8 !important;
+  border:1px solid rgba(112,204,132,.16) !important;
+  box-shadow:none !important;
+}
+
+/* "See more" pills */
+.portfolioPage .portfolioSection button,
+.portfolioPage .portfolioSeeMore,
+.portfolioPage .portfolioMoreBtn{
+  background:#1a2921 !important;
+  color:#8ea491 !important;
+  border:1px solid rgba(144,193,130,.10) !important;
+  box-shadow:none !important;
+}
+
+/* Total Worth outer block should blend into the dark page */
+.portfolioPage .portfolioOverview,
+.portfolioPage .portfolioOverviewGrid,
+.portfolioPage .portfolioValueBlock{
+  background:transparent !important;
+  border:0 !important;
+  box-shadow:none !important;
+}
+
+/* Kill any remaining light inline/background fills inside portfolio */
+.portfolioPage [style*="background:#fff"],
+.portfolioPage [style*="background: #fff"],
+.portfolioPage [style*="background:white"],
+.portfolioPage [style*="background: white"],
+.portfolioPage [style*="background:#fb"],
+.portfolioPage [style*="background: #fb"]{
+  background:#16241d !important;
+}
+
+/* Make generic buttons inside Portfolio dark unless they are intentionally action tiles */
+.portfolioPage button:not(.portfolioAction):not(.portfolioQuickAction):not(.portfolioActionCard){
+  box-shadow:none !important;
+}
+
+/* Remove remaining old white/glass values from known Portfolio classes */
+.portfolioPage .portfolioNetworkPill,
+.portfolioPage .portfolioHeader,
+.portfolioPage .portfolioTopbar,
+.portfolioPage .portfolioTabs,
+.portfolioPage .portfolioNav,
+.portfolioPage .portfolioMiniAnalytics,
+.portfolioPage .portfolioAssetTableWrap,
+.portfolioPage .portfolioActivityList,
+.portfolioPage .portfolioNft{
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+
+/* Ensure the whole visible portfolio canvas is uniformly dark */
+body.portfolio-active,
+body:has(.portfolioPage:not(.hidden)){
+  background:#0d1512 !important;
+}

@@ -830,3 +830,11 @@ This update rebuilds the Portfolio information architecture around the current C
 - Targets the exact current Portfolio classes: `portfolioMiniAnalytics`, `portfolioAllocationBar`, `portfolioMovers`, `portfolioAssetTableWrap`, `portfolioEmpty`, `portfolioActivityList`, and `portfolioNft`.
 - Removes old glass/gray fills and replaces them with the dark green Portfolio palette.
 - Vercel configuration unchanged.
+
+## V1.11.29 — All-Dark Portfolio
+- Removes the final light Portfolio surfaces.
+- Darkens the wallet identity/header strip, avatar ring, Time Machine, Force Sync, Solana LIVE pill, navigation controls, live badge, and See More controls.
+- Keeps the entire visible Portfolio canvas in one dark army-green family.
+- Removes remaining white/glass inset effects from Portfolio controls.
+- Updates stylesheet cache key to `styles.css?v=11129`.
+- Vercel configuration unchanged.
