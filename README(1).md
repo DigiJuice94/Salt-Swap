@@ -777,3 +777,11 @@ This update rebuilds the Portfolio information architecture around the current C
 - Your own private/local Watch List is hidden while viewing someone else.
 - Adds `Back to my profile` to return to your own profile.
 - Keeps the V1.11.20 known-good deployment configuration unchanged.
+
+## V1.11.22 — Follow Profiles
+- Adds a real `Follow` button when viewing another trader's full profile.
+- Button changes to `Following` after following and can be clicked again to unfollow.
+- Follow relationships persist in the existing Trenches social profile storage.
+- Displays live Following and Followers counts instead of hard-coded zeros.
+- Following/follower data survives future profile edits.
+- Uses the existing `/api/social-profile` route, so `vercel.json` remains unchanged.
