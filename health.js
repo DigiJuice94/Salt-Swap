@@ -1,1 +1,9 @@
-module.exports=async function handler(req,res){res.setHeader('Cache-Control','no-store');return res.status(200).json({ok:true,service:'Salt Swap scanner',version:'1.5.0',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY)}})};
+export default function handler(req,res){
+  res.setHeader('Cache-Control','no-store');
+  return res.status(410).json({
+    ok:false,
+    legacy:true,
+    version:'1.11.13',
+    message:'Legacy health.js is disabled. Production health is /api/health -> api.mjs.'
+  });
+}

@@ -1,3 +1,5 @@
-import {defineConfig} from 'vite';
-import react from '@vitejs/plugin-react';
-export default defineConfig({plugins:[react()],server:{proxy:{'/api':'http://localhost:8787'}}});
+/*
+  LEGACY FILE NEUTRALIZED BY THE TRENCHES V1.11.13.
+  Production is served by index.html + api.mjs.
+  This file intentionally does nothing.
+*/

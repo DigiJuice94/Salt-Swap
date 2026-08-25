@@ -775,10 +775,19 @@ Maintenance cleanup only — no intended feature redesign.
 - Protects quote-token feed cards from incorrectly using a base-token image and derives quote USD pricing when possible.
 - Existing stored thesis/feed data and Redis keys are unchanged.
 
-## V1.11.10 — GitHub / Vercel Root Isolation
-- Production now lives inside a dedicated `trenches-app` Vercel Root Directory.
-- Old Salt Swap files in the GitHub repository root can no longer override the current application.
-- Uses the standard Vercel function `api/router.mjs` instead of a root-level legacy API build.
-- `/api/health` fingerprints the deployment with `version: 1.11.10`, `build: trenches-app-root`, and `router: api/router.mjs`.
-- Preserves the V1.11.09 Social Feed helper repair.
-- Repairs stale CSS/image paths left behind by older patches.
+## V1.11.12 — Fresh GitHub Root
+- This build is intended to replace the entire old mixed Salt Swap / Trenches repository working tree.
+- Vercel Root Directory should be blank.
+- Production backend remains `api.mjs` at the repository root.
+- `/api/health` fingerprints the deployment with `version: 1.11.12` and `build: fresh-github-root`.
+- Includes the Social Feed helper repair from V1.11.09.
+- Excludes old Vite files, duplicate APIs, old ZIPs, and legacy Salt Swap files.
+
+## V1.11.13 — Drop-in / No-Wipe Deployment Repair
+- Designed to be uploaded over the existing mixed GitHub repository without deleting the repository contents first.
+- Vercel Root Directory stays blank.
+- `vercel.json` explicitly builds only the current `api.mjs`.
+- All current `/api/*` routes are explicitly mapped to `api.mjs`.
+- Old `api.js`, `health.js`, `scan.js`, `[mint].js`, `app.js`, `index.js`, `main.jsx`, `vite.config.js`, `package.json`, `styles (2).css`, and `index (1).html` are overwritten with harmless neutralized files.
+- Old ZIP archives and unused images can remain because they are not part of the production routes/build.
+- `/api/health` fingerprints this deployment as `version: 1.11.13`, `build: drop-in-no-wipe`.

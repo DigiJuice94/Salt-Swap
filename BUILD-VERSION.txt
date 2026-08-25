@@ -1,4 +1,5 @@
-The Trenches V1.11.10
-Vercel Root Directory: trenches-app
-API Router: api/router.mjs
-Expected /api/health version: 1.11.10
+THE TRENCHES V1.11.13
+DEPLOYMENT MODE: DROP-IN / NO WIPE
+VERCEL ROOT DIRECTORY: BLANK
+PRODUCTION API: api.mjs
+EXPECTED /api/health: version=1.11.13 build=drop-in-no-wipe

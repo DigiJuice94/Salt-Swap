@@ -1,62 +1,40 @@
-THE TRENCHES V1.11.10 — GITHUB / VERCEL RESET
+THE TRENCHES V1.11.13 — DROP-IN UPDATE / NO GITHUB WIPE
 
-THIS FIX IS DESIGNED FOR YOUR CURRENT GITHUB REPOSITORY.
+YOU DO NOT NEED TO DELETE THE OLD GITHUB FILES.
 
-Your GitHub root contains old Salt Swap files and newer Trenches files together.
-This build prevents those old files from interfering without requiring you to
-manually delete the entire repository.
+1. VERCEL
+   Settings -> Build and Deployment -> Root Directory
+   Make sure Root Directory is COMPLETELY BLANK.
+   Save.
 
-1. UPLOAD THIS WHOLE FOLDER
-Upload the ENTIRE folder named:
+2. GITHUB
+   Open the ROOT of the Salt-Swap repository.
+   Upload the CONTENTS of this update folder to the ROOT.
+   Allow GitHub to replace files with matching names.
+   Commit directly to main.
 
-    trenches-app
+3. WHAT THIS UPDATE DOES
+   - Replaces index.html
+   - Replaces styles.css
+   - Replaces api.mjs
+   - Replaces vercel.json
+   - Overwrites old conflicting api.js / health.js / scan.js / app.js /
+     index.js / main.jsx / vite.config.js / package.json with harmless
+     neutralized versions.
+   - Old ZIPs and old image files may remain; Vercel will ignore them.
 
-to the ROOT of your GitHub repository.
+4. VERIFY
+   After Vercel finishes deploying, open:
 
-When done, GitHub should show:
-    trenches-app/
-    api.js                 <- old root file can stay
-    health.js              <- old root file can stay
-    index.js               <- old root file can stay
-    ...other old files...
+       /api/health
 
-2. CHANGE VERCEL ROOT DIRECTORY
-In Vercel go to:
+   It MUST show:
 
-    Project -> Settings -> Build and Deployment -> Root Directory -> Edit
+       "version":"1.11.13"
+       "build":"drop-in-no-wipe"
 
-Set Root Directory to EXACTLY:
+If those values appear, the deployment problem is fixed.
 
-    trenches-app
-
-Save it.
-
-3. REDEPLOY
-Go to Deployments and redeploy the newest MAIN deployment.
-If Vercel offers build-cache reuse, choose a fresh redeploy / do not reuse
-the old build cache.
-
-4. VERIFY THE BACKEND
-Open:
-
-    https://YOUR-DOMAIN/api/health
-
-It MUST contain all three of these:
-
-    "version":"1.11.10"
-    "build":"trenches-app-root"
-    "router":"api/router.mjs"
-
-If those appear, the deployment problem is fixed.
-
-5. FUTURE UPDATES
-From now on, every update should replace files INSIDE:
-
-    trenches-app/
-
-Do not switch the Vercel Root Directory back to the repository root.
-
-WHY THIS WORKS
-Vercel will only build files inside trenches-app. The old root api.js,
-health.js, app.js, index.js, Vite files, old ZIPs, and older Salt Swap
-files become invisible to the production build.
+FUTURE UPDATES
+You can keep uploading future update contents to the GitHub ROOT.
+No special trenches-app Root Directory is needed.
