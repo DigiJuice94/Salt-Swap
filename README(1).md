@@ -650,3 +650,14 @@ This update rebuilds the Portfolio information architecture around the current C
 - Raises the backend candidate ceiling from 80 to 160 so each supported chain can carry a meaningful runner set.
 - Lowers the discovery liquidity cutoff for genuinely active newer runners while still requiring either liquidity or meaningful 24h volume.
 - Robinhood Chain remains sourced from available DEX Screener data because GeckoTerminal does not provide a mapped Robinhood network in this integration.
+
+## V1.10.97 — Trenches Scanner Rebrand
+- Removes the old Salt-branded language from the Swap / risk-analysis interface.
+- `SALT RISK SCORE` → `TRENCHES RISK SCORE`.
+- `Salt's take` → `TRENCHES INTEL`.
+- `Salt check` → `Trenches scan`.
+- `Salt Verified` → `Trenches Verified`.
+- Main scan action uses `Scan Token`.
+- Scanner-generated `Source: Salt` labels now display as `Source: Trenches Engine`, with the launch-bundle source shown as `Trenches Bundle Analysis`.
+- Rewrites score hints, analysis summaries, swap-route notes, DEX-paid checks, holder intelligence and identity-analysis copy to speak as The Trenches.
+- Keeps legacy `Salt Swap ...` wallet-signature payloads, Redis keys and internal compatibility identifiers unchanged so existing Social profiles/sessions are not broken.

@@ -14,7 +14,7 @@ const ZEROX_BASE='https://api.0x.org/swap/allowance-holder';
 const NATIVE_EVM='0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
 const SOL_MINT='So11111111111111111111111111111111111111112';
 
-const metric=(value,status,detail,source='Salt')=>({value,status,detail,source});
+const metric=(value,status,detail,source='Trenches Engine')=>({value,status,detail,source});
 const number=v=>{if(v==null||v==='')return null;const n=Number(v);return Number.isFinite(n)?n:null};
 const bool=v=>v===true||v===1||v==='1'||v==='true'?true:v===false||v===0||v==='0'||v==='false'?false:null;
 const money=n=>{n=Number(n);if(!Number.isFinite(n))return null;if(n>=1e9)return `$${(n/1e9).toFixed(2)}B`;if(n>=1e6)return `$${(n/1e6).toFixed(2)}M`;if(n>=1e3)return `$${(n/1e3).toFixed(1)}K`;return `$${n.toFixed(n<10?2:0)}`};
@@ -102,12 +102,12 @@ async function dexPaidIntel(chainId,tokenAddress){
   for(const e of evidence){const k=`${e.type}:${e.label}`;if(!seen.has(k)){seen.add(k);unique.push(e)}}
   if(unique.length){
     const labels=unique.map(x=>x.label);
-    const detail=`DEX Screener shows paid-service evidence for this token: ${labels.join(', ')}. Salt checks paid orders plus active boosts, recent profiles, ads, and community takeovers. Paid promotion/identity work is useful context, not proof of safety.`;
+    const detail=`DEX Screener shows paid-service evidence for this token: ${labels.join(', ')}. The Trenches checks paid orders plus active boosts, recent profiles, ads, and community takeovers. Paid promotion/identity work is useful context, not proof of safety.`;
     return metric(`Yes — ${labels.join(' + ')}`,'good',detail,`DEX Screener (${[...new Set(unique.map(x=>x.source))].join(' + ')})`);
   }
   const anyResponse=[orders,pairs,profiles,ads,ctos,boostLatest,boostTop].some(x=>x!=null);
-  if(!anyResponse)return metric('Could not verify','unknown','DEX Screener data sources were unavailable for this scan. Salt will not guess whether DEX services were paid.','DEX Screener');
-  return metric('No paid evidence found','unknown','Salt checked DEX Screener paid orders, active boosts, recent token profiles, ads, and community takeovers and found no paid-service evidence in the currently available API data. This is not treated as proof that a project never paid DEX Screener.','DEX Screener multi-source');
+  if(!anyResponse)return metric('Could not verify','unknown','DEX Screener data sources were unavailable for this scan. The Trenches will not guess whether DEX services were paid.','DEX Screener');
+  return metric('No paid evidence found','unknown','The Trenches checked DEX Screener paid orders, active boosts, recent token profiles, ads, and community takeovers and found no paid-service evidence in the currently available API data. This is not treated as proof that a project never paid DEX Screener.','DEX Screener multi-source');
 }
 async function rpc(url,method,params){const j=await fetchJson(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params})});if(j.error)throw new Error(j.error.message||'RPC error');return j.result}
 
@@ -133,7 +133,7 @@ function tradeTokenAddr(side){return field(side,'address','token_address','token
 function tradeHash(r){return field(r,'txHash','tx_hash','signature','txid')}
 function tradeOwner(r){return field(r,'owner','wallet','trader','walletAddress','wallet_address')}
 function isBuyTrade(r,mint){const ta=tradeTokenAddr(field(r,'to')),fa=tradeTokenAddr(field(r,'from'));if(ta===mint)return true;if(fa===mint)return false;return String(field(r,'side','type','txType','tx_type')||'').toLowerCase()==='buy'}
-async function saltLaunchBundleAnalysis(mint,rpcUrl,supplyUi){const hit=BUNDLE_ANALYSIS_CACHE.get(mint);if(hit&&Date.now()-hit.time<300000)return hit.data;try{const trades=await birdeye(`/defi/txs/token?address=${encodeURIComponent(mint)}&offset=0&limit=50&tx_type=swap&sort_type=asc&ui_amount_mode=scaled`,'solana'),buys=rowsFrom(trades).filter(r=>isBuyTrade(r,mint)&&tradeHash(r)&&tradeOwner(r)).slice(0,40);if(buys.length<4)return null;const calls=buys.map((r,i)=>({jsonrpc:'2.0',id:1000+i,method:'getTransaction',params:[tradeHash(r),{encoding:'jsonParsed',maxSupportedTransactionVersion:0,commitment:'confirmed'}]})),txs=await fetchJson(rpcUrl,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(calls)},15000),slots=new Map();for(const x of Array.isArray(txs)?txs:[]){const r=buys[Number(x.id)-1000],slot=number(x?.result?.slot);if(!r||slot==null)continue;if(!slots.has(slot))slots.set(slot,[]);slots.get(slot).push(r)}const bundled=new Set(),ordered=[...slots.keys()].sort((a,b)=>a-b);for(const slot of ordered){const rs=slots.get(slot)||[];if(rs.length>=4)rs.forEach(r=>bundled.add(tradeOwner(r)))}for(let i=0;i<ordered.length-1;i++){if(ordered[i+1]-ordered[i]>1)continue;const ws=new Set([...(slots.get(ordered[i])||[]),...(slots.get(ordered[i+1])||[])].map(tradeOwner).filter(Boolean));if(ws.size>=3)ws.forEach(w=>bundled.add(w))}if(!bundled.size)return{percent_of_supply:0,holder_count:0,_percentUnits:'percent',_source:'Salt launch bundle analysis'};const wallets=[...bundled].slice(0,30),bcalls=wallets.map((w,i)=>({jsonrpc:'2.0',id:2000+i,method:'getTokenAccountsByOwner',params:[w,{mint},{encoding:'jsonParsed',commitment:'confirmed'}]})),bal=await fetchJson(rpcUrl,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(bcalls)},15000);let held=0;for(const x of Array.isArray(bal)?bal:[])for(const a of x?.result?.value||[])held+=Number(a?.account?.data?.parsed?.info?.tokenAmount?.uiAmountString||a?.account?.data?.parsed?.info?.tokenAmount?.uiAmount||0);const data={percent_of_supply:supplyUi?held/supplyUi*100:null,holder_count:wallets.length,_percentUnits:'percent',_source:'Salt launch bundle analysis'};BUNDLE_ANALYSIS_CACHE.set(mint,{time:Date.now(),data});return data}catch(e){console.warn('Salt bundle analysis:',e.message);return null}}
+async function saltLaunchBundleAnalysis(mint,rpcUrl,supplyUi){const hit=BUNDLE_ANALYSIS_CACHE.get(mint);if(hit&&Date.now()-hit.time<300000)return hit.data;try{const trades=await birdeye(`/defi/txs/token?address=${encodeURIComponent(mint)}&offset=0&limit=50&tx_type=swap&sort_type=asc&ui_amount_mode=scaled`,'solana'),buys=rowsFrom(trades).filter(r=>isBuyTrade(r,mint)&&tradeHash(r)&&tradeOwner(r)).slice(0,40);if(buys.length<4)return null;const calls=buys.map((r,i)=>({jsonrpc:'2.0',id:1000+i,method:'getTransaction',params:[tradeHash(r),{encoding:'jsonParsed',maxSupportedTransactionVersion:0,commitment:'confirmed'}]})),txs=await fetchJson(rpcUrl,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(calls)},15000),slots=new Map();for(const x of Array.isArray(txs)?txs:[]){const r=buys[Number(x.id)-1000],slot=number(x?.result?.slot);if(!r||slot==null)continue;if(!slots.has(slot))slots.set(slot,[]);slots.get(slot).push(r)}const bundled=new Set(),ordered=[...slots.keys()].sort((a,b)=>a-b);for(const slot of ordered){const rs=slots.get(slot)||[];if(rs.length>=4)rs.forEach(r=>bundled.add(tradeOwner(r)))}for(let i=0;i<ordered.length-1;i++){if(ordered[i+1]-ordered[i]>1)continue;const ws=new Set([...(slots.get(ordered[i])||[]),...(slots.get(ordered[i+1])||[])].map(tradeOwner).filter(Boolean));if(ws.size>=3)ws.forEach(w=>bundled.add(w))}if(!bundled.size)return{percent_of_supply:0,holder_count:0,_percentUnits:'percent',_source:'Trenches Bundle Analysis'};const wallets=[...bundled].slice(0,30),bcalls=wallets.map((w,i)=>({jsonrpc:'2.0',id:2000+i,method:'getTokenAccountsByOwner',params:[w,{mint},{encoding:'jsonParsed',commitment:'confirmed'}]})),bal=await fetchJson(rpcUrl,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(bcalls)},15000);let held=0;for(const x of Array.isArray(bal)?bal:[])for(const a of x?.result?.value||[])held+=Number(a?.account?.data?.parsed?.info?.tokenAmount?.uiAmountString||a?.account?.data?.parsed?.info?.tokenAmount?.uiAmount||0);const data={percent_of_supply:supplyUi?held/supplyUi*100:null,holder_count:wallets.length,_percentUnits:'percent',_source:'Trenches Bundle Analysis'};BUNDLE_ANALYSIS_CACHE.set(mint,{time:Date.now(),data});return data}catch(e){console.warn('Salt bundle analysis:',e.message);return null}}
 
 function holderTag(profile,name){
   if(!profile)return null;
@@ -156,15 +156,15 @@ function holderPct(entry){
 
 function holderCount(entry){return number(field(entry,'holder_count','holderCount','count','wallet_count','walletCount'))}
 function cohortMetric(entry,label,thresholds,description){
-  if(!entry)return metric('Could not verify','unknown',`${label} data was not available from Salt's current holder-intelligence sources. This is different from a confirmed 0%.`,'Salt');
+  if(!entry)return metric('Could not verify','unknown',`${label} data was not available from The Trenches' current holder-intelligence sources. This is different from a confirmed 0%.`,'Trenches Engine');
   const pct=holderPct(entry), wallets=holderCount(entry), source=entry._source||'Birdeye Holder Profile';
   if(pct==null)return metric('Detected · % unknown','unknown',`${label} wallets were detected, but a reliable current supply percentage was not returned.`,source);
   const [goodMax,warnMax]=thresholds;
   const status=pct<goodMax?'good':pct<warnMax?'warn':'bad';
   const countText=wallets==null?'':` across ${Math.round(wallets).toLocaleString('en-US')} wallet${Math.round(wallets)===1?'':'s'}`;
-  if(entry._partial)return metric(`≥${pct.toFixed(1)}%`,status,`${description} The fallback only exposes the top tagged wallets, so Salt can verify at least ${pct.toFixed(1)}% of supply${countText}; the full cohort may be larger.`,source);
-  if(pct===0&&source==='Birdeye Holder Profile')return metric('No Birdeye-tagged wallets','unknown',`${description} Birdeye returned zero tagged ${label.toLowerCase()} wallets, but Salt does not treat an indexer zero as proof that none exist.`,source);
-  if(pct===0&&source==='Salt launch bundle analysis')return metric('No launch bundle detected','good',`${description} Salt checked the sampled earliest swaps for same-slot/adjacent-slot coordinated buying and found no qualifying launch bundle in that sample.`,source);
+  if(entry._partial)return metric(`≥${pct.toFixed(1)}%`,status,`${description} The fallback only exposes the top tagged wallets, so The Trenches can verify at least ${pct.toFixed(1)}% of supply${countText}; the full cohort may be larger.`,source);
+  if(pct===0&&source==='Birdeye Holder Profile')return metric('No Birdeye-tagged wallets','unknown',`${description} Birdeye returned zero tagged ${label.toLowerCase()} wallets, but The Trenches does not treat an indexer zero as proof that none exist.`,source);
+  if(pct===0&&source==='Trenches Bundle Analysis')return metric('No launch bundle detected','good',`${description} The Trenches checked the sampled earliest swaps for same-slot/adjacent-slot coordinated buying and found no qualifying launch bundle in that sample.`,source);
   return metric(`${pct.toFixed(1)}%`,status,`${description} Currently holding about ${pct.toFixed(1)}% of supply${countText}.`,source);
 }
 
@@ -211,8 +211,8 @@ async function duplicateIntel(mint,name,symbol){
   try{const j=await fetchJson(`https://api.dexscreener.com/latest/dex/search?q=${encodeURIComponent(q)}`,{headers:{accept:'application/json'}},8000); const pairs=Array.isArray(j?.pairs)?j.pairs:[]; if(!pairs.length)return null;
     const norm=s=>String(s||'').trim().toLowerCase().replace(/[^a-z0-9]/g,''); const nn=norm(name),ns=norm(symbol); const seen=new Set();
     for(const p of pairs){const b=p?.baseToken||{}, addr=String(b.address||''); if(!addr||addr===mint)continue; const same=(nn&&norm(b.name)===nn)||(ns&&norm(b.symbol)===ns); if(same)seen.add(addr);}
-    if(seen.size)return metric(`${seen.size} similar contract${seen.size===1?'':'s'}`,'warn',`DexScreener returned ${seen.size} other token contract${seen.size===1?'':'s'} with the same name or symbol. This is an identity warning, not proof that this mint is fake.`,'Salt + DexScreener');
-    return metric('No close duplicate found','good','Salt searched indexed DEX listings and did not find another contract with the same normalized name or symbol. This does not prove official identity.','Salt + DexScreener');
+    if(seen.size)return metric(`${seen.size} similar contract${seen.size===1?'':'s'}`,'warn',`DexScreener returned ${seen.size} other token contract${seen.size===1?'':'s'} with the same name or symbol. This is an identity warning, not proof that this mint is fake.`,'Trenches Engine + DexScreener');
+    return metric('No close duplicate found','good','The Trenches searched indexed DEX listings and did not find another contract with the same normalized name or symbol. This does not prove official identity.','Trenches Engine + DexScreener');
   }catch{return null;}
 }
 
@@ -269,23 +269,23 @@ async function scanSolana(mint){
   ];
   const baseScore=finalize(checks);
   const s=applyHardRiskOverrides(baseScore,{mintable,freezable,top10,bundlePct,devPct});
-  const creatorHistory=creator?metric(creator.mintLike?`${creator.mintLike} recent mint/create event${creator.mintLike===1?'':'s'}`:'Creator identified',creator.mintLike>=3?'warn':'good',`Salt traced a likely launch signer ${creator.address.slice(0,6)}…${creator.address.slice(-4)}. Helius returned ${creator.recentCount} recent parsed transactions${creator.createdAt?` and the earliest sampled mint activity was ${new Date(creator.createdAt*1000).toLocaleDateString('en-US')}`:''}. This is creator-wallet context, not proof of every prior deployment.`,'Helius launch history'):metric('Could not verify','unknown','Salt could not reliably trace a creator wallet from the mint history for this scan.','Salt');
+  const creatorHistory=creator?metric(creator.mintLike?`${creator.mintLike} recent mint/create event${creator.mintLike===1?'':'s'}`:'Creator identified',creator.mintLike>=3?'warn':'good',`The Trenches traced a likely launch signer ${creator.address.slice(0,6)}…${creator.address.slice(-4)}. Helius returned ${creator.recentCount} recent parsed transactions${creator.createdAt?` and the earliest sampled mint activity was ${new Date(creator.createdAt*1000).toLocaleDateString('en-US')}`:''}. This is creator-wallet context, not proof of every prior deployment.`,'Helius launch history'):metric('Could not verify','unknown','The Trenches could not reliably trace a creator wallet from the mint history for this scan.','Trenches Engine');
   return {mint,chain:'solana',name,symbol,decimals,logoUri,logoUris,identitySource,verified,priceUsd,marketCapUsd,...s,
-    summary:s.hardRiskOverride?`HIGH RISK override triggered: ${s.hardRiskReasons.join('; ')}. Salt completed ${s.checksCompleted}/${s.checksTotal} core checks. The numerical Salt Score is still shown, but positive checks cannot cancel these severe structural risks.`:risks.length?`Salt completed ${s.checksCompleted}/${s.checksTotal} core checks and found ${risks.join(', ')}.`:`Salt completed ${s.checksCompleted}/${s.checksTotal} core checks. No major warning was found in the data currently available.`,
+    summary:s.hardRiskOverride?`HIGH RISK override triggered: ${s.hardRiskReasons.join('; ')}. The Trenches completed ${s.checksCompleted}/${s.checksTotal} core checks. The numerical Trenches Risk Score is still shown, but positive checks cannot cancel these severe structural risks.`:risks.length?`The Trenches completed ${s.checksCompleted}/${s.checksTotal} core checks and found ${risks.join(', ')}.`:`The Trenches completed ${s.checksCompleted}/${s.checksTotal} core checks. No major warning was found in the data currently available.`,
     authenticity:metric('Mint confirmed','good','Helius confirmed a valid Solana token mint on-chain.','Helius'),
-    sellable:metric(liq!=null?'Market found':'Not simulated',liq!=null?'good':'unknown',liq!=null?'Birdeye returned live market/liquidity data.':'A real swap-route simulation is a later Salt layer.',liq!=null?'Birdeye':'Salt'),
+    sellable:metric(liq!=null?'Market found':'Not simulated',liq!=null?'good':'unknown',liq!=null?'Birdeye returned live market/liquidity data.':'A real swap-route simulation is a later Trenches intelligence layer.',liq!=null?'Birdeye':'Salt'),
     mintAuthority:metric(mintable?'Active':'Revoked',mintable?'warn':'good',mintable?'Mint authority is still active. More supply could be created, increasing dilution risk; this alone does not force HIGH RISK.':'No active mint capability was detected.',security?'Helius + Birdeye':'Helius'),
     freezeAuthority:metric(freezable?'Active':'Revoked',freezable?'bad':'good',freezable?'Token accounts may be freezeable.':'No active freeze capability was detected.',security?'Helius + Birdeye':'Helius'),
     top10:metric(top10==null?'Unknown':`${top10.toFixed(1)}%`,statusPct(top10),top10==null?'Holder concentration was unavailable.':`Top 10 token accounts hold about ${top10.toFixed(1)}% of current supply.`,'Helius'),
-    owner:cohortMetric(devTag,'Creator / dev',[3,10],'Salt checks Birdeye dev labels first, then falls back to the creator wallet traced from Solana launch history.'),
-    bundled:cohortMetric(bundlerTag,'Bundler',[5,15],'Salt checks Birdeye labels first, then independently checks early trade slots when coverage is missing or reports zero.'),
-    snipers:cohortMetric(sniperTag,'Sniper',[5,15],'Salt checks Birdeye Holder Profile first, then falls back to tagged Top Traders when available.'),
-    insiders:cohortMetric(insiderTag,'Insider',[2,8],'Salt checks Birdeye Holder Profile first, then falls back to tagged Top Traders when available.'),
-    smartTraders:cohortMetric(smartTag,'Smart trader',[101,102],'Salt checks Birdeye Holder Profile first, then tagged Top Traders for profitable-wallet participation.'),
-    liquidity:metric(liq==null?'Unknown':money(liq),liq==null?'unknown':liq>=100000?'good':liq>=20000?'warn':'bad',liq==null?(process.env.BIRDEYE_API_KEY?'Birdeye did not return liquidity for this token.':'Add BIRDEYE_API_KEY for market/liquidity intelligence.'):`Current indexed liquidity is about ${money(liq)}.`,liq==null?'Salt':'Birdeye'),
+    owner:cohortMetric(devTag,'Creator / dev',[3,10],'The Trenches checks Birdeye dev labels first, then falls back to the creator wallet traced from Solana launch history.'),
+    bundled:cohortMetric(bundlerTag,'Bundler',[5,15],'The Trenches checks Birdeye labels first, then independently checks early trade slots when coverage is missing or reports zero.'),
+    snipers:cohortMetric(sniperTag,'Sniper',[5,15],'The Trenches checks Birdeye Holder Profile first, then falls back to tagged Top Traders when available.'),
+    insiders:cohortMetric(insiderTag,'Insider',[2,8],'The Trenches checks Birdeye Holder Profile first, then falls back to tagged Top Traders when available.'),
+    smartTraders:cohortMetric(smartTag,'Smart trader',[101,102],'The Trenches checks Birdeye Holder Profile first, then tagged Top Traders for profitable-wallet participation.'),
+    liquidity:metric(liq==null?'Unknown':money(liq),liq==null?'unknown':liq>=100000?'good':liq>=20000?'warn':'bad',liq==null?(process.env.BIRDEYE_API_KEY?'Birdeye did not return liquidity for this token.':'Add BIRDEYE_API_KEY for market/liquidity intelligence.'):`Current indexed liquidity is about ${money(liq)}.`,liq==null?'Trenches Engine':'Birdeye'),
     holders:metric(holders==null?'Unknown':count(holders),holders==null?'unknown':'good',holders==null?(process.env.BIRDEYE_API_KEY?'Birdeye did not return a holder count.':'Add BIRDEYE_API_KEY for indexed holder data.'):'Current indexed holder count.','Birdeye'),
     dexPaid,
-    duplicates:duplicateCheck||metric('Could not verify','unknown','Salt could not complete the secondary DEX identity search for this token.','Salt'),
+    duplicates:duplicateCheck||metric('Could not verify','unknown','The Trenches could not complete the secondary DEX identity search for this token.','Trenches Engine'),
     creatorHistory
   };
 }
@@ -344,11 +344,11 @@ async function scanEvm(address,pref){
   const baseScore=finalize(checks);const sc=applyHardRiskOverrides(baseScore,{sellabilityBad,mintable,top10,devPct:ownerPct});
   const name=(rhAsset?.tokenName?String(rhAsset.tokenName).replace(/\s*[•·]\s*Robinhood Token\s*$/i,'').trim():null)||field(overview,'name')||field(gp,'token_name','tokenName')||dex?.name||`${chainLabel} token`,symbol=rhAsset?.tokenSymbol||field(overview,'symbol')||field(gp,'token_symbol','tokenSymbol')||dex?.symbol||'TOKEN',decimals=isRobinhoodStockToken?18:(number(field(overview,'decimals','decimal'))??number(field(gp,'decimals'))??18);
   const dexPaid=await dexPaidIntel(chain==='bnb'?'bsc':chain==='base'?'base':chain==='robinhood'?'robinhood':'ethereum',address);
-  const marketSource=overview?'Birdeye':dex?'DEX Screener':'Salt';
-  const securitySource=security?'Birdeye':gp?'GoPlus':'Salt';
+  const marketSource=overview?'Birdeye':dex?'DEX Screener':'Trenches Engine';
+  const securitySource=security?'Birdeye':gp?'GoPlus':'Trenches Engine';
   const logoUri=rhAsset?.logoUrl||dex?.imageUrl||field(overview,'logoURI','logo_uri','logo');
   const marketCapLabel=isRobinhoodStockToken?(companyMarketCapUsd!=null?'Company Market Cap':underlyingAumUsd!=null?'Underlying AUM':'Company Market Cap'):'Market Cap';
-  return {mint:address,chain,name,symbol,decimals,logoUri,logoUris:[logoUri].filter(Boolean),verified:isRobinhoodStockToken,priceUsd,marketCapUsd,marketCapLabel,assetType:isRobinhoodStockToken?'robinhood_stock_token':'crypto_token',tokenizedMarketValueUsd,underlyingPriceUsd:number(rhPrice?.rawUnderlyingPriceUsd),stockTokenMultiplier:number(rhPrice?.multiplier),robinhoodAssetStatus:rhAsset?.status||null,...sc,summary:sc.hardRiskOverride?`HIGH RISK override triggered: ${sc.hardRiskReasons.join('; ')}. Salt confirmed the contract on ${chainLabel}. The numerical Salt Score is still shown, but positive checks cannot cancel these severe safety risks.`:`Salt confirmed the contract on ${chainLabel} and completed ${sc.checksCompleted}/${sc.checksTotal} core checks. Market data can fall back to DEX Screener and contract security can fall back to GoPlus when Birdeye is unavailable.`,
+  return {mint:address,chain,name,symbol,decimals,logoUri,logoUris:[logoUri].filter(Boolean),verified:isRobinhoodStockToken,priceUsd,marketCapUsd,marketCapLabel,assetType:isRobinhoodStockToken?'robinhood_stock_token':'crypto_token',tokenizedMarketValueUsd,underlyingPriceUsd:number(rhPrice?.rawUnderlyingPriceUsd),stockTokenMultiplier:number(rhPrice?.multiplier),robinhoodAssetStatus:rhAsset?.status||null,...sc,summary:sc.hardRiskOverride?`HIGH RISK override triggered: ${sc.hardRiskReasons.join('; ')}. The Trenches confirmed the contract on ${chainLabel}. The numerical Trenches Risk Score is still shown, but positive checks cannot cancel these severe safety risks.`:`The Trenches confirmed the contract on ${chainLabel} and completed ${sc.checksCompleted}/${sc.checksTotal} core checks. Market data can fall back to DEX Screener and contract security can fall back to GoPlus when Birdeye is unavailable.`,
     authenticity:metric('Contract confirmed','good',`Deployed bytecode exists on ${chainLabel}.`,'EVM RPC'),
     sellable:metric(honeypot==null&&!cannotSell?'Could not verify':sellabilityBad?'Possible sell restriction':'No sell block detected',honeypot==null&&!cannotSell?'unknown':sellabilityBad?'bad':'good',cannotSell?'GoPlus reports a sell restriction.':honeypot===true?'A honeypot flag was returned.':'No current sell-block/honeypot signal was returned by the available security providers.',securitySource),
     honeypot:metric(honeypot==null?'Could not verify':honeypot?'Detected':'Not detected',honeypot==null?'unknown':honeypot?'bad':'good','Current token-security honeypot signal.',securitySource),
@@ -358,10 +358,10 @@ async function scanEvm(address,pref){
     proxyRisk:metric(proxy==null?'Could not verify':proxy?'Upgradeable / proxy':'No proxy flag',proxy==null?'unknown':proxy?'warn':'good','Proxy/upgradeability signal.',securitySource),
     top10:metric(top10==null?'Could not verify':`${top10.toFixed(1)}%`,top10==null?'unknown':statusPct(top10),top10==null?'Holder concentration was not available from the current providers.':`Top 10 indexed holders account for about ${top10.toFixed(1)}% of supply.`,'GoPlus'),
     owner:metric(ownerPct==null?'Could not verify':`${ownerPct.toFixed(1)}%`,ownerPct==null?'unknown':ownerPct<5?'good':ownerPct<15?'warn':'bad',ownerPct==null?'Owner share was not returned.':`Indexed contract owner/deployer share is about ${ownerPct.toFixed(1)}%.`,'GoPlus'),
-    bundled:metric('Could not verify','unknown','EVM linked-wallet bundle analysis is not yet implemented.','Salt'),snipers:metric('Could not verify','unknown','EVM launch-sniper analysis is not yet implemented.','Salt'),
+    bundled:metric('Could not verify','unknown','EVM linked-wallet bundle analysis is not yet implemented.','Trenches Engine'),snipers:metric('Could not verify','unknown','EVM launch-sniper analysis is not yet implemented.','Trenches Engine'),
     liquidity:metric(liq==null?'Could not verify':money(liq),liq==null?'unknown':liq>=100000?'good':liq>=20000?'warn':'bad',liq==null?'No current liquidity figure was returned by Birdeye or DEX Screener.':`Current indexed liquidity is about ${money(liq)}.` ,marketSource),
-    holders:metric(holders==null?'Could not verify':count(holders),holders==null?'unknown':'good','Current indexed holder count.',holders==null?'Salt':overview?'Birdeye':'GoPlus'),dexPaid,
-    duplicates:metric('Needs identity graph','unknown','Official contract matching is a later Salt layer.','Salt'),creatorHistory:metric('Needs history','unknown','Deployer history is a later Salt layer.','Salt')};
+    holders:metric(holders==null?'Could not verify':count(holders),holders==null?'unknown':'good','Current indexed holder count.',holders==null?'Trenches Engine':overview?'Birdeye':'GoPlus'),dexPaid,
+    duplicates:metric('Needs identity graph','unknown','Official contract matching is a later Trenches intelligence layer.','Trenches Engine'),creatorHistory:metric('Needs history','unknown','Deployer history is a later Trenches intelligence layer.','Trenches Engine')};
 }
 
 async function scanHandler(req,res){
@@ -376,7 +376,7 @@ async function scanHandler(req,res){
     else if(isEvm)result=await scanEvm(mint.toLowerCase(),pref);
     else throw Object.assign(new Error('Paste a valid Solana mint or 0x Ethereum / Base / BNB Chain / Robinhood Chain contract address.'),{status:400});
     return res.status(200).json(result);
-  }catch(e){console.error('Salt scan error',e);const message=errorText(e?.message??e);return res.status(Number(e?.status)||500).json({error:message||'Salt scanner failed.'});}
+  }catch(e){console.error('Salt scan error',e);const message=errorText(e?.message??e);return res.status(Number(e?.status)||500).json({error:message||'Trenches scanner failed.'});}
 };
 
 
@@ -1145,7 +1145,7 @@ const pr=await kv('get',`salt:social:profile:${wallet}`);if(!pr)return res.statu
 
 async function healthHandler(req,res){
   res.setHeader('Cache-Control','no-store');
-  return res.status(200).json({ok:true,service:'Salt Swap scanner',version:'1.9.9',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY),zerox:Boolean(process.env.ZEROX_API_KEY),social:Boolean(process.env.UPSTASH_REDIS_REST_URL&&process.env.UPSTASH_REDIS_REST_TOKEN)}});
+  return res.status(200).json({ok:true,service:'The Trenches scanner',version:'1.9.9',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY),zerox:Boolean(process.env.ZEROX_API_KEY),social:Boolean(process.env.UPSTASH_REDIS_REST_URL&&process.env.UPSTASH_REDIS_REST_TOKEN)}});
 }
 
 export default async function handler(req,res){
@@ -1177,7 +1177,7 @@ export default async function handler(req,res){
     if(route==='social-news')return socialNewsHandler(req,res);
     if(route==='social-reviews')return socialReviewsHandler(req,res);
     if(route==='social-post-actions')return socialPostActionsHandler(req,res);
-    return res.status(404).json({error:'Salt API route not found.'});
+    return res.status(404).json({error:'Trenches API route not found.'});
   }catch(e){
     console.error('Salt API router error',e);
     return res.status(500).json({error:errorText(e)});

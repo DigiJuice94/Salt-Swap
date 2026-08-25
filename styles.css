@@ -2969,3 +2969,26 @@ body.trending-active::before{opacity:.045!important}
   .trendingSpotPrice{font-size:26px!important}
   .trendingSpotIdentity b{font-size:14px!important}
 }
+
+
+/* V1.10.97 — Trenches scanner language / identity */
+.scoreWords>small{
+  letter-spacing:.15em!important;
+  font-weight:950!important;
+}
+.takeTop strong{
+  letter-spacing:.08em!important;
+  font-size:11px!important;
+}
+.takeTop .miniShaker{
+  color:#687756!important;
+  font-size:12px!important;
+}
+.safetyLine>span:nth-child(2){
+  font-weight:850!important;
+  letter-spacing:.02em!important;
+}
+.metricSource{
+  font-weight:750!important;
+  letter-spacing:.015em;
+}
