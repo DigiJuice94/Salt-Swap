@@ -705,3 +705,10 @@ This update rebuilds the Portfolio information architecture around the current C
 - Replaces the blue / purple post-scan line with the Trenches army-green palette.
 - Updates the chart fill, current-value guide, endpoint pulse, right-side current-value tag, hover dot and chart metric accent to matching army green.
 - Keeps the off-white Swap chart background and green/red volume bars unchanged.
+
+## V1.11.03 — Force Army-green Chart
+- Fixes the Swap chart still appearing purple/blue after V1.11.02.
+- Adds the army-green stroke directly to the generated SVG path instead of relying only on CSS.
+- Adds explicit army-green SVG colors for the current-value guide, endpoint pulse and right-side value tag.
+- Adds a version query to `styles.css` so browsers/Vercel clients do not keep using the older cached chart stylesheet.
+- Adds a final high-specificity CSS override as a second safeguard.
