@@ -566,3 +566,11 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Old Trenches Social auth cleanup runs in parallel and is awaited only after the new wallet has already returned an address, so profile isolation remains intact without making the wallet popup feel slow.
 - The previous provider is only disconnected in the background when switching to a different provider. The selected provider is never disconnected right before reconnecting.
 - Clicking the wallet that is already active now closes the chooser immediately instead of reconnecting it unnecessarily.
+
+## V1.10.90 — Sheep site / wallet icon
+- Removes the old embedded salt-shaker favicon.
+- Browser tab favicon is now the Trenches helmeted sheep head.
+- Adds a real `/favicon.ico` and `/favicon.png` so wallet extensions that read the origin favicon also receive the sheep head.
+- Adds Apple touch icon, 192px/512px app icons, and a site webmanifest.
+- Adds The Trenches application/site metadata so wallet connection surfaces have consistent branding.
+- Uses the existing `trenches-sheep-social.png` artwork; no new mascot artwork was generated.
