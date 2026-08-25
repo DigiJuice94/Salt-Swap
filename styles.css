@@ -3986,3 +3986,188 @@ body.trending-active::before{opacity:.045!important}
     padding:18px 14px 28px !important;
   }
 }
+
+/* V1.11.27 — All-green Portfolio surfaces */
+#portfolioView .portfolioEmpty,
+#portfolioView .portfolioEmptyState,
+#portfolioView .emptyState,
+#portfolioView .emptyAssets,
+#portfolioView .emptyActivity,
+#portfolioView .emptyCollectibles,
+#portfolioView .portfolioAnalyticsCard,
+#portfolioView .portfolioAnalyticsPanel,
+#portfolioView .portfolioAllocation,
+#portfolioView .portfolioMovers,
+#portfolioView .portfolioActivityCard,
+#portfolioView .portfolioCollectiblesCard,
+#portfolioView .portfolioAssetsEmpty,
+#portfolioView .portfolioNoData,
+#portfolioView .portfolioPlaceholder,
+#portfolioView .portfolioSectionCard,
+#portfolioView .portfolioDataCard,
+#portfolioView .portfolioGridCard,
+.portfolioPage .portfolioEmpty,
+.portfolioPage .portfolioEmptyState,
+.portfolioPage .emptyState,
+.portfolioPage .emptyAssets,
+.portfolioPage .emptyActivity,
+.portfolioPage .emptyCollectibles,
+.portfolioPage .portfolioAnalyticsCard,
+.portfolioPage .portfolioAnalyticsPanel,
+.portfolioPage .portfolioAllocation,
+.portfolioPage .portfolioMovers,
+.portfolioPage .portfolioActivityCard,
+.portfolioPage .portfolioCollectiblesCard,
+.portfolioPage .portfolioAssetsEmpty,
+.portfolioPage .portfolioNoData,
+.portfolioPage .portfolioPlaceholder,
+.portfolioPage .portfolioSectionCard,
+.portfolioPage .portfolioDataCard,
+.portfolioPage .portfolioGridCard{
+  background:#14211b !important;
+  border:1px solid rgba(158,204,134,.10) !important;
+  color:#eaf0e7 !important;
+  box-shadow:none !important;
+}
+
+#portfolioView [class*="empty"],
+#portfolioView [class*="Empty"],
+#portfolioView [class*="placeholder"],
+#portfolioView [class*="Placeholder"],
+#portfolioView [class*="analytics"],
+#portfolioView [class*="Analytics"],
+#portfolioView [class*="allocation"],
+#portfolioView [class*="Allocation"],
+#portfolioView [class*="mover"],
+#portfolioView [class*="Mover"],
+#portfolioView [class*="activity"],
+#portfolioView [class*="Activity"],
+.portfolioPage [class*="empty"],
+.portfolioPage [class*="Empty"],
+.portfolioPage [class*="placeholder"],
+.portfolioPage [class*="Placeholder"],
+.portfolioPage [class*="analytics"],
+.portfolioPage [class*="Analytics"],
+.portfolioPage [class*="allocation"],
+.portfolioPage [class*="Allocation"],
+.portfolioPage [class*="mover"],
+.portfolioPage [class*="Mover"],
+.portfolioPage [class*="activity"],
+.portfolioPage [class*="Activity"]{
+  border-color:rgba(158,204,134,.10) !important;
+}
+
+#portfolioView .portfolioEmpty,
+#portfolioView .portfolioEmptyState,
+#portfolioView .emptyState,
+#portfolioView .emptyAssets,
+#portfolioView .emptyActivity,
+#portfolioView .portfolioAssetsEmpty,
+#portfolioView .portfolioNoData,
+#portfolioView .portfolioPlaceholder,
+.portfolioPage .portfolioEmpty,
+.portfolioPage .portfolioEmptyState,
+.portfolioPage .emptyState,
+.portfolioPage .emptyAssets,
+.portfolioPage .emptyActivity,
+.portfolioPage .portfolioAssetsEmpty,
+.portfolioPage .portfolioNoData,
+.portfolioPage .portfolioPlaceholder{
+  background:#18271f !important;
+}
+
+#portfolioView .portfolioAnalyticsCard,
+#portfolioView .portfolioAnalyticsPanel,
+#portfolioView .portfolioAllocation,
+#portfolioView .portfolioMovers,
+.portfolioPage .portfolioAnalyticsCard,
+.portfolioPage .portfolioAnalyticsPanel,
+.portfolioPage .portfolioAllocation,
+.portfolioPage .portfolioMovers{
+  background:#16241d !important;
+}
+
+#portfolioView .portfolioActivityCard,
+#portfolioView .portfolioCollectiblesCard,
+.portfolioPage .portfolioActivityCard,
+.portfolioPage .portfolioCollectiblesCard{
+  background:#15231c !important;
+}
+
+#portfolioView .portfolioEmpty *,
+#portfolioView .portfolioEmptyState *,
+#portfolioView .emptyState *,
+#portfolioView .emptyAssets *,
+#portfolioView .emptyActivity *,
+#portfolioView .portfolioNoData *,
+#portfolioView .portfolioPlaceholder *,
+#portfolioView .portfolioAnalyticsCard *,
+#portfolioView .portfolioAnalyticsPanel *,
+#portfolioView .portfolioAllocation *,
+#portfolioView .portfolioMovers *,
+.portfolioPage .portfolioEmpty *,
+.portfolioPage .portfolioEmptyState *,
+.portfolioPage .emptyState *,
+.portfolioPage .emptyAssets *,
+.portfolioPage .emptyActivity *,
+.portfolioPage .portfolioNoData *,
+.portfolioPage .portfolioPlaceholder *,
+.portfolioPage .portfolioAnalyticsCard *,
+.portfolioPage .portfolioAnalyticsPanel *,
+.portfolioPage .portfolioAllocation *,
+.portfolioPage .portfolioMovers *{
+  color:#b7c7b7 !important;
+}
+
+#portfolioView .portfolioEmpty b,
+#portfolioView .portfolioEmptyState b,
+#portfolioView .emptyState b,
+#portfolioView .emptyAssets b,
+#portfolioView .emptyActivity b,
+#portfolioView .portfolioNoData b,
+#portfolioView .portfolioPlaceholder b,
+#portfolioView .portfolioAnalyticsCard b,
+#portfolioView .portfolioAnalyticsPanel b,
+#portfolioView .portfolioAllocation b,
+#portfolioView .portfolioMovers b,
+.portfolioPage .portfolioEmpty b,
+.portfolioPage .portfolioEmptyState b,
+.portfolioPage .emptyState b,
+.portfolioPage .emptyAssets b,
+.portfolioPage .emptyActivity b,
+.portfolioPage .portfolioNoData b,
+.portfolioPage .portfolioPlaceholder b,
+.portfolioPage .portfolioAnalyticsCard b,
+.portfolioPage .portfolioAnalyticsPanel b,
+.portfolioPage .portfolioAllocation b,
+.portfolioPage .portfolioMovers b{
+  color:#eef4eb !important;
+}
+
+#portfolioView .portfolioAnalyticsCard::before,
+#portfolioView .portfolioAnalyticsCard::after,
+#portfolioView .portfolioActivityCard::before,
+#portfolioView .portfolioActivityCard::after,
+#portfolioView .portfolioAssetsEmpty::before,
+#portfolioView .portfolioAssetsEmpty::after,
+.portfolioPage .portfolioAnalyticsCard::before,
+.portfolioPage .portfolioAnalyticsCard::after,
+.portfolioPage .portfolioActivityCard::before,
+.portfolioPage .portfolioActivityCard::after,
+.portfolioPage .portfolioAssetsEmpty::before,
+.portfolioPage .portfolioAssetsEmpty::after{
+  display:none !important;
+}
+
+#portfolioView hr,
+.portfolioPage hr{
+  border-color:rgba(158,204,134,.08) !important;
+}
+
+/* Kill any remaining rolled-back light card fill inside Portfolio only */
+#portfolioView .portfolioMain [style*="background"],
+#portfolioView .portfolioDashboard [style*="background"],
+.portfolioPage .portfolioMain [style*="background"],
+.portfolioPage .portfolioDashboard [style*="background"]{
+  background-color:#16241d !important;
+}

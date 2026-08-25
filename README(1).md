@@ -816,3 +816,10 @@ This update rebuilds the Portfolio information architecture around the current C
 - Replaces heavy borders/shadows with subtle green dividers.
 - Keeps all V1.11.25 profile, follow, feed, chart, and deployment behavior unchanged.
 - Vercel configuration unchanged.
+
+## V1.11.27 — All-Green Portfolio
+- Removes the remaining gray/light empty-state bubbles from Portfolio.
+- Converts No Assets, Analytics, Movers, Collectibles, and Recent Activity panels to the same dark green family as the rest of Portfolio.
+- Keeps subtle green borders and muted green-gray text.
+- Preserves the full-width layout and all profile/follow/feed fixes.
+- Vercel configuration unchanged.
