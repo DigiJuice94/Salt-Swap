@@ -4266,66 +4266,51 @@ body:has(.portfolioPage:not(.hidden)){
   background:var(--portfolio-pill-dot)!important;
 }
 
-/* V1.11.40 — Allocation ring outline */
+/* V1.11.41 — Small allocation ring only */
 .portfolioPage .portfolioAllocationDonut,
-.portfolioPage .portfolioAllocationRing,
 .portfolioPage .portfolioDonut,
-.portfolioPage .portfolioDonutChart,
-.portfolioPage .portfolioAllocationChart{
+.portfolioPage .portfolioDonutRing,
+.portfolioPage .portfolioAllocationDonutWrap{
   background:transparent !important;
   background-image:none !important;
-  border:6px solid #9ff0b1 !important;
+  border:5px solid #9ff0b1 !important;
   border-radius:50% !important;
   box-shadow:none !important;
 }
 
-/* Remove any filled inner disc/pseudo-element */
-.portfolioPage .portfolioAllocationDonut::before,
-.portfolioPage .portfolioAllocationDonut::after,
-.portfolioPage .portfolioAllocationRing::before,
-.portfolioPage .portfolioAllocationRing::after,
-.portfolioPage .portfolioDonut::before,
-.portfolioPage .portfolioDonut::after,
-.portfolioPage .portfolioDonutChart::before,
-.portfolioPage .portfolioDonutChart::after,
-.portfolioPage .portfolioAllocationChart::before,
-.portfolioPage .portfolioAllocationChart::after{
+/* Explicitly remove the accidental oval from ALL surrounding allocation containers */
+.portfolioPage .portfolioAllocationChart,
+.portfolioPage .portfolioAllocationCard,
+.portfolioPage .portfolioAllocationWrap,
+.portfolioPage .portfolioAllocationVisual,
+.portfolioPage .portfolioAllocationGraphic,
+.portfolioPage .portfolioAnalyticsCard{
+  border-radius:14px !important;
+}
+
+.portfolioPage .portfolioAllocationChart,
+.portfolioPage .portfolioAllocationWrap,
+.portfolioPage .portfolioAllocationVisual,
+.portfolioPage .portfolioAllocationGraphic{
+  border:0 !important;
   background:transparent !important;
   background-image:none !important;
   box-shadow:none !important;
 }
 
-/* Center value stays light green; helper text stays white */
+/* Center text */
 .portfolioPage .portfolioAllocationDonut b,
-.portfolioPage .portfolioAllocationRing b,
 .portfolioPage .portfolioDonut b,
-.portfolioPage .portfolioDonutChart b,
-.portfolioPage .portfolioAllocationChart b{
+.portfolioPage .portfolioDonutRing b,
+.portfolioPage .portfolioAllocationDonutWrap b{
   color:#9ff0b1 !important;
   -webkit-text-fill-color:#9ff0b1 !important;
 }
 
 .portfolioPage .portfolioAllocationDonut small,
-.portfolioPage .portfolioAllocationRing small,
 .portfolioPage .portfolioDonut small,
-.portfolioPage .portfolioDonutChart small,
-.portfolioPage .portfolioAllocationChart small{
+.portfolioPage .portfolioDonutRing small,
+.portfolioPage .portfolioAllocationDonutWrap small{
   color:#ffffff !important;
   -webkit-text-fill-color:#ffffff !important;
-}
-
-.portfolioPage .portfolioAllocationDonut{
-  background:transparent !important;
-  background-image:none !important;
-  border:6px solid #9ff0b1 !important;
-  border-radius:50% !important;
-  box-shadow:none !important;
-}
-
-.portfolioPage .portfolioAllocationDonutWrap{
-  background:transparent !important;
-  background-image:none !important;
-  border:6px solid #9ff0b1 !important;
-  border-radius:50% !important;
-  box-shadow:none !important;
 }

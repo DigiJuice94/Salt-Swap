@@ -903,3 +903,9 @@ This update rebuilds the Portfolio information architecture around the current C
 - Uses the light-green Portfolio accent for the outline.
 - Keeps center text readable.
 - Vercel configuration unchanged.
+
+## V1.11.41 — Fix Allocation Oval
+- Removes the accidental giant green oval around the Allocation section.
+- Restricts the light-green circular border to the small allocation donut only.
+- Surrounding allocation chart/container has no circular border.
+- Vercel configuration unchanged.
