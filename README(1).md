@@ -712,3 +712,10 @@ This update rebuilds the Portfolio information architecture around the current C
 - Adds explicit army-green SVG colors for the current-value guide, endpoint pulse and right-side value tag.
 - Adds a version query to `styles.css` so browsers/Vercel clients do not keep using the older cached chart stylesheet.
 - Adds a final high-specificity CSS override as a second safeguard.
+
+## V1.11.04 — Hard-lock Army Green Chart
+- Fixes the line still rendering blue/purple in deployment.
+- Removes the `fomo` class from the actual history line and endpoint.
+- Writes the army-green stroke directly into the SVG `style` attribute with `!important`, so older Fomo CSS cannot override it.
+- Cache-busts `styles.css` again and adds `Cache-Control: no-store` for the homepage and stylesheet in Vercel.
+- Keeps the off-white chart, green/red volume bars, and army-green current-value marker.
