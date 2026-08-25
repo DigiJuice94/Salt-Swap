@@ -4003,3 +4003,127 @@ body:has(.portfolioPage:not(.hidden)){
   color:#ee9186 !important;
   -webkit-text-fill-color:#ee9186 !important;
 }
+
+/* V1.11.38 — Dark Portfolio sub-tabs / cards */
+
+/* ANALYTICS: metric cards, allocation, performance, P/L */
+.portfolioPage .portfolioAnalyticsStats,
+.portfolioPage .portfolioAnalyticsStat,
+.portfolioPage .portfolioAnalyticsCard,
+.portfolioPage .portfolioAnalyticsPanel,
+.portfolioPage .portfolioAnalyticsGrid > *,
+.portfolioPage .portfolioAnalyticsSummary > *,
+.portfolioPage .portfolioAllocationCard,
+.portfolioPage .portfolioPerformanceCard,
+.portfolioPage .portfolioPnlCard,
+.portfolioPage .portfolioProfitLossCard,
+.portfolioPage [data-portfolio-panel="analytics"] article,
+.portfolioPage [data-portfolio-panel="analytics"] .portfolioCard{
+  background:#0f1b15 !important;
+  background-image:none !important;
+  color:#ffffff !important;
+  border:1px solid rgba(141,193,123,.12) !important;
+  box-shadow:none !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+
+.portfolioPage [data-portfolio-panel="analytics"] h1,
+.portfolioPage [data-portfolio-panel="analytics"] h2,
+.portfolioPage [data-portfolio-panel="analytics"] h3,
+.portfolioPage [data-portfolio-panel="analytics"] h4,
+.portfolioPage [data-portfolio-panel="analytics"] b,
+.portfolioPage [data-portfolio-panel="analytics"] strong,
+.portfolioPage [data-portfolio-panel="analytics"] span:not(.positive):not(.negative):not(.up):not(.down),
+.portfolioPage [data-portfolio-panel="analytics"] p,
+.portfolioPage [data-portfolio-panel="analytics"] small{
+  color:#ffffff !important;
+  -webkit-text-fill-color:#ffffff !important;
+}
+
+.portfolioPage [data-portfolio-panel="analytics"] .portfolioAllocationBar,
+.portfolioPage [data-portfolio-panel="analytics"] .portfolioPnlChart,
+.portfolioPage [data-portfolio-panel="analytics"] .portfolioPerformanceChart{
+  background:#0a1711 !important;
+  background-image:none !important;
+  border-color:rgba(141,193,123,.10) !important;
+}
+
+/* DEFI: giant gray empty panel + Solana pill */
+.portfolioPage .portfolioDefiCard,
+.portfolioPage .portfolioDefiPanel,
+.portfolioPage .portfolioDefiEmpty,
+.portfolioPage [data-portfolio-panel="defi"] .portfolioEmpty,
+.portfolioPage [data-portfolio-panel="defi"] article,
+.portfolioPage [data-portfolio-panel="defi"] .portfolioCard{
+  background:#0f1b15 !important;
+  background-image:none !important;
+  color:#ffffff !important;
+  border:1px solid rgba(141,193,123,.12) !important;
+  box-shadow:none !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+
+.portfolioPage [data-portfolio-panel="defi"] h1,
+.portfolioPage [data-portfolio-panel="defi"] h2,
+.portfolioPage [data-portfolio-panel="defi"] h3,
+.portfolioPage [data-portfolio-panel="defi"] b,
+.portfolioPage [data-portfolio-panel="defi"] strong,
+.portfolioPage [data-portfolio-panel="defi"] p,
+.portfolioPage [data-portfolio-panel="defi"] span,
+.portfolioPage [data-portfolio-panel="defi"] small{
+  color:#ffffff !important;
+  -webkit-text-fill-color:#ffffff !important;
+}
+
+.portfolioPage .portfolioDefiBadge,
+.portfolioPage [data-portfolio-panel="defi"] .portfolioCount,
+.portfolioPage [data-portfolio-panel="defi"] .portfolioBadge,
+.portfolioPage [data-portfolio-panel="defi"] button{
+  background:#173623 !important;
+  color:#ffffff !important;
+  -webkit-text-fill-color:#ffffff !important;
+  border:1px solid rgba(121,223,152,.20) !important;
+  box-shadow:none !important;
+}
+
+/* ASSETS: count pill + hide small balances control */
+.portfolioPage .portfolioAssetCount,
+.portfolioPage .portfolioAssetsCount,
+.portfolioPage [data-portfolio-panel="assets"] .portfolioCount,
+.portfolioPage [data-portfolio-panel="assets"] .portfolioBadge,
+.portfolioPage [data-portfolio-panel="assets"] [class*="Count"],
+.portfolioPage [data-portfolio-panel="assets"] [class*="Badge"]{
+  background:#173623 !important;
+  color:#ffffff !important;
+  -webkit-text-fill-color:#ffffff !important;
+  border:1px solid rgba(121,223,152,.20) !important;
+  box-shadow:none !important;
+}
+
+.portfolioPage [data-portfolio-panel="assets"] button,
+.portfolioPage .portfolioHideSmall,
+.portfolioPage .portfolioSmallBalanceToggle{
+  background:#173623 !important;
+  color:#ffffff !important;
+  -webkit-text-fill-color:#ffffff !important;
+  border:1px solid rgba(121,223,152,.20) !important;
+  box-shadow:none !important;
+}
+
+.portfolioPage [data-portfolio-panel="assets"] input{
+  background:#0d1b14 !important;
+  color:#ffffff !important;
+  border:1px solid rgba(141,193,123,.15) !important;
+}
+.portfolioPage [data-portfolio-panel="assets"] input::placeholder{
+  color:#9bad9e !important;
+}
+
+/* Final broad cleanup only inside these three tabs */
+.portfolioPage [data-portfolio-panel="analytics"] [style*="background"],
+.portfolioPage [data-portfolio-panel="defi"] [style*="background"],
+.portfolioPage [data-portfolio-panel="assets"] [style*="background"]{
+  background-color:#0f1b15 !important;
+}

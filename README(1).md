@@ -884,3 +884,10 @@ This update rebuilds the Portfolio information architecture around the current C
 - Secondary labels are softened to light gray-green.
 - Green/red gain-loss colors remain unchanged.
 - Vercel configuration unchanged.
+
+## V1.11.38 — Dark Portfolio Subtabs
+- Darkens Analytics metric cards, allocation/performance panels, and P/L panel.
+- Darkens the DeFi empty-state panel and DeFi pill/button.
+- Darkens Assets count badges and the Hide small balances control.
+- Forces white text across Analytics/DeFi light remnants.
+- Vercel configuration unchanged.
