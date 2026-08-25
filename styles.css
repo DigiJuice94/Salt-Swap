@@ -3672,3 +3672,211 @@ body.trending-active::before{opacity:.045!important}
 @media(max-width:980px){.portfolioPage .polyPortfolioOverview{grid-template-columns:1fr!important}.portfolioPage .polyQuickActions{grid-template-columns:repeat(4,1fr)!important}}
 @media(max-width:720px){.portfolioPage .portfolioDashboard{padding:16px 12px 34px!important}.portfolioPage .polyPortfolioHeader{flex-wrap:wrap!important}.portfolioPage .portfolioHeaderActions{width:100%!important;overflow:auto!important}.portfolioPage .polyQuickActions{grid-template-columns:1fr 1fr!important}.portfolioPage .polyAnalyticsGrid{grid-template-columns:1fr!important}}
 body:has(.portfolioPage:not(.hidden)){background:#07110d!important}
+
+/* V1.11.33 — Solid Green Portfolio + Readability */
+
+/* Remove ALL gray/light gradient or hue transition on Portfolio canvas */
+.portfolioPage,
+.portfolioPage .portfolioDashboard,
+.portfolioPage .portfolioHeaderRow,
+.portfolioPage .portfolioTopbar,
+.portfolioPage .polyPortfolioHeader,
+body:has(.portfolioPage:not(.hidden)){
+  background:#07110d !important;
+  background-image:none !important;
+  background-color:#07110d !important;
+}
+
+/* Ensure no legacy gradient overlays can tint the page */
+.portfolioPage::before,
+.portfolioPage::after,
+.portfolioPage .portfolioDashboard::before,
+.portfolioPage .portfolioDashboard::after,
+.portfolioPage .portfolioHeaderRow::before,
+.portfolioPage .portfolioHeaderRow::after,
+.portfolioPage .polyPortfolioHeader::before,
+.portfolioPage .polyPortfolioHeader::after{
+  display:none !important;
+  background:none !important;
+  background-image:none !important;
+}
+
+/* Header stays same green instead of gray */
+.portfolioPage .polyPortfolioHeader{
+  background:#07110d !important;
+  border-bottom:1px solid rgba(141,193,123,.12) !important;
+}
+
+/* Wallet balance in light green */
+.portfolioPage #portfolioTotalValue,
+.portfolioPage .portfolioTotalValue,
+.portfolioPage .portfolioValueBlock h1{
+  color:#9ff0b1 !important;
+  text-shadow:0 0 18px rgba(121,223,152,.10) !important;
+}
+
+/* Make all primary text larger and easier to read */
+.portfolioPage{
+  font-size:15px !important;
+}
+
+.portfolioPage .portfolioWalletIdentity b{
+  font-size:18px !important;
+}
+
+.portfolioPage .portfolioWalletIdentity button{
+  font-size:12px !important;
+}
+
+.portfolioPage .portfolioHeaderActions button,
+.portfolioPage .portfolioNetworkPill{
+  font-size:12px !important;
+}
+
+.portfolioPage .polyPortfolioTabs button{
+  font-size:14px !important;
+  font-weight:800 !important;
+}
+
+.portfolioPage .portfolioValueBlock::before{
+  font-size:11px !important;
+}
+
+.portfolioPage #portfolioTotalValue,
+.portfolioPage .portfolioTotalValue{
+  font-size:clamp(46px,5.5vw,72px) !important;
+  font-weight:800 !important;
+}
+
+.portfolioPage .portfolioValueBlock small,
+.portfolioPage .portfolioValueBlock em,
+.portfolioPage .portfolioRangeChange{
+  font-size:13px !important;
+}
+
+.portfolioPage .portfolioChartCard b,
+.portfolioPage .portfolioChartCard strong,
+.portfolioPage .portfolioChartCard h3{
+  font-size:16px !important;
+}
+
+.portfolioPage .portfolioChartCard small{
+  font-size:11px !important;
+}
+
+.portfolioPage .portfolioAxisText{
+  font-size:10px !important;
+}
+
+.portfolioPage .portfolioValueAxis{
+  font-size:11px !important;
+}
+
+.portfolioPage .portfolioRangeTabs button{
+  font-size:11px !important;
+}
+
+.portfolioPage .polyQuickActions button{
+  font-size:16px !important;
+  font-weight:800 !important;
+}
+
+.portfolioPage .polyQuickActions button small{
+  font-size:11px !important;
+}
+
+.portfolioPage .portfolioSectionHead small{
+  font-size:10px !important;
+}
+
+.portfolioPage .portfolioSectionHead h2{
+  font-size:24px !important;
+}
+
+.portfolioPage .portfolioSectionHead button{
+  font-size:11px !important;
+}
+
+.portfolioPage .portfolioTableHead{
+  font-size:11px !important;
+}
+
+.portfolioPage .portfolioTokenRow{
+  font-size:13px !important;
+}
+
+.portfolioPage .portfolioTokenRow b{
+  font-size:14px !important;
+}
+
+.portfolioPage .portfolioTokenRow small{
+  font-size:11px !important;
+}
+
+.portfolioPage .portfolioEmpty{
+  font-size:13px !important;
+}
+
+.portfolioPage .portfolioEmpty b{
+  font-size:14px !important;
+}
+
+.portfolioPage .portfolioMiniHead b{
+  font-size:15px !important;
+}
+
+.portfolioPage .portfolioMiniHead span,
+.portfolioPage .portfolioMiniHead small{
+  font-size:11px !important;
+}
+
+.portfolioPage .portfolioAllocationLegend,
+.portfolioPage .portfolioMover{
+  font-size:12px !important;
+}
+
+.portfolioPage .portfolioActivityRow{
+  font-size:13px !important;
+}
+
+.portfolioPage .portfolioActivityRow small{
+  font-size:11px !important;
+}
+
+/* Improve contrast of muted text */
+.portfolioPage .portfolioWalletIdentity button,
+.portfolioPage .portfolioValueBlock small,
+.portfolioPage .portfolioValueBlock em,
+.portfolioPage .portfolioRangeChange,
+.portfolioPage .portfolioSectionHead small,
+.portfolioPage .portfolioMiniHead span,
+.portfolioPage .portfolioMiniHead small,
+.portfolioPage .polyQuickActions button small{
+  color:#9aaf9f !important;
+}
+
+/* Force any old inline/background transition classes to solid green */
+.portfolioPage [style*="linear-gradient"],
+.portfolioPage [style*="radial-gradient"]{
+  background:#07110d !important;
+  background-image:none !important;
+}
+
+/* Wider, cleaner spacing with larger text */
+.portfolioPage .portfolioDashboard{
+  padding-top:28px !important;
+}
+
+.portfolioPage .polyPortfolioTabs{
+  gap:30px !important;
+}
+
+@media(max-width:720px){
+  .portfolioPage{
+    font-size:14px !important;
+  }
+  .portfolioPage #portfolioTotalValue,
+  .portfolioPage .portfolioTotalValue{
+    font-size:46px !important;
+  }
+}

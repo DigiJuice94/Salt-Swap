@@ -852,3 +852,11 @@ This update rebuilds the Portfolio information architecture around the current C
 - Polyfolio-inspired clean portfolio hierarchy in The Trenches dark green palette.
 - No Polyfolio/Portfolio logo added.
 - Vercel unchanged.
+
+## V1.11.33 — Solid Green + Readability
+- Removes the gray/light hue transition from Portfolio and forces one consistent dark green page background.
+- Changes wallet balance / total value to the bright Trenches green accent.
+- Increases text sizes across wallet header, tabs, chart labels, actions, asset table, analytics, and activity.
+- Improves muted text contrast for easier reading.
+- Keeps V1.11.32 Polyfolio-inspired layout and all app behavior intact.
+- Vercel configuration unchanged.
