@@ -3238,3 +3238,177 @@ body.trending-active::before{opacity:.045!important}
   font-weight:900;
   letter-spacing:.05em;
 }
+
+
+/* V1.11.01 — off-white Swap-page chart theme */
+/* This only changes the post-scan chart component used on the Swap page. */
+
+.scanChartCard{
+  background:
+    radial-gradient(circle at 88% 4%,rgba(112,129,83,.055),transparent 32%),
+    linear-gradient(145deg,#fbf7ec,#f3ecdc)!important;
+  border-color:#d6c8a7!important;
+  box-shadow:
+    0 22px 54px rgba(71,59,34,.12),
+    inset 0 1px 0 rgba(255,255,255,.9)!important;
+  color:#183948!important;
+}
+
+.scanChartHead{
+  border-bottom-color:rgba(120,101,62,.10)!important;
+}
+
+.scanChartTitle small,
+.scanChartPriceBlock small,
+.scanChartHeadlineStat small{
+  color:#7d8f84!important;
+}
+
+.scanChartTitle h3{
+  color:#17384a!important;
+}
+
+.scanChartTitle h3 em{
+  color:#718875!important;
+}
+
+.scanChartPriceBlock strong,
+.scanChartHeadlineStat strong{
+  color:#19384a!important;
+}
+
+.scanChartHeadlineStat{
+  border-left-color:rgba(127,110,75,.16)!important;
+}
+
+.scanChartDexLink{
+  background:#f5eedf!important;
+  border-color:#d0c2a1!important;
+  color:#4e624a!important;
+}
+
+.scanChartDexLink:hover{
+  background:#e9dfca!important;
+  border-color:#bcae8f!important;
+  color:#354630!important;
+}
+
+.scanChartToolbar{
+  border-top-color:rgba(124,105,70,.12)!important;
+}
+
+.scanChartRanges button{
+  background:#f4eddd!important;
+  border-color:#d4c7a8!important;
+  color:#718177!important;
+}
+
+.scanChartRanges button.active{
+  background:#4a583c!important;
+  border-color:#4a583c!important;
+  color:#fff7db!important;
+}
+
+#scanChartStatus{
+  color:#83928d!important;
+}
+
+.scanChartCanvas{
+  background:
+    linear-gradient(rgba(255,255,255,.18),rgba(255,255,255,.18)),
+    #fbf8ef!important;
+  border-color:#ddd1b8!important;
+}
+
+.scanChartGrid line{
+  stroke:#d7d0c1!important;
+  opacity:.72!important;
+}
+
+.scanChartAxis text{
+  fill:#7d8988!important;
+}
+
+.scanChartMetricLabel,
+.scanChartVolumeLabel{
+  fill:#778780!important;
+}
+
+.scanChartMetricValue{
+  fill:#168ac7!important;
+}
+
+.scanChartVolumeValue{
+  fill:#3b9b5d!important;
+}
+
+.scanChartArea{
+  opacity:.75;
+}
+
+.scanChartLastGuide{
+  stroke:#168ac7!important;
+  opacity:.58!important;
+}
+
+.scanChartCurrentTag rect{
+  fill:#159de1!important;
+  stroke:#0e86c3!important;
+}
+
+.scanChartHoverLine{
+  stroke:#7b8e87!important;
+  opacity:.48!important;
+}
+
+.scanChartHoverDot{
+  fill:#ffffff!important;
+  stroke:#168ac7!important;
+}
+
+.scanChartTooltip{
+  background:rgba(255,250,239,.97)!important;
+  border-color:#d1c3a2!important;
+  color:#19384a!important;
+  box-shadow:0 10px 28px rgba(72,61,38,.18)!important;
+}
+
+.scanChartTooltip small{
+  color:#168ac7!important;
+}
+
+.scanChartTooltip span{
+  color:#7d8c89!important;
+}
+
+.scanChartLoading,
+.scanChartUnavailable{
+  color:#7d8c88!important;
+}
+
+.scanChartLoading b,
+.scanChartUnavailable b{
+  color:#405751!important;
+}
+
+.scanChartLoading span{
+  border-color:#d7ccb3!important;
+  border-top-color:#4c5b3d!important;
+}
+
+.scanChartStats>div{
+  background:#f6efe1!important;
+  border-color:#d7cab0!important;
+}
+
+.scanChartStats small{
+  color:#7c8d87!important;
+}
+
+.scanChartStats strong{
+  color:#344e59!important;
+}
+
+.scanChartLiveDot{
+  background:#5fc77d!important;
+}

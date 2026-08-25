@@ -694,3 +694,9 @@ This update rebuilds the Portfolio information architecture around the current C
 - Adds a dotted current-value guide across the chart.
 - Changes the history line to a purple → blue gradient while keeping the dark Trenches terminal background.
 - Hovering the line shows market cap (or price fallback), chart mode, and exact timestamp.
+
+## V1.11.01 — Off-white Swap Chart
+- Changes only the post-scan chart on the Swap page to the site's warm off-white / cream theme.
+- Keeps the Fomo-style blue/purple market-cap line, green/red volume bars, blue current-value marker and live pulse.
+- Chart shell, canvas, controls, stat boxes, tooltip, grid and labels now use off-white / beige / dark-green Trenches colors.
+- Trending and Portfolio dark layouts are untouched.
