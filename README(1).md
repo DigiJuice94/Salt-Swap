@@ -808,3 +808,11 @@ This update rebuilds the Portfolio information architecture around the current C
 - Darkens the Portfolio shell, tabs, cards, chart area, action tiles, tables, inputs, and asset rows.
 - Preserves V1.11.24 profile discovery, Follow/Following, Feed fixes, chart cursor fix, and deployment configuration.
 - Vercel configuration unchanged.
+
+## V1.11.26 — Full-Width Dark Portfolio
+- Removes the pale/gray outer frame and oversized light borders from Portfolio.
+- Makes the Portfolio page use the full available width instead of a centered boxed layout.
+- Uses a consistent dark army-green terminal surface across the shell, header, tabs, chart, cards, action tiles, and asset table.
+- Replaces heavy borders/shadows with subtle green dividers.
+- Keeps all V1.11.25 profile, follow, feed, chart, and deployment behavior unchanged.
+- Vercel configuration unchanged.
