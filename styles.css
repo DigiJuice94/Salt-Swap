@@ -2876,3 +2876,96 @@ body.trending-active::before{opacity:.045!important}
   .trendingSpotlight{grid-auto-rows:minmax(180px,auto)}
   .trendingSpotCard{min-height:180px!important;max-height:none}
 }
+
+
+/* V1.10.95 — Trending readability pass */
+/* Bigger desktop typography without changing the Trending information architecture. */
+
+.trendingHeroCopy small{font-size:11px!important}
+.trendingHeroCopy p{font-size:14px!important;max-width:900px!important}
+.trendingHeroStatus b{font-size:10px!important}
+.trendingHeroStatus small{font-size:10px!important}
+.trendingHeroStatus button{font-size:10px!important;padding:9px 12px!important}
+
+.trendingPulseGrid article{padding:17px 18px!important}
+.trendingPulseGrid article>small{font-size:9px!important}
+.trendingPulseValue b{font-size:23px!important}
+.trendingPulseValue span{font-size:10px!important}
+
+.trendingModeTabs button,
+.trendingChainTabs button{
+  font-size:11px!important;
+  padding:10px 14px!important;
+}
+.trendingSearch{flex-basis:390px!important}
+.trendingSearch input{font-size:11px!important;padding:11px 0!important}
+
+.trendingSpotlight{
+  grid-auto-rows:minmax(218px,auto)!important;
+}
+.trendingSpotCard{
+  min-height:218px!important;
+  max-height:285px!important;
+  padding:20px!important;
+}
+.trendingSpotCard.lead{min-height:218px!important}
+.trendingTokenIcon{width:42px!important;height:42px!important;flex-basis:42px!important}
+.trendingTokenIcon.large{width:50px!important;height:50px!important;flex-basis:50px!important}
+.trendingTokenIcon i{font-size:13px!important}
+.trendingSpotIdentity>span{font-size:10px!important}
+.trendingSpotIdentity b{font-size:15px!important}
+.trendingSpotIdentity small{font-size:9px!important}
+.trendingHeatBadge{font-size:10px!important;padding:6px 9px!important}
+.trendingSpotPrice{font-size:30px!important;margin-top:21px!important}
+.trendingSpotPrice span{font-size:11px!important}
+.trendingSpotStats{gap:7px!important;margin-top:15px!important}
+.trendingSpotStats>span{padding:9px!important}
+.trendingSpotStats small{font-size:8px!important}
+.trendingSpotStats b{font-size:10px!important}
+
+.trendingTableHead,
+.trendingRow{
+  grid-template-columns:minmax(285px,1.8fr) .78fr .58fr .60fr .82fr .78fr .82fr .76fr 42px!important;
+  min-width:1160px!important;
+}
+.trendingTableHead{
+  padding:13px 16px!important;
+  font-size:9px!important;
+}
+.trendingRow{padding:13px 16px!important}
+.trendingRankToken{
+  grid-template-columns:30px 42px minmax(0,1fr)!important;
+  gap:11px!important;
+}
+.trendingRank{font-size:10px!important}
+.trendingIdentity b{font-size:13px!important}
+.trendingIdentity small{font-size:9px!important}
+.trendingCell{font-size:11px!important}
+.trendingCell.price b{font-size:11px!important}
+.trendingCell.price small{font-size:8px!important}
+.trendingCell.heat b{font-size:10px!important;width:24px!important}
+.trendingCell.heat>span{width:58px!important;height:6px!important}
+.trendingWatchBtn{font-size:21px!important}
+
+.trendingInfoCard{padding:16px!important}
+.trendingInfoIcon{width:36px!important;height:36px!important;flex-basis:36px!important}
+.trendingInfoCard b{font-size:11px!important}
+.trendingInfoCard p{font-size:10px!important}
+
+.trendingEmpty b{font-size:14px!important}
+.trendingEmpty span{font-size:10px!important}
+.trendingSpotlightLoading{font-size:11px!important}
+
+@media(max-width:980px){
+  .trendingSpotlight{grid-auto-rows:minmax(205px,auto)!important}
+  .trendingSpotCard{min-height:205px!important;max-height:none!important}
+}
+
+@media(max-width:620px){
+  .trendingHeroCopy p{font-size:12px!important}
+  .trendingPulseValue b{font-size:19px!important}
+  .trendingModeTabs button,.trendingChainTabs button{font-size:10px!important;padding:9px 12px!important}
+  .trendingSpotCard{min-height:205px!important;padding:17px!important}
+  .trendingSpotPrice{font-size:26px!important}
+  .trendingSpotIdentity b{font-size:14px!important}
+}

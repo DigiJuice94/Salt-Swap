@@ -632,3 +632,10 @@ This update rebuilds the Portfolio information architecture around the current C
 - Renames the Trending card state to `lead` so it no longer collides with the homepage hero.
 - Locks spotlight cards to a compact ~188–245px dashboard-card layout.
 - Keeps all existing live Trending data, filters, watchlist, heat score, and Salt Check routing unchanged.
+
+## V1.10.95 — Trending readability pass
+- Increases typography throughout the Trending page.
+- Makes filter buttons, chain buttons, search text, summary cards, spotlight cards, prices, token names, statistics and the live table significantly easier to read.
+- Enlarges token artwork and Heat / Watchlist controls.
+- Slightly increases spotlight-card height so the larger type never gets cramped.
+- Keeps the same Trending layout, data, filters and functionality from V1.10.94.
