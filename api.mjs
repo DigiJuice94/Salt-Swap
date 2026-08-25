@@ -1172,83 +1172,6 @@ async function portfolioHandler(req,res){
   }catch(e){return res.status(Number(e?.status)||500).json({error:errorText(e)})}
 }
 
-
-// V1.11.09 — Social feed enrichment helpers.
-// These are intentionally defined together because Community Feed,
-// Profile Feed, posting, replies/quotes and token snapshot enrichment
-// all depend on the same post/token identity rules.
-const socialTokenSnapshotCache=new Map();
-
-function meaningfulSocialTokenName(value){
-  const s=String(value||'').replace(/\s+/g,' ').trim();
-  if(!s)return false;
-  const low=s.toLowerCase();
-  if(['token','contract token','unknown','unknown token','n/a','na','none','undefined','null'].includes(low))return false;
-  // A raw CA is not a meaningful display name.
-  if(/^0x[a-f0-9]{40}$/i.test(s)||/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(s))return false;
-  return true
-}
-function meaningfulSocialTokenSymbol(value){
-  const s=String(value||'').replace(/^\$/,'').trim();
-  if(!s)return false;
-  const low=s.toLowerCase();
-  if(['token','unknown','n/a','na','none','undefined','null','?','-'].includes(low))return false;
-  if(/^0x[a-f0-9]{40}$/i.test(s)||/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(s))return false;
-  return true
-}
-function applySocialPairSnapshot(snap,pair,target){
-  if(!snap||!pair)return snap;
-  const wanted=String(target||'').toLowerCase(),
-    base=pair?.baseToken||{},quote=pair?.quoteToken||{},
-    baseAddress=String(base?.address||'').toLowerCase(),
-    quoteAddress=String(quote?.address||'').toLowerCase(),
-    targetIsQuote=Boolean(wanted&&quoteAddress===wanted&&baseAddress!==wanted),
-    token=targetIsQuote?quote:base;
-
-  if(!meaningfulSocialTokenName(snap.name)&&meaningfulSocialTokenName(token?.name)){
-    snap.name=String(token.name).replace(/\s+/g,' ').trim().slice(0,100)
-  }
-  if(!meaningfulSocialTokenSymbol(snap.symbol)&&meaningfulSocialTokenSymbol(token?.symbol)){
-    snap.symbol=String(token.symbol).trim().replace(/^\$/,'').slice(0,20)
-  }
-
-  // DexScreener priceUsd describes the base token. When the requested token
-  // is the quote token, derive quote USD from base USD / base priceNative.
-  let livePrice=null;
-  if(!targetIsQuote){
-    livePrice=number(pair?.priceUsd)
-  }else{
-    const baseUsd=number(pair?.priceUsd),baseInQuote=number(pair?.priceNative);
-    if(baseUsd!=null&&baseInQuote!=null&&baseInQuote>0)livePrice=baseUsd/baseInQuote
-  }
-  if(livePrice!=null)snap.priceUsd=livePrice;
-
-  // DexScreener's pair image normally represents the base token, so don't
-  // incorrectly put that image on a quote-token post.
-  if(!snap.image&&!targetIsQuote){
-    snap.image=normalizeTokenIcon(pair?.info?.imageUrl)||''
-  }
-  return snap
-}
-function socialPostId(wallet,chain,token){
-  return `${String(wallet||'').trim()}:${cleanChain(chain)}:${String(token||'').trim().toLowerCase()}`
-}
-function parseSocialPostId(postId){
-  const s=String(postId||'').trim(),first=s.indexOf(':'),second=first<0?-1:s.indexOf(':',first+1);
-  if(first<=0||second<=first+1)return null;
-  const wallet=safeSocialWallet(s.slice(0,first)),
-    chain=cleanChain(s.slice(first+1,second)),
-    token=cleanToken(s.slice(second+1));
-  return wallet&&chain&&token?{wallet,chain,token}:null
-}
-function cleanSocialComment(value){
-  return String(value||'')
-    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g,'')
-    .replace(/\r\n?/g,'\n')
-    .trim()
-    .slice(0,400)
-}
-
 async function socialTokenSnapshot(chain,token,fallback={}){
   let snap={name:String(fallback?.name||'').trim().slice(0,100),symbol:String(fallback?.symbol||'').trim().replace(/^\$/,'').slice(0,20),priceUsd:number(fallback?.priceUsd),image:normalizeTokenIcon(fallback?.image)||''},
     dsChain=chain==='bnb'?'bsc':chain,target=String(token||'').trim(),pairs=[];
@@ -1366,7 +1289,7 @@ const pr=await kv('get',`salt:social:profile:${wallet}`);if(!pr)return res.statu
 
 async function healthHandler(req,res){
   res.setHeader('Cache-Control','no-store');
-  return res.status(200).json({ok:true,service:'The Trenches scanner',version:'1.11.14',build:'clean-repo-reset',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY),zerox:Boolean(process.env.ZEROX_API_KEY),social:Boolean(process.env.UPSTASH_REDIS_REST_URL&&process.env.UPSTASH_REDIS_REST_TOKEN)}});
+  return res.status(200).json({ok:true,service:'The Trenches scanner',version:'1.9.9',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY),zerox:Boolean(process.env.ZEROX_API_KEY),social:Boolean(process.env.UPSTASH_REDIS_REST_URL&&process.env.UPSTASH_REDIS_REST_TOKEN)}});
 }
 
 export default async function handler(req,res){
