@@ -846,3 +846,9 @@ This update rebuilds the Portfolio information architecture around the current C
 - Full-width layout preserved.
 - Stylesheet cache key updated to `styles.css?v=11130`.
 - Vercel configuration unchanged.
+
+## V1.11.32 — Polyfolio-Style Portfolio
+- Built from V1.11.30 before the mistaken logo update.
+- Polyfolio-inspired clean portfolio hierarchy in The Trenches dark green palette.
+- No Polyfolio/Portfolio logo added.
+- Vercel unchanged.

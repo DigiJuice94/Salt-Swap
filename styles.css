@@ -3614,260 +3614,61 @@ body.trending-active::before{opacity:.045!important}
   color:#596447!important;
 }
 
-/* V1.11.30 — PORTFOLIO DARK REDESIGN */
-.portfolioPage{
-  --pf-bg:#09120e;
-  --pf-surface:#0f1b15;
-  --pf-surface2:#13231a;
-  --pf-surface3:#183025;
-  --pf-tile:#1d3528;
-  --pf-border:rgba(126,190,115,.14);
-  --pf-border2:rgba(133,208,123,.22);
-  --pf-text:#eef5eb;
-  --pf-muted:#8ea494;
-  --pf-accent:#79df98;
-  width:100%!important;
-  max-width:none!important;
-  min-height:100vh!important;
-  margin:0!important;
-  padding:0!important;
-  background:var(--pf-bg)!important;
-  color:var(--pf-text)!important;
-  border:0!important;
-  border-radius:0!important;
-  box-shadow:none!important;
-}
+/* V1.11.32 — POLYFOLIO-INSPIRED PORTFOLIO */
+.portfolioPage{--p-bg:#07110d;--p-panel:#0d1913;--p-panel2:#101f17;--p-panel3:#14271c;--p-line:rgba(141,193,123,.12);--p-line2:rgba(141,193,123,.20);--p-text:#f1f5ee;--p-muted:#829888;--p-accent:#78de96;--p-accent2:#a6efb6;width:100%!important;max-width:none!important;min-height:100vh!important;margin:0!important;padding:0!important;background:var(--p-bg)!important;color:var(--p-text)!important;border:0!important;border-radius:0!important;box-shadow:none!important}
 .portfolioPage *{box-shadow:none!important}
-
-.portfolioPage .portfolioDashboard{
-  width:100%!important;
-  max-width:none!important;
-  margin:0!important;
-  padding:22px 28px 40px!important;
-  background:var(--pf-bg)!important;
-  border:0!important;
-  border-radius:0!important;
-}
-
-.portfolioPage .portfolioTopbar{
-  background:var(--pf-surface)!important;
-  border:1px solid var(--pf-border)!important;
-  border-radius:14px!important;
-}
-.portfolioPage .portfolioWalletIdentity,
-.portfolioPage .portfolioWalletIdentity>div,
-.portfolioPage .portfolioWalletIdentity button{
-  background:transparent!important;
-}
-.portfolioPage .portfolioWalletIdentity b{color:var(--pf-text)!important}
-.portfolioPage .portfolioWalletIdentity button{color:var(--pf-muted)!important;border:0!important}
-.portfolioPage .portfolioAvatar{
-  background:var(--pf-surface3)!important;
-  border:2px solid #244131!important;
-  box-shadow:0 0 0 1px rgba(121,223,152,.10)!important;
-}
-
-.portfolioPage .portfolioTopbar button,
-.portfolioPage .portfolioNetworkPill{
-  background:#14251c!important;
-  color:var(--pf-text)!important;
-  border:1px solid var(--pf-border)!important;
-}
-.portfolioPage .portfolioTopbar button:hover,
-.portfolioPage .portfolioNetworkPill:hover{
-  background:#1a3024!important;
-}
-.portfolioPage .portfolioNetworkPill small{
-  background:#1d3a2a!important;
-  color:#9de7ae!important;
-}
-
-.portfolioPage .portfolioTabs{
-  background:var(--pf-surface)!important;
-  border:1px solid var(--pf-border)!important;
-  border-radius:12px!important;
-}
-.portfolioPage .portfolioTabs button{
-  background:transparent!important;
-  color:var(--pf-muted)!important;
-  border:1px solid transparent!important;
-}
-.portfolioPage .portfolioTabs button.active{
-  background:#1a3024!important;
-  color:var(--pf-text)!important;
-  border-color:var(--pf-border2)!important;
-}
-
-.portfolioPage [data-portfolio-panel],
-.portfolioPage .portfolioOverview,
-.portfolioPage .portfolioOverviewGrid,
-.portfolioPage .portfolioValueBlock{
-  background:transparent!important;
-  border:0!important;
-}
-.portfolioPage .portfolioValueBlock h1,
-.portfolioPage .portfolioValueBlock b,
-.portfolioPage .portfolioValueBlock strong{
-  color:var(--pf-text)!important;
-}
-.portfolioPage .portfolioValueBlock small,
-.portfolioPage .portfolioValueBlock em{
-  color:var(--pf-muted)!important;
-}
-
-.portfolioPage .portfolioChartCard{
-  background:var(--pf-surface)!important;
-  border:1px solid var(--pf-border)!important;
-  border-radius:16px!important;
-}
-.portfolioPage .portfolioChart{
-  background:#0a1711!important;
-  border:1px solid rgba(121,223,152,.10)!important;
-  border-radius:14px!important;
-}
-.portfolioPage .portfolioChartGrid line{stroke:#234638!important;opacity:.45!important}
-.portfolioPage .portfolioAxisText{fill:#7b9785!important}
-.portfolioPage .portfolioValueAxis{fill:#a8c9b0!important}
-.portfolioPage .portfolioChart svg path.portfolioValueLine{stroke:var(--pf-accent)!important}
-.portfolioPage .portfolioChart svg circle.portfolioLastDot{fill:var(--pf-accent)!important}
-.portfolioPage .portfolioRangeTabs{
-  background:#122119!important;
-  border:1px solid var(--pf-border)!important;
-}
-.portfolioPage .portfolioRangeTabs button{background:transparent!important;color:#82988a!important}
-.portfolioPage .portfolioRangeTabs button.active{background:var(--pf-accent)!important;color:#0b1410!important}
-
-.portfolioPage .portfolioQuickActions button{
-  background:var(--pf-tile)!important;
-  color:var(--pf-text)!important;
-  border:1px solid var(--pf-border)!important;
-  border-radius:15px!important;
-}
-.portfolioPage .portfolioQuickActions button:hover{background:#223f2e!important}
-.portfolioPage .portfolioQuickActions button small{color:#9aaf9f!important}
-
-.portfolioPage .portfolioSectionHead h2,
-.portfolioPage .portfolioSectionHead h3,
-.portfolioPage .portfolioSectionHead b,
-.portfolioPage .portfolioSectionHead strong{color:var(--pf-text)!important}
-.portfolioPage .portfolioSectionHead small,
-.portfolioPage .portfolioSectionHead span{color:var(--pf-muted)!important}
-.portfolioPage .portfolioSectionHead button{
-  background:#13231a!important;
-  border:1px solid var(--pf-border)!important;
-  color:#8ca190!important;
-}
-
-.portfolioPage .portfolioAssetTableWrap{
-  background:var(--pf-surface)!important;
-  border:1px solid var(--pf-border)!important;
-  border-radius:14px!important;
-}
-.portfolioPage .portfolioAssetTable th{
-  background:#0c1812!important;
-  color:#78907f!important;
-  border-bottom:1px solid var(--pf-border)!important;
-}
-.portfolioPage .portfolioAssetTable td{
-  background:transparent!important;
-  color:#dfe9df!important;
-  border-bottom:1px solid rgba(123,182,113,.08)!important;
-}
-
-.portfolioPage .portfolioEmpty,
-.portfolioPage .portfolioChartEmpty{
-  background:#122119!important;
-  background-image:none!important;
-  border:1px solid rgba(123,182,113,.09)!important;
-  color:#7f9585!important;
-  border-radius:12px!important;
-}
-.portfolioPage .portfolioEmpty b,
-.portfolioPage .portfolioChartEmpty b{color:#dce8dd!important}
-.portfolioPage .portfolioEmpty span,
-.portfolioPage .portfolioChartEmpty span{color:#738a7a!important}
-
-.portfolioPage .portfolioMiniAnalytics,
-.portfolioPage .portfolioAnalyticsCard{
-  background:var(--pf-surface)!important;
-  border:1px solid var(--pf-border)!important;
-  border-radius:14px!important;
-}
-.portfolioPage .portfolioMiniHead b{color:var(--pf-text)!important}
-.portfolioPage .portfolioMiniHead span,
-.portfolioPage .portfolioMiniHead small{color:var(--pf-muted)!important}
-.portfolioPage .portfolioAllocationBar{
-  background:#1a2b22!important;
-  border:1px solid rgba(123,182,113,.08)!important;
-}
-.portfolioPage .portfolioAllocationBar>span{background:var(--pf-accent)!important}
+.portfolioPage .portfolioDashboard{width:min(1500px,100%)!important;max-width:none!important;margin:0 auto!important;padding:24px 30px 54px!important;background:transparent!important}
+.portfolioPage .polyPortfolioHeader{min-height:68px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:18px!important;padding:0 2px 18px!important;margin:0!important;background:transparent!important;border:0!important;border-bottom:1px solid var(--p-line)!important;border-radius:0!important}
+.portfolioPage .portfolioWalletIdentity{display:flex!important;align-items:center!important;gap:11px!important}
+.portfolioPage .portfolioAvatar{width:42px!important;height:42px!important;flex:0 0 42px!important;background:#17281f!important;border:1px solid var(--p-line2)!important}
+.portfolioPage .portfolioWalletIdentity b{color:var(--p-text)!important;font-size:15px!important}
+.portfolioPage .portfolioWalletIdentity button{background:transparent!important;border:0!important;color:var(--p-muted)!important;padding:0!important}
+.portfolioPage .portfolioHeaderActions{display:flex!important;align-items:center!important;gap:8px!important}
+.portfolioPage .portfolioHeaderActions button,.portfolioPage .portfolioNetworkPill{min-height:34px!important;padding:0 12px!important;background:#0c1812!important;color:#c8d4ca!important;border:1px solid var(--p-line)!important;border-radius:9px!important}
+.portfolioPage .portfolioNetworkPill small{background:#183c28!important;color:var(--p-accent2)!important;border-radius:999px!important;padding:2px 5px!important}
+.portfolioPage .polyPortfolioTabs{display:flex!important;width:max-content!important;max-width:100%!important;margin:18px 0 30px!important;padding:0!important;gap:24px!important;background:transparent!important;border:0!important;border-radius:0!important;overflow:auto!important}
+.portfolioPage .polyPortfolioTabs button{position:relative!important;padding:8px 0 11px!important;background:transparent!important;border:0!important;color:#718778!important}
+.portfolioPage .polyPortfolioTabs button.active{color:var(--p-text)!important}
+.portfolioPage .polyPortfolioTabs button.active::after{content:""!important;position:absolute!important;left:0!important;right:0!important;bottom:0!important;height:2px!important;background:var(--p-accent)!important;border-radius:999px!important}
+.portfolioPage .portfolioValueBlock{background:transparent!important;border:0!important;margin-bottom:16px!important}
+.portfolioPage .portfolioValueBlock::before{content:"PORTFOLIO BALANCE"!important;display:block!important;margin-bottom:7px!important;color:#6f8676!important;font-size:9px!important;font-weight:850!important;letter-spacing:.12em!important}
+.portfolioPage #portfolioTotalValue{color:var(--p-text)!important;font-size:clamp(38px,5vw,62px)!important;line-height:.95!important;letter-spacing:-.055em!important}
+.portfolioPage .portfolioValueBlock small,.portfolioPage .portfolioValueBlock em,.portfolioPage .portfolioRangeChange{color:var(--p-muted)!important}
+.portfolioPage .polyPortfolioOverview{display:grid!important;grid-template-columns:minmax(0,1fr) 228px!important;gap:16px!important}
+.portfolioPage .polyPerformanceCard{min-height:440px!important;padding:18px!important;background:var(--p-panel)!important;border:1px solid var(--p-line)!important;border-radius:18px!important}
+.portfolioPage .portfolioChart{min-height:315px!important;background:#09150f!important;border:0!important;border-radius:13px!important}
+.portfolioPage .portfolioChartGrid line{stroke:#1b392b!important;opacity:.52!important}
+.portfolioPage .portfolioAxisText{fill:#688071!important}.portfolioPage .portfolioValueAxis{fill:#9eb5a4!important}
+.portfolioPage .portfolioChart svg path.portfolioValueLine{stroke:var(--p-accent)!important}
+.portfolioPage .portfolioRangeTabs{background:#0c1a13!important;border:1px solid var(--p-line)!important;border-radius:10px!important}
+.portfolioPage .portfolioRangeTabs button{background:transparent!important;color:#718879!important}
+.portfolioPage .portfolioRangeTabs button.active{background:#173423!important;color:var(--p-accent2)!important}
+.portfolioPage .polyQuickActions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important}
+.portfolioPage .polyQuickActions button{min-height:calc(50% - 5px)!important;padding:15px!important;background:var(--p-panel2)!important;color:var(--p-text)!important;border:1px solid var(--p-line)!important;border-radius:14px!important;text-align:left!important}
+.portfolioPage .polyQuickActions button:hover{background:var(--p-panel3)!important;border-color:var(--p-line2)!important}
+.portfolioPage .polyQuickActions button small{color:#7f9685!important}
+.portfolioPage .portfolioSectionHead{margin-top:34px!important;margin-bottom:12px!important}
+.portfolioPage .portfolioSectionHead small{color:#627a6a!important;font-size:8px!important;letter-spacing:.13em!important}
+.portfolioPage .portfolioSectionHead h2{margin-top:3px!important;color:var(--p-text)!important;font-size:20px!important}
+.portfolioPage .portfolioSectionHead button{background:transparent!important;border:0!important;color:#6f8776!important}
+.portfolioPage .polyAssetsCard{background:transparent!important;border:1px solid var(--p-line)!important;border-radius:14px!important;overflow:hidden!important}
+.portfolioPage .portfolioTableHead{background:#0b1711!important;color:#5f7767!important;border-bottom:1px solid var(--p-line)!important}
+.portfolioPage .portfolioTokenList{background:var(--p-panel)!important}
+.portfolioPage .portfolioTokenRow{background:transparent!important;border-bottom:1px solid rgba(141,193,123,.07)!important}
+.portfolioPage .portfolioTokenRow:hover{background:#122119!important}
+.portfolioPage .portfolioEmpty{min-height:84px!important;padding:22px!important;background:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;color:#667d6e!important}
+.portfolioPage .portfolioEmpty b{color:#aab9ad!important}.portfolioPage .portfolioEmpty span{color:#5d7364!important}
+.portfolioPage .polyAnalyticsGrid{grid-template-columns:1fr 1fr!important;gap:14px!important}
+.portfolioPage .portfolioMiniAnalytics{min-height:170px!important;padding:18px!important;background:var(--p-panel)!important;border:1px solid var(--p-line)!important;border-radius:14px!important}
+.portfolioPage .portfolioMiniHead b{color:#dfe8e0!important}.portfolioPage .portfolioMiniHead span{color:#718777!important}
+.portfolioPage .portfolioAllocationBar{height:8px!important;background:#182b21!important;border:0!important}.portfolioPage .portfolioAllocationBar>span{background:var(--p-accent)!important}
 .portfolioPage .portfolioMovers{background:transparent!important}
-.portfolioPage .portfolioMover{border-bottom:1px solid rgba(123,182,113,.08)!important;color:var(--pf-text)!important}
-.portfolioPage .portfolioMover>span{background:#1a2b22!important;border:1px solid rgba(123,182,113,.08)!important}
-
-.portfolioPage .portfolioNftGrid{background:transparent!important}
-.portfolioPage .portfolioNft{
-  background:var(--pf-surface)!important;
-  border:1px solid var(--pf-border)!important;
-  border-radius:14px!important;
-  color:var(--pf-text)!important;
-}
-.portfolioPage .portfolioNft>div{background:#182a20!important}
-
-.portfolioPage .portfolioActivityList{
-  background:var(--pf-surface)!important;
-  border:1px solid var(--pf-border)!important;
-  border-radius:14px!important;
-}
-.portfolioPage .portfolioActivityRow{
-  background:transparent!important;
-  border-bottom:1px solid rgba(123,182,113,.08)!important;
-  color:var(--pf-text)!important;
-}
-.portfolioPage .portfolioActivityRow:hover{background:#14251c!important}
-
-.portfolioPage input,
-.portfolioPage select,
-.portfolioPage textarea{
-  background:#111f18!important;
-  color:var(--pf-text)!important;
-  border:1px solid var(--pf-border)!important;
-}
-.portfolioPage .portfolioLive{
-  background:#183122!important;
-  color:#9ee9ad!important;
-  border:1px solid rgba(121,223,152,.15)!important;
-}
-
-/* eliminate any residual light/glass look inside portfolio */
-.portfolioPage .portfolioTopbar,
-.portfolioPage .portfolioTabs,
-.portfolioPage .portfolioChartCard,
-.portfolioPage .portfolioChart,
-.portfolioPage .portfolioMiniAnalytics,
-.portfolioPage .portfolioAnalyticsCard,
-.portfolioPage .portfolioAssetTableWrap,
-.portfolioPage .portfolioActivityList,
-.portfolioPage .portfolioNft,
-.portfolioPage .portfolioQuickActions button,
-.portfolioPage .portfolioNetworkPill{
-  backdrop-filter:none!important;
-  -webkit-backdrop-filter:none!important;
-}
-
-/* broad safeguard for old light backgrounds in portfolio-specific classes */
-.portfolioPage [class^="portfolio"],
-.portfolioPage [class*=" portfolio"]{
-  border-color:var(--pf-border)!important;
-}
-.portfolioPage [class*="portfolio"][style*="background"]{
-  background-color:var(--pf-surface)!important;
-}
-
-@media(min-width:1200px){
-  .portfolioPage .portfolioDashboard{padding-left:40px!important;padding-right:40px!important}
-}
-@media(max-width:900px){
-  .portfolioPage .portfolioDashboard{padding:16px 12px 28px!important}
-}
-body:has(.portfolioPage:not(.hidden)){background:#09120e!important}
+.portfolioPage .portfolioNft{background:var(--p-panel)!important;border:1px solid var(--p-line)!important;border-radius:14px!important}.portfolioPage .portfolioNft>div{background:#14251c!important}
+.portfolioPage .portfolioActivityList{background:var(--p-panel)!important;border:1px solid var(--p-line)!important;border-radius:14px!important;overflow:hidden!important}
+.portfolioPage .portfolioActivityRow{background:transparent!important;border-bottom:1px solid rgba(141,193,123,.07)!important}.portfolioPage .portfolioActivityRow:hover{background:#122119!important}
+.portfolioPage input,.portfolioPage select,.portfolioPage textarea{background:#0d1b14!important;color:var(--p-text)!important;border:1px solid var(--p-line)!important}
+.portfolioPage .portfolioLive{background:#163723!important;color:#9fe7af!important;border:1px solid rgba(120,222,150,.14)!important}
+.portfolioPage [class*="portfolio"]{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:none!important}
+@media(max-width:980px){.portfolioPage .polyPortfolioOverview{grid-template-columns:1fr!important}.portfolioPage .polyQuickActions{grid-template-columns:repeat(4,1fr)!important}}
+@media(max-width:720px){.portfolioPage .portfolioDashboard{padding:16px 12px 34px!important}.portfolioPage .polyPortfolioHeader{flex-wrap:wrap!important}.portfolioPage .portfolioHeaderActions{width:100%!important;overflow:auto!important}.portfolioPage .polyQuickActions{grid-template-columns:1fr 1fr!important}.portfolioPage .polyAnalyticsGrid{grid-template-columns:1fr!important}}
+body:has(.portfolioPage:not(.hidden)){background:#07110d!important}

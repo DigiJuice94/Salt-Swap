@@ -16,7 +16,7 @@
   <link rel="shortcut icon" href="/favicon.ico?v=11090" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=11090" />
   <link rel="manifest" href="/site.webmanifest?v=11090" />
-  <link rel="stylesheet" href="/styles.css?v=11130" />
+  <link rel="stylesheet" href="/styles.css?v=11132" />
   <script defer src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.4/lib/index.iife.min.js"></script>
 
 <style>
@@ -384,7 +384,7 @@ body.publicProfileOpen{overflow:hidden}
       </div>
 
       <div id="portfolioDashboard" class="portfolioDashboard hidden">
-        <div class="portfolioHeaderRow coinstatsPortfolioHeader">
+        <div class="portfolioHeaderRow coinstatsPortfolioHeader polyPortfolioHeader">
           <div class="portfolioWalletIdentity">
             <div id="portfolioAvatar" class="portfolioAvatar">W</div>
             <div>
@@ -399,7 +399,7 @@ body.publicProfileOpen{overflow:hidden}
           </div>
         </div>
 
-        <div class="portfolioTabs coinstatsPortfolioTabs" role="tablist" aria-label="Portfolio sections">
+        <div class="portfolioTabs coinstatsPortfolioTabs polyPortfolioTabs" role="tablist" aria-label="Portfolio sections">
           <button class="active" data-portfolio-tab="dashboard" type="button">Dashboard</button>
           <button data-portfolio-tab="analytics" type="button">Analytics</button>
           <button data-portfolio-tab="assets" type="button">Assets</button>
@@ -427,8 +427,8 @@ body.publicProfileOpen{overflow:hidden}
             <div class="portfolioUpdated"><span class="portfolioLiveDot"></span><span id="portfolioUpdatedAt">Live</span></div>
           </div>
 
-          <div class="portfolioOverviewGrid coinstatsOverviewGrid">
-            <div class="portfolioChartCard coinstatsChartCard">
+          <div class="portfolioOverviewGrid coinstatsOverviewGrid polyPortfolioOverview">
+            <div class="portfolioChartCard coinstatsChartCard polyPerformanceCard">
               <div class="portfolioChartHead">
                 <div>
                   <b>Portfolio Value</b>
@@ -446,7 +446,7 @@ body.publicProfileOpen{overflow:hidden}
               </div>
             </div>
 
-            <div class="portfolioQuickActions coinstatsQuickActions">
+            <div class="portfolioQuickActions coinstatsQuickActions polyQuickActions">
               <button id="portfolioReceiveBtn" type="button"><span>↙</span><b>Receive</b><small>Wallet address</small></button>
               <button id="portfolioSwapBtn" type="button"><span>⇄</span><b>Swap</b><small>Best route</small></button>
               <button id="portfolioSendBtn" type="button"><span>↗</span><b>Send</b><small>Transfer</small></button>
@@ -455,7 +455,7 @@ body.publicProfileOpen{overflow:hidden}
           </div>
 
           <div class="portfolioSectionHead"><div><small>ASSETS</small><h2>Your assets</h2></div><button type="button" data-open-portfolio-tab="assets">See More Assets</button></div>
-          <div class="portfolioAssetTableWrap">
+          <div class="portfolioAssetTableWrap polyAssetsCard">
             <div class="portfolioTableHead coinstatsAssetColumns dashboardAssetHead">
               <span>Name</span><span>Amount</span><span>24h Change</span><span>Price</span><span>Total</span><span>Avg Buy</span><span>P/L</span>
             </div>
@@ -463,7 +463,7 @@ body.publicProfileOpen{overflow:hidden}
           </div>
 
           <div class="portfolioSectionHead"><div><small>CHARTS</small><h2>Portfolio analytics</h2></div><button type="button" data-open-portfolio-tab="analytics">See More Charts</button></div>
-          <div class="portfolioDashboardCharts">
+          <div class="portfolioDashboardCharts polyAnalyticsGrid">
             <article class="portfolioMiniAnalytics">
               <div class="portfolioMiniHead"><b>Asset Allocation</b><span id="portfolioAllocationTotal">—</span></div>
               <div id="portfolioAllocationBar" class="portfolioAllocationBar"></div>
