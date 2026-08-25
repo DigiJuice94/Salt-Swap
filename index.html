@@ -1729,7 +1729,7 @@ function renderTrendingSpotlight(rows){
   const el=$('trendingSpotlight');if(!el)return;
   const hot=rows.slice(0,3);
   if(!hot.length){el.innerHTML='<div class="trendingEmpty"><b>No tokens match this view.</b><span>Try another chain or clear your search.</span></div>';return}
-  el.innerHTML=hot.map((r,i)=>`<button class="trendingSpotCard ${i===0?'hero':''}" type="button" data-trending-open="${socialEsc(trendingRowKey(r))}">
+  el.innerHTML=hot.map((r,i)=>`<button class="trendingSpotCard ${i===0?'lead':''}" type="button" data-trending-open="${socialEsc(trendingRowKey(r))}">
     <div class="trendingSpotTop">
       ${trendingTokenIcon(r,'large')}
       <div class="trendingSpotIdentity"><span>${socialEsc(r.name||'Unknown')}</span><b>$${socialEsc(r.symbol||'TOKEN')}</b><small><i class="chainOrb ${socialEsc(r.chain)}"></i>${socialEsc(trendingChainLabel(r.chain))}${r.boosted?' · Boosted':''}</small></div>

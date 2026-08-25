@@ -625,3 +625,10 @@ This update rebuilds the Portfolio information architecture around the current C
 - Clicking a token routes directly into Salt Check using the contract and detected chain.
 - Auto-refreshes every 60 seconds while Trending is open.
 - Trending is explicitly treated as attention/momentum, not a safety endorsement.
+
+## V1.10.94 — Trending spotlight layout fix
+- Fixes the giant Trending spotlight cards shown in the screenshot.
+- Root cause: the #1 Trending card used the generic CSS class `hero`, which inherited the landing page's 650px minimum height and vertical centering.
+- Renames the Trending card state to `lead` so it no longer collides with the homepage hero.
+- Locks spotlight cards to a compact ~188–245px dashboard-card layout.
+- Keeps all existing live Trending data, filters, watchlist, heat score, and Salt Check routing unchanged.

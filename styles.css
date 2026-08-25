@@ -2816,7 +2816,7 @@ body.trending-active::before{opacity:.045!important}
 
 .trendingSpotlight{display:grid;grid-template-columns:1.35fr 1fr 1fr;gap:10px;margin-bottom:14px}
 .trendingSpotCard{min-width:0;text-align:left;border:1px solid rgba(146,180,144,.13);border-radius:19px;background:linear-gradient(145deg,#142820,#0f1f1a);padding:16px;color:#dce8de;cursor:pointer;box-shadow:0 16px 36px rgba(0,0,0,.13);transition:transform .15s ease,border-color .15s ease}
-.trendingSpotCard:hover{transform:translateY(-2px);border-color:rgba(139,205,145,.34)}.trendingSpotCard.hero{background:linear-gradient(145deg,#1b3528,#10251e);border-color:rgba(143,206,146,.25)}
+.trendingSpotCard:hover{transform:translateY(-2px);border-color:rgba(139,205,145,.34)}.trendingSpotCard.lead{background:linear-gradient(145deg,#1b3528,#10251e);border-color:rgba(143,206,146,.25)}
 .trendingSpotTop{display:flex;align-items:center;gap:10px}.trendingTokenIcon{width:34px;height:34px;flex:0 0 34px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:#203a2d;border:1px solid rgba(160,198,158,.12)}.trendingTokenIcon.large{width:42px;height:42px;flex-basis:42px}.trendingTokenIcon img{width:100%;height:100%;object-fit:cover}.trendingTokenIcon i{font-style:normal;font-size:11px;font-weight:950;color:#b9d7b9}
 .trendingSpotIdentity{min-width:0;display:grid;gap:1px}.trendingSpotIdentity>span{font-size:8px;color:#789285;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.trendingSpotIdentity b{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.trendingSpotIdentity small{display:flex;align-items:center;gap:5px;font-size:7px;color:#678073}
 .trendingHeatBadge{margin-left:auto;align-self:flex-start;border:1px solid rgba(221,175,91,.15);border-radius:999px;background:rgba(97,66,25,.24);color:#e4b865;font-size:8px;padding:5px 7px}
@@ -2838,8 +2838,41 @@ body.trending-active::before{opacity:.045!important}
 .trendingBottomGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.trendingInfoCard{display:flex;align-items:flex-start;gap:11px;border:1px solid rgba(139,173,140,.1);border-radius:15px;background:#10201b;padding:13px}.trendingInfoIcon{width:31px;height:31px;flex:0 0 31px;border-radius:9px;display:grid;place-items:center;background:#1a3127;color:#85ba86}.trendingInfoCard>div:last-child{display:grid;gap:3px}.trendingInfoCard b{font-size:9px;color:#b9cdbf}.trendingInfoCard p{margin:0;color:#637c70;font-size:8px;line-height:1.55}
 
 @media(max-width:980px){
-  .trendingHero{align-items:flex-start;flex-direction:column}.trendingPulseGrid{grid-template-columns:1fr 1fr}.trendingSpotlight{grid-template-columns:1fr 1fr}.trendingSpotCard.hero{grid-column:1/-1}.trendingControls{align-items:stretch;flex-direction:column}.trendingSearch{max-width:none;flex-basis:auto}
+  .trendingHero{align-items:flex-start;flex-direction:column}.trendingPulseGrid{grid-template-columns:1fr 1fr}.trendingSpotlight{grid-template-columns:1fr 1fr}.trendingSpotCard.lead{grid-column:1/-1}.trendingControls{align-items:stretch;flex-direction:column}.trendingSearch{max-width:none;flex-basis:auto}
 }
 @media(max-width:620px){
-  .trendingPage{padding:12px 10px 50px}.trendingHero{padding:20px 18px}.trendingHeroCopy h1{font-size:37px}.trendingPulseGrid{grid-template-columns:1fr 1fr}.trendingSpotlight{grid-template-columns:1fr}.trendingSpotCard.hero{grid-column:auto}.trendingBottomGrid{grid-template-columns:1fr}.trendingHeroStatus{width:100%;box-sizing:border-box}.trendingHeroStatus button{margin-left:auto}
+  .trendingPage{padding:12px 10px 50px}.trendingHero{padding:20px 18px}.trendingHeroCopy h1{font-size:37px}.trendingPulseGrid{grid-template-columns:1fr 1fr}.trendingSpotlight{grid-template-columns:1fr}.trendingSpotCard.lead{grid-column:auto}.trendingBottomGrid{grid-template-columns:1fr}.trendingHeroStatus{width:100%;box-sizing:border-box}.trendingHeroStatus button{margin-left:auto}
+}
+
+
+/* V1.10.94 — fix Trending spotlight collision with global landing-page .hero */
+.trendingSpotlight{
+  align-items:stretch;
+  grid-auto-rows:minmax(188px,auto);
+}
+.trendingSpotCard{
+  min-height:188px!important;
+  height:auto!important;
+  max-height:245px;
+  display:block!important;
+  align-items:initial!important;
+  justify-content:initial!important;
+  text-align:left!important;
+  overflow:hidden;
+}
+.trendingSpotCard.lead{
+  min-height:188px!important;
+}
+.trendingSpotCard .trendingSpotTop{
+  margin:0;
+}
+.trendingSpotCard .trendingSpotPrice{
+  margin-top:18px;
+}
+.trendingSpotCard .trendingSpotStats{
+  margin-top:12px;
+}
+@media(max-width:980px){
+  .trendingSpotlight{grid-auto-rows:minmax(180px,auto)}
+  .trendingSpotCard{min-height:180px!important;max-height:none}
 }
