@@ -4171,3 +4171,115 @@ body.trending-active::before{opacity:.045!important}
 .portfolioPage .portfolioDashboard [style*="background"]{
   background-color:#16241d !important;
 }
+
+/* V1.11.28 — exact Portfolio gray-surface cleanup */
+.portfolioPage .portfolioMiniAnalytics,
+.portfolioPage .portfolioAnalyticsCard{
+  background:#16241d !important;
+  border:1px solid rgba(139,190,126,.13) !important;
+  box-shadow:none !important;
+  color:#eaf1e7 !important;
+}
+
+.portfolioPage .portfolioMiniHead b{
+  color:#eef4eb !important;
+}
+.portfolioPage .portfolioMiniHead > span,
+.portfolioPage .portfolioMiniHead small{
+  color:#8fa593 !important;
+}
+
+.portfolioPage .portfolioAllocationBar{
+  background:#26382d !important;
+  border:1px solid rgba(140,194,130,.10) !important;
+  box-shadow:none !important;
+}
+
+.portfolioPage .portfolioAllocationLegend > span,
+.portfolioPage .portfolioAllocationLegend b,
+.portfolioPage .portfolioAllocationLegend em{
+  color:#aebfac !important;
+}
+
+.portfolioPage .portfolioMovers{
+  background:#14231c !important;
+  border:0 !important;
+  box-shadow:none !important;
+}
+.portfolioPage .portfolioMover{
+  border-bottom-color:rgba(143,190,130,.10) !important;
+}
+.portfolioPage .portfolioMover > span{
+  background:#22362a !important;
+  border:1px solid rgba(144,194,128,.10) !important;
+}
+
+.portfolioPage .portfolioAssetTableWrap{
+  background:#111e18 !important;
+  border:1px solid rgba(139,190,126,.10) !important;
+  box-shadow:none !important;
+}
+
+.portfolioPage .portfolioEmpty{
+  background:#182820 !important;
+  background-image:none !important;
+  border:0 !important;
+  color:#8fa594 !important;
+  box-shadow:none !important;
+}
+.portfolioPage .portfolioEmpty b{
+  color:#e9f0e6 !important;
+}
+.portfolioPage .portfolioEmpty span{
+  color:#82988a !important;
+}
+
+.portfolioPage .portfolioActivityList{
+  background:#111e18 !important;
+  border:1px solid rgba(139,190,126,.10) !important;
+  box-shadow:none !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+.portfolioPage .portfolioActivityRow{
+  background:#111e18 !important;
+  border-bottom-color:rgba(139,190,126,.08) !important;
+}
+.portfolioPage .portfolioActivityRow:hover{
+  background:#17281f !important;
+}
+
+.portfolioPage .portfolioNftGrid{
+  background:transparent !important;
+}
+.portfolioPage .portfolioNft{
+  background:#15251d !important;
+  border:1px solid rgba(139,190,126,.10) !important;
+  box-shadow:none !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+.portfolioPage .portfolioNft > div{
+  background:#203329 !important;
+}
+
+/* Dashboard analytics must never fall back to pale gray. */
+.portfolioPage .portfolioDashboardCharts > article{
+  background:#16241d !important;
+  border-color:rgba(139,190,126,.13) !important;
+}
+
+/* Any empty box directly inside the dashboard stays green. */
+.portfolioPage [data-portfolio-panel="dashboard"] .portfolioEmpty{
+  background:#182820 !important;
+  background-image:none !important;
+}
+
+/* Eliminate old glass/light portfolio card rules from the rollback era. */
+.portfolioPage .portfolioMiniAnalytics,
+.portfolioPage .portfolioActivityList,
+.portfolioPage .portfolioNft,
+.portfolioPage .portfolioAssetTableWrap{
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}

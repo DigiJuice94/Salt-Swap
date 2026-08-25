@@ -823,3 +823,10 @@ This update rebuilds the Portfolio information architecture around the current C
 - Keeps subtle green borders and muted green-gray text.
 - Preserves the full-width layout and all profile/follow/feed fixes.
 - Vercel configuration unchanged.
+
+## V1.11.28 — Portfolio Cache + Gray Surface Fix
+- Found the underlying issue: `index.html` was still loading `styles.css?v=11107`, so rollback-era Portfolio CSS could remain cached.
+- Cache key is now `styles.css?v=11128`.
+- Targets the exact current Portfolio classes: `portfolioMiniAnalytics`, `portfolioAllocationBar`, `portfolioMovers`, `portfolioAssetTableWrap`, `portfolioEmpty`, `portfolioActivityList`, and `portfolioNft`.
+- Removes old glass/gray fills and replaces them with the dark green Portfolio palette.
+- Vercel configuration unchanged.
