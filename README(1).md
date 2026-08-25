@@ -700,3 +700,8 @@ This update rebuilds the Portfolio information architecture around the current C
 - Keeps the Fomo-style blue/purple market-cap line, green/red volume bars, blue current-value marker and live pulse.
 - Chart shell, canvas, controls, stat boxes, tooltip, grid and labels now use off-white / beige / dark-green Trenches colors.
 - Trending and Portfolio dark layouts are untouched.
+
+## V1.11.02 — Army-green Swap Chart Line
+- Replaces the blue / purple post-scan line with the Trenches army-green palette.
+- Updates the chart fill, current-value guide, endpoint pulse, right-side current-value tag, hover dot and chart metric accent to matching army green.
+- Keeps the off-white Swap chart background and green/red volume bars unchanged.
