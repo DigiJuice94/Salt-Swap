@@ -838,3 +838,11 @@ This update rebuilds the Portfolio information architecture around the current C
 - Removes remaining white/glass inset effects from Portfolio controls.
 - Updates stylesheet cache key to `styles.css?v=11129`.
 - Vercel configuration unchanged.
+
+## V1.11.30 — Portfolio Dark Redesign
+- Replaces the stacked Portfolio fixes with one full dark army-green design.
+- Removes V1.11.25–V1.11.29 override layers.
+- Rebuilds header, tabs, chart, actions, assets, analytics, NFTs, activity, empty states, badges, and inputs under one consistent palette.
+- Full-width layout preserved.
+- Stylesheet cache key updated to `styles.css?v=11130`.
+- Vercel configuration unchanged.

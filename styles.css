@@ -3614,818 +3614,260 @@ body.trending-active::before{opacity:.045!important}
   color:#596447!important;
 }
 
-/* V1.11.25 — Dark Portfolio restoration */
-#portfolioView,
-.portfolioView,
-.portfolioPage,
-.portfolioShell,
-.portfolioWrap{
-  background:#0f1714 !important;
-  color:#edf2e8 !important;
-}
-
-#portfolioView .portfolioShell,
-#portfolioView .portfolioWrap,
-#portfolioView .portfolioDashboard,
-#portfolioView .portfolioMain,
-.portfolioPage .portfolioShell,
-.portfolioPage .portfolioWrap{
-  background:#0f1714 !important;
-  border-color:rgba(192,214,163,.14) !important;
-  box-shadow:none !important;
-}
-
-#portfolioView .portfolioHeader,
-#portfolioView .portfolioTopbar,
-#portfolioView .portfolioTabs,
-#portfolioView .portfolioNav,
-#portfolioView .portfolioCard,
-#portfolioView .portfolioPanel,
-#portfolioView .portfolioSummaryCard,
-#portfolioView .portfolioAssetsCard,
-#portfolioView .portfolioAssetRow,
-#portfolioView .portfolioTable,
-#portfolioView .portfolioActionCard,
-#portfolioView .portfolioStatCard,
-#portfolioView .portfolioMetricCard,
-#portfolioView .portfolioChartCard,
-.portfolioPage .portfolioHeader,
-.portfolioPage .portfolioTopbar,
-.portfolioPage .portfolioTabs,
-.portfolioPage .portfolioNav,
-.portfolioPage .portfolioCard,
-.portfolioPage .portfolioPanel,
-.portfolioPage .portfolioSummaryCard,
-.portfolioPage .portfolioAssetsCard,
-.portfolioPage .portfolioAssetRow,
-.portfolioPage .portfolioTable,
-.portfolioPage .portfolioActionCard,
-.portfolioPage .portfolioStatCard,
-.portfolioPage .portfolioMetricCard,
-.portfolioPage .portfolioChartCard{
-  background:#16221d !important;
-  color:#edf2e8 !important;
-  border-color:rgba(192,214,163,.16) !important;
-}
-
-#portfolioView .portfolioTabs button,
-#portfolioView .portfolioNav button,
-.portfolioPage .portfolioTabs button,
-.portfolioPage .portfolioNav button{
-  color:#aebca8 !important;
-  background:transparent !important;
-  border-color:transparent !important;
-}
-
-#portfolioView .portfolioTabs button.active,
-#portfolioView .portfolioNav button.active,
-.portfolioPage .portfolioTabs button.active,
-.portfolioPage .portfolioNav button.active{
-  color:#f4f7ef !important;
-  background:#233229 !important;
-  border-color:rgba(194,222,160,.18) !important;
-}
-
-#portfolioView .portfolioActionCard,
-#portfolioView .portfolioQuickAction,
-#portfolioView .portfolioAction,
-.portfolioPage .portfolioActionCard,
-.portfolioPage .portfolioQuickAction,
-.portfolioPage .portfolioAction{
-  background:#24352a !important;
-  border-color:rgba(190,220,155,.16) !important;
-  color:#f1f5ec !important;
-}
-
-#portfolioView .portfolioActionCard:hover,
-#portfolioView .portfolioQuickAction:hover,
-#portfolioView .portfolioAction:hover,
-.portfolioPage .portfolioActionCard:hover,
-.portfolioPage .portfolioQuickAction:hover,
-.portfolioPage .portfolioAction:hover{
-  background:#2b4132 !important;
-}
-
-#portfolioView .portfolioChart,
-#portfolioView .portfolioChartCard,
-#portfolioView canvas,
-.portfolioPage .portfolioChart,
-.portfolioPage .portfolioChartCard,
-.portfolioPage canvas{
-  background:#10201c !important;
-}
-
-#portfolioView h1,
-#portfolioView h2,
-#portfolioView h3,
-#portfolioView h4,
-#portfolioView strong,
-#portfolioView b,
-#portfolioView .portfolioValue,
-#portfolioView .portfolioTotal,
-.portfolioPage h1,
-.portfolioPage h2,
-.portfolioPage h3,
-.portfolioPage h4,
-.portfolioPage strong,
-.portfolioPage b,
-.portfolioPage .portfolioValue,
-.portfolioPage .portfolioTotal{
-  color:#f1f5ec !important;
-}
-
-#portfolioView p,
-#portfolioView small,
-#portfolioView .muted,
-#portfolioView .portfolioMeta,
-#portfolioView .portfolioSub,
-#portfolioView .portfolioLabel,
-.portfolioPage p,
-.portfolioPage small,
-.portfolioPage .muted,
-.portfolioPage .portfolioMeta,
-.portfolioPage .portfolioSub,
-.portfolioPage .portfolioLabel{
-  color:#9cae9e !important;
-}
-
-#portfolioView table,
-#portfolioView thead,
-#portfolioView tbody,
-#portfolioView tr,
-#portfolioView td,
-#portfolioView th,
-.portfolioPage table,
-.portfolioPage thead,
-.portfolioPage tbody,
-.portfolioPage tr,
-.portfolioPage td,
-.portfolioPage th{
-  background:transparent !important;
-  color:#e7eee5 !important;
-  border-color:rgba(187,211,161,.12) !important;
-}
-
-#portfolioView input,
-#portfolioView select,
-#portfolioView button.secondaryBtn,
-.portfolioPage input,
-.portfolioPage select,
-.portfolioPage button.secondaryBtn{
-  background:#18251f !important;
-  color:#edf2e8 !important;
-  border-color:rgba(190,214,166,.18) !important;
-}
-
-#portfolioView .positive,
-#portfolioView .portfolioPositive,
-.portfolioPage .positive,
-.portfolioPage .portfolioPositive{
-  color:#9ee384 !important;
-}
-
-#portfolioView .negative,
-#portfolioView .portfolioNegative,
-.portfolioPage .negative,
-.portfolioPage .portfolioNegative{
-  color:#ff9c8e !important;
-}
-
-/* V1.11.26 — Full-width clean dark Portfolio */
-#portfolioView,
-.portfolioView,
+/* V1.11.30 — PORTFOLIO DARK REDESIGN */
 .portfolioPage{
-  width:100% !important;
-  max-width:none !important;
-  min-height:calc(100vh - 70px) !important;
-  margin:0 !important;
-  padding:0 !important;
-  background:#0d1512 !important;
-  border:0 !important;
-  border-radius:0 !important;
-  box-shadow:none !important;
-  color:#edf3e9 !important;
+  --pf-bg:#09120e;
+  --pf-surface:#0f1b15;
+  --pf-surface2:#13231a;
+  --pf-surface3:#183025;
+  --pf-tile:#1d3528;
+  --pf-border:rgba(126,190,115,.14);
+  --pf-border2:rgba(133,208,123,.22);
+  --pf-text:#eef5eb;
+  --pf-muted:#8ea494;
+  --pf-accent:#79df98;
+  width:100%!important;
+  max-width:none!important;
+  min-height:100vh!important;
+  margin:0!important;
+  padding:0!important;
+  background:var(--pf-bg)!important;
+  color:var(--pf-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+.portfolioPage *{box-shadow:none!important}
+
+.portfolioPage .portfolioDashboard{
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:22px 28px 40px!important;
+  background:var(--pf-bg)!important;
+  border:0!important;
+  border-radius:0!important;
 }
 
-#portfolioView > *,
-.portfolioView > *,
-.portfolioPage > *{
-  max-width:none !important;
-}
-
-#portfolioView .portfolioShell,
-#portfolioView .portfolioWrap,
-#portfolioView .portfolioDashboard,
-#portfolioView .portfolioMain,
-.portfolioPage .portfolioShell,
-.portfolioPage .portfolioWrap,
-.portfolioPage .portfolioDashboard,
-.portfolioPage .portfolioMain{
-  width:100% !important;
-  max-width:none !important;
-  margin:0 !important;
-  padding:28px 34px 36px !important;
-  background:#0d1512 !important;
-  border:0 !important;
-  border-radius:0 !important;
-  box-shadow:none !important;
-}
-
-#portfolioView .portfolioHeader,
-#portfolioView .portfolioTopbar,
-.portfolioPage .portfolioHeader,
 .portfolioPage .portfolioTopbar{
-  background:#121d18 !important;
-  border:1px solid rgba(170,204,145,.10) !important;
-  border-radius:16px !important;
-  box-shadow:none !important;
+  background:var(--pf-surface)!important;
+  border:1px solid var(--pf-border)!important;
+  border-radius:14px!important;
 }
-
-#portfolioView .portfolioTabs,
-#portfolioView .portfolioNav,
-.portfolioPage .portfolioTabs,
-.portfolioPage .portfolioNav{
-  background:#101a16 !important;
-  border:1px solid rgba(170,204,145,.10) !important;
-  border-radius:14px !important;
-  box-shadow:none !important;
-}
-
-#portfolioView .portfolioCard,
-#portfolioView .portfolioPanel,
-#portfolioView .portfolioSummaryCard,
-#portfolioView .portfolioAssetsCard,
-#portfolioView .portfolioStatCard,
-#portfolioView .portfolioMetricCard,
-.portfolioPage .portfolioCard,
-.portfolioPage .portfolioPanel,
-.portfolioPage .portfolioSummaryCard,
-.portfolioPage .portfolioAssetsCard,
-.portfolioPage .portfolioStatCard,
-.portfolioPage .portfolioMetricCard{
-  background:#111c17 !important;
-  border:1px solid rgba(169,206,143,.09) !important;
-  border-radius:16px !important;
-  box-shadow:none !important;
-}
-
-#portfolioView .portfolioChartCard,
-#portfolioView .portfolioChart,
-.portfolioPage .portfolioChartCard,
-.portfolioPage .portfolioChart{
-  background:#0d1b17 !important;
-  border:1px solid rgba(116,221,153,.15) !important;
-  border-radius:18px !important;
-  box-shadow:none !important;
-}
-
-#portfolioView .portfolioActionCard,
-#portfolioView .portfolioQuickAction,
-#portfolioView .portfolioAction,
-.portfolioPage .portfolioActionCard,
-.portfolioPage .portfolioQuickAction,
-.portfolioPage .portfolioAction{
-  background:#203228 !important;
-  border:1px solid rgba(177,219,148,.13) !important;
-  border-radius:16px !important;
-  box-shadow:none !important;
-}
-
-#portfolioView .portfolioAssetRow,
-#portfolioView .portfolioTable,
-#portfolioView table,
-.portfolioPage .portfolioAssetRow,
-.portfolioPage .portfolioTable,
-.portfolioPage table{
-  background:transparent !important;
-  border-color:rgba(177,219,148,.08) !important;
-  box-shadow:none !important;
-}
-
-#portfolioView .portfolioAssetRow,
-.portfolioPage .portfolioAssetRow{
-  border-left:0 !important;
-  border-right:0 !important;
-  border-radius:0 !important;
-}
-
-#portfolioView .portfolioShell::before,
-#portfolioView .portfolioShell::after,
-#portfolioView .portfolioWrap::before,
-#portfolioView .portfolioWrap::after,
-.portfolioPage .portfolioShell::before,
-.portfolioPage .portfolioShell::after,
-.portfolioPage .portfolioWrap::before,
-.portfolioPage .portfolioWrap::after{
-  display:none !important;
-}
-
-#portfolioView .portfolioHeader *,
-#portfolioView .portfolioTopbar *,
-#portfolioView .portfolioTabs *,
-#portfolioView .portfolioNav *,
-.portfolioPage .portfolioHeader *,
-.portfolioPage .portfolioTopbar *,
-.portfolioPage .portfolioTabs *,
-.portfolioPage .portfolioNav *{
-  box-shadow:none !important;
-}
-
-#portfolioView button,
-#portfolioView input,
-#portfolioView select,
-.portfolioPage button,
-.portfolioPage input,
-.portfolioPage select{
-  box-shadow:none !important;
-}
-
-#portfolioView .portfolioTabs button.active,
-#portfolioView .portfolioNav button.active,
-.portfolioPage .portfolioTabs button.active,
-.portfolioPage .portfolioNav button.active{
-  background:#1c2b23 !important;
-  color:#f4f7ef !important;
-  border:1px solid rgba(177,219,148,.12) !important;
-}
-
-#portfolioView .portfolioLive,
-#portfolioView .liveBadge,
-#portfolioView .portfolioStatus,
-.portfolioPage .portfolioLive,
-.portfolioPage .liveBadge,
-.portfolioPage .portfolioStatus{
-  background:#16241d !important;
-  border:1px solid rgba(118,223,154,.16) !important;
-  color:#bfe9c7 !important;
-}
-
-@media (min-width:1200px){
-  #portfolioView .portfolioShell,
-  #portfolioView .portfolioWrap,
-  #portfolioView .portfolioDashboard,
-  #portfolioView .portfolioMain,
-  .portfolioPage .portfolioShell,
-  .portfolioPage .portfolioWrap,
-  .portfolioPage .portfolioDashboard,
-  .portfolioPage .portfolioMain{
-    padding-left:48px !important;
-    padding-right:48px !important;
-  }
-}
-
-@media (max-width:900px){
-  #portfolioView .portfolioShell,
-  #portfolioView .portfolioWrap,
-  #portfolioView .portfolioDashboard,
-  #portfolioView .portfolioMain,
-  .portfolioPage .portfolioShell,
-  .portfolioPage .portfolioWrap,
-  .portfolioPage .portfolioDashboard,
-  .portfolioPage .portfolioMain{
-    padding:18px 14px 28px !important;
-  }
-}
-
-/* V1.11.27 — All-green Portfolio surfaces */
-#portfolioView .portfolioEmpty,
-#portfolioView .portfolioEmptyState,
-#portfolioView .emptyState,
-#portfolioView .emptyAssets,
-#portfolioView .emptyActivity,
-#portfolioView .emptyCollectibles,
-#portfolioView .portfolioAnalyticsCard,
-#portfolioView .portfolioAnalyticsPanel,
-#portfolioView .portfolioAllocation,
-#portfolioView .portfolioMovers,
-#portfolioView .portfolioActivityCard,
-#portfolioView .portfolioCollectiblesCard,
-#portfolioView .portfolioAssetsEmpty,
-#portfolioView .portfolioNoData,
-#portfolioView .portfolioPlaceholder,
-#portfolioView .portfolioSectionCard,
-#portfolioView .portfolioDataCard,
-#portfolioView .portfolioGridCard,
-.portfolioPage .portfolioEmpty,
-.portfolioPage .portfolioEmptyState,
-.portfolioPage .emptyState,
-.portfolioPage .emptyAssets,
-.portfolioPage .emptyActivity,
-.portfolioPage .emptyCollectibles,
-.portfolioPage .portfolioAnalyticsCard,
-.portfolioPage .portfolioAnalyticsPanel,
-.portfolioPage .portfolioAllocation,
-.portfolioPage .portfolioMovers,
-.portfolioPage .portfolioActivityCard,
-.portfolioPage .portfolioCollectiblesCard,
-.portfolioPage .portfolioAssetsEmpty,
-.portfolioPage .portfolioNoData,
-.portfolioPage .portfolioPlaceholder,
-.portfolioPage .portfolioSectionCard,
-.portfolioPage .portfolioDataCard,
-.portfolioPage .portfolioGridCard{
-  background:#14211b !important;
-  border:1px solid rgba(158,204,134,.10) !important;
-  color:#eaf0e7 !important;
-  box-shadow:none !important;
-}
-
-#portfolioView [class*="empty"],
-#portfolioView [class*="Empty"],
-#portfolioView [class*="placeholder"],
-#portfolioView [class*="Placeholder"],
-#portfolioView [class*="analytics"],
-#portfolioView [class*="Analytics"],
-#portfolioView [class*="allocation"],
-#portfolioView [class*="Allocation"],
-#portfolioView [class*="mover"],
-#portfolioView [class*="Mover"],
-#portfolioView [class*="activity"],
-#portfolioView [class*="Activity"],
-.portfolioPage [class*="empty"],
-.portfolioPage [class*="Empty"],
-.portfolioPage [class*="placeholder"],
-.portfolioPage [class*="Placeholder"],
-.portfolioPage [class*="analytics"],
-.portfolioPage [class*="Analytics"],
-.portfolioPage [class*="allocation"],
-.portfolioPage [class*="Allocation"],
-.portfolioPage [class*="mover"],
-.portfolioPage [class*="Mover"],
-.portfolioPage [class*="activity"],
-.portfolioPage [class*="Activity"]{
-  border-color:rgba(158,204,134,.10) !important;
-}
-
-#portfolioView .portfolioEmpty,
-#portfolioView .portfolioEmptyState,
-#portfolioView .emptyState,
-#portfolioView .emptyAssets,
-#portfolioView .emptyActivity,
-#portfolioView .portfolioAssetsEmpty,
-#portfolioView .portfolioNoData,
-#portfolioView .portfolioPlaceholder,
-.portfolioPage .portfolioEmpty,
-.portfolioPage .portfolioEmptyState,
-.portfolioPage .emptyState,
-.portfolioPage .emptyAssets,
-.portfolioPage .emptyActivity,
-.portfolioPage .portfolioAssetsEmpty,
-.portfolioPage .portfolioNoData,
-.portfolioPage .portfolioPlaceholder{
-  background:#18271f !important;
-}
-
-#portfolioView .portfolioAnalyticsCard,
-#portfolioView .portfolioAnalyticsPanel,
-#portfolioView .portfolioAllocation,
-#portfolioView .portfolioMovers,
-.portfolioPage .portfolioAnalyticsCard,
-.portfolioPage .portfolioAnalyticsPanel,
-.portfolioPage .portfolioAllocation,
-.portfolioPage .portfolioMovers{
-  background:#16241d !important;
-}
-
-#portfolioView .portfolioActivityCard,
-#portfolioView .portfolioCollectiblesCard,
-.portfolioPage .portfolioActivityCard,
-.portfolioPage .portfolioCollectiblesCard{
-  background:#15231c !important;
-}
-
-#portfolioView .portfolioEmpty *,
-#portfolioView .portfolioEmptyState *,
-#portfolioView .emptyState *,
-#portfolioView .emptyAssets *,
-#portfolioView .emptyActivity *,
-#portfolioView .portfolioNoData *,
-#portfolioView .portfolioPlaceholder *,
-#portfolioView .portfolioAnalyticsCard *,
-#portfolioView .portfolioAnalyticsPanel *,
-#portfolioView .portfolioAllocation *,
-#portfolioView .portfolioMovers *,
-.portfolioPage .portfolioEmpty *,
-.portfolioPage .portfolioEmptyState *,
-.portfolioPage .emptyState *,
-.portfolioPage .emptyAssets *,
-.portfolioPage .emptyActivity *,
-.portfolioPage .portfolioNoData *,
-.portfolioPage .portfolioPlaceholder *,
-.portfolioPage .portfolioAnalyticsCard *,
-.portfolioPage .portfolioAnalyticsPanel *,
-.portfolioPage .portfolioAllocation *,
-.portfolioPage .portfolioMovers *{
-  color:#b7c7b7 !important;
-}
-
-#portfolioView .portfolioEmpty b,
-#portfolioView .portfolioEmptyState b,
-#portfolioView .emptyState b,
-#portfolioView .emptyAssets b,
-#portfolioView .emptyActivity b,
-#portfolioView .portfolioNoData b,
-#portfolioView .portfolioPlaceholder b,
-#portfolioView .portfolioAnalyticsCard b,
-#portfolioView .portfolioAnalyticsPanel b,
-#portfolioView .portfolioAllocation b,
-#portfolioView .portfolioMovers b,
-.portfolioPage .portfolioEmpty b,
-.portfolioPage .portfolioEmptyState b,
-.portfolioPage .emptyState b,
-.portfolioPage .emptyAssets b,
-.portfolioPage .emptyActivity b,
-.portfolioPage .portfolioNoData b,
-.portfolioPage .portfolioPlaceholder b,
-.portfolioPage .portfolioAnalyticsCard b,
-.portfolioPage .portfolioAnalyticsPanel b,
-.portfolioPage .portfolioAllocation b,
-.portfolioPage .portfolioMovers b{
-  color:#eef4eb !important;
-}
-
-#portfolioView .portfolioAnalyticsCard::before,
-#portfolioView .portfolioAnalyticsCard::after,
-#portfolioView .portfolioActivityCard::before,
-#portfolioView .portfolioActivityCard::after,
-#portfolioView .portfolioAssetsEmpty::before,
-#portfolioView .portfolioAssetsEmpty::after,
-.portfolioPage .portfolioAnalyticsCard::before,
-.portfolioPage .portfolioAnalyticsCard::after,
-.portfolioPage .portfolioActivityCard::before,
-.portfolioPage .portfolioActivityCard::after,
-.portfolioPage .portfolioAssetsEmpty::before,
-.portfolioPage .portfolioAssetsEmpty::after{
-  display:none !important;
-}
-
-#portfolioView hr,
-.portfolioPage hr{
-  border-color:rgba(158,204,134,.08) !important;
-}
-
-/* Kill any remaining rolled-back light card fill inside Portfolio only */
-#portfolioView .portfolioMain [style*="background"],
-#portfolioView .portfolioDashboard [style*="background"],
-.portfolioPage .portfolioMain [style*="background"],
-.portfolioPage .portfolioDashboard [style*="background"]{
-  background-color:#16241d !important;
-}
-
-/* V1.11.28 — exact Portfolio gray-surface cleanup */
-.portfolioPage .portfolioMiniAnalytics,
-.portfolioPage .portfolioAnalyticsCard{
-  background:#16241d !important;
-  border:1px solid rgba(139,190,126,.13) !important;
-  box-shadow:none !important;
-  color:#eaf1e7 !important;
-}
-
-.portfolioPage .portfolioMiniHead b{
-  color:#eef4eb !important;
-}
-.portfolioPage .portfolioMiniHead > span,
-.portfolioPage .portfolioMiniHead small{
-  color:#8fa593 !important;
-}
-
-.portfolioPage .portfolioAllocationBar{
-  background:#26382d !important;
-  border:1px solid rgba(140,194,130,.10) !important;
-  box-shadow:none !important;
-}
-
-.portfolioPage .portfolioAllocationLegend > span,
-.portfolioPage .portfolioAllocationLegend b,
-.portfolioPage .portfolioAllocationLegend em{
-  color:#aebfac !important;
-}
-
-.portfolioPage .portfolioMovers{
-  background:#14231c !important;
-  border:0 !important;
-  box-shadow:none !important;
-}
-.portfolioPage .portfolioMover{
-  border-bottom-color:rgba(143,190,130,.10) !important;
-}
-.portfolioPage .portfolioMover > span{
-  background:#22362a !important;
-  border:1px solid rgba(144,194,128,.10) !important;
-}
-
-.portfolioPage .portfolioAssetTableWrap{
-  background:#111e18 !important;
-  border:1px solid rgba(139,190,126,.10) !important;
-  box-shadow:none !important;
-}
-
-.portfolioPage .portfolioEmpty{
-  background:#182820 !important;
-  background-image:none !important;
-  border:0 !important;
-  color:#8fa594 !important;
-  box-shadow:none !important;
-}
-.portfolioPage .portfolioEmpty b{
-  color:#e9f0e6 !important;
-}
-.portfolioPage .portfolioEmpty span{
-  color:#82988a !important;
-}
-
-.portfolioPage .portfolioActivityList{
-  background:#111e18 !important;
-  border:1px solid rgba(139,190,126,.10) !important;
-  box-shadow:none !important;
-  backdrop-filter:none !important;
-  -webkit-backdrop-filter:none !important;
-}
-.portfolioPage .portfolioActivityRow{
-  background:#111e18 !important;
-  border-bottom-color:rgba(139,190,126,.08) !important;
-}
-.portfolioPage .portfolioActivityRow:hover{
-  background:#17281f !important;
-}
-
-.portfolioPage .portfolioNftGrid{
-  background:transparent !important;
-}
-.portfolioPage .portfolioNft{
-  background:#15251d !important;
-  border:1px solid rgba(139,190,126,.10) !important;
-  box-shadow:none !important;
-  backdrop-filter:none !important;
-  -webkit-backdrop-filter:none !important;
-}
-.portfolioPage .portfolioNft > div{
-  background:#203329 !important;
-}
-
-/* Dashboard analytics must never fall back to pale gray. */
-.portfolioPage .portfolioDashboardCharts > article{
-  background:#16241d !important;
-  border-color:rgba(139,190,126,.13) !important;
-}
-
-/* Any empty box directly inside the dashboard stays green. */
-.portfolioPage [data-portfolio-panel="dashboard"] .portfolioEmpty{
-  background:#182820 !important;
-  background-image:none !important;
-}
-
-/* Eliminate old glass/light portfolio card rules from the rollback era. */
-.portfolioPage .portfolioMiniAnalytics,
-.portfolioPage .portfolioActivityList,
-.portfolioPage .portfolioNft,
-.portfolioPage .portfolioAssetTableWrap{
-  backdrop-filter:none !important;
-  -webkit-backdrop-filter:none !important;
-}
-
-/* V1.11.29 — Remove final light Portfolio surfaces */
-
-/* Top identity/header strip */
-.portfolioPage .portfolioTopbar,
-.portfolioPage .portfolioHeader{
-  background:#121c17 !important;
-  border:1px solid rgba(145,192,129,.10) !important;
-  color:#edf3e9 !important;
-  box-shadow:none !important;
-}
-
 .portfolioPage .portfolioWalletIdentity,
-.portfolioPage .portfolioWalletIdentity > div,
+.portfolioPage .portfolioWalletIdentity>div,
 .portfolioPage .portfolioWalletIdentity button{
-  background:transparent !important;
-  color:#dfe9de !important;
+  background:transparent!important;
 }
-
-.portfolioPage .portfolioWalletIdentity b{
-  color:#f1f6ef !important;
-}
-
-.portfolioPage .portfolioWalletIdentity button{
-  color:#93a996 !important;
-}
-
-/* Avatar ring was still light */
+.portfolioPage .portfolioWalletIdentity b{color:var(--pf-text)!important}
+.portfolioPage .portfolioWalletIdentity button{color:var(--pf-muted)!important;border:0!important}
 .portfolioPage .portfolioAvatar{
-  border-color:#25372c !important;
-  box-shadow:0 0 0 1px rgba(143,190,129,.14) !important;
-  background:#1c2c23 !important;
+  background:var(--pf-surface3)!important;
+  border:2px solid #244131!important;
+  box-shadow:0 0 0 1px rgba(121,223,152,.10)!important;
 }
 
-/* Top controls */
-.portfolioPage .portfolioHeaderActions button,
 .portfolioPage .portfolioTopbar button,
-.portfolioPage .portfolioNetworkPill,
-.portfolioPage .portfolioSyncBtn,
-.portfolioPage .portfolioTimeMachineBtn{
-  background:#1a2921 !important;
-  color:#dbe6da !important;
-  border:1px solid rgba(144,193,130,.12) !important;
-  box-shadow:none !important;
+.portfolioPage .portfolioNetworkPill{
+  background:#14251c!important;
+  color:var(--pf-text)!important;
+  border:1px solid var(--pf-border)!important;
 }
-
-.portfolioPage .portfolioHeaderActions button:hover,
 .portfolioPage .portfolioTopbar button:hover,
 .portfolioPage .portfolioNetworkPill:hover{
-  background:#21342a !important;
+  background:#1a3024!important;
 }
-
 .portfolioPage .portfolioNetworkPill small{
-  background:#233a2d !important;
-  color:#9ed7a6 !important;
+  background:#1d3a2a!important;
+  color:#9de7ae!important;
 }
 
-/* Remove old glossy/white inset from header controls */
-.portfolioPage .portfolioHeaderActions *,
-.portfolioPage .portfolioTopbar *,
-.portfolioPage .portfolioNetworkPill{
-  box-shadow:none !important;
+.portfolioPage .portfolioTabs{
+  background:var(--pf-surface)!important;
+  border:1px solid var(--pf-border)!important;
+  border-radius:12px!important;
+}
+.portfolioPage .portfolioTabs button{
+  background:transparent!important;
+  color:var(--pf-muted)!important;
+  border:1px solid transparent!important;
+}
+.portfolioPage .portfolioTabs button.active{
+  background:#1a3024!important;
+  color:var(--pf-text)!important;
+  border-color:var(--pf-border2)!important;
 }
 
-/* Dashboard nav active/inactive */
-.portfolioPage .portfolioTabs,
-.portfolioPage .portfolioNav{
-  background:#101a16 !important;
-  border:1px solid rgba(144,193,130,.10) !important;
-}
-.portfolioPage .portfolioTabs button,
-.portfolioPage .portfolioNav button{
-  background:transparent !important;
-  color:#9fb19f !important;
-  border:1px solid transparent !important;
-}
-.portfolioPage .portfolioTabs button.active,
-.portfolioPage .portfolioNav button.active{
-  background:#1e3026 !important;
-  color:#f2f6ef !important;
-  border-color:rgba(144,193,130,.12) !important;
-}
-
-/* Live badge */
-.portfolioPage .portfolioLive,
-.portfolioPage .liveBadge,
-.portfolioPage .portfolioStatus{
-  background:#1a2a21 !important;
-  color:#9ed8a8 !important;
-  border:1px solid rgba(112,204,132,.16) !important;
-  box-shadow:none !important;
-}
-
-/* "See more" pills */
-.portfolioPage .portfolioSection button,
-.portfolioPage .portfolioSeeMore,
-.portfolioPage .portfolioMoreBtn{
-  background:#1a2921 !important;
-  color:#8ea491 !important;
-  border:1px solid rgba(144,193,130,.10) !important;
-  box-shadow:none !important;
-}
-
-/* Total Worth outer block should blend into the dark page */
+.portfolioPage [data-portfolio-panel],
 .portfolioPage .portfolioOverview,
 .portfolioPage .portfolioOverviewGrid,
 .portfolioPage .portfolioValueBlock{
-  background:transparent !important;
-  border:0 !important;
-  box-shadow:none !important;
+  background:transparent!important;
+  border:0!important;
+}
+.portfolioPage .portfolioValueBlock h1,
+.portfolioPage .portfolioValueBlock b,
+.portfolioPage .portfolioValueBlock strong{
+  color:var(--pf-text)!important;
+}
+.portfolioPage .portfolioValueBlock small,
+.portfolioPage .portfolioValueBlock em{
+  color:var(--pf-muted)!important;
 }
 
-/* Kill any remaining light inline/background fills inside portfolio */
-.portfolioPage [style*="background:#fff"],
-.portfolioPage [style*="background: #fff"],
-.portfolioPage [style*="background:white"],
-.portfolioPage [style*="background: white"],
-.portfolioPage [style*="background:#fb"],
-.portfolioPage [style*="background: #fb"]{
-  background:#16241d !important;
+.portfolioPage .portfolioChartCard{
+  background:var(--pf-surface)!important;
+  border:1px solid var(--pf-border)!important;
+  border-radius:16px!important;
+}
+.portfolioPage .portfolioChart{
+  background:#0a1711!important;
+  border:1px solid rgba(121,223,152,.10)!important;
+  border-radius:14px!important;
+}
+.portfolioPage .portfolioChartGrid line{stroke:#234638!important;opacity:.45!important}
+.portfolioPage .portfolioAxisText{fill:#7b9785!important}
+.portfolioPage .portfolioValueAxis{fill:#a8c9b0!important}
+.portfolioPage .portfolioChart svg path.portfolioValueLine{stroke:var(--pf-accent)!important}
+.portfolioPage .portfolioChart svg circle.portfolioLastDot{fill:var(--pf-accent)!important}
+.portfolioPage .portfolioRangeTabs{
+  background:#122119!important;
+  border:1px solid var(--pf-border)!important;
+}
+.portfolioPage .portfolioRangeTabs button{background:transparent!important;color:#82988a!important}
+.portfolioPage .portfolioRangeTabs button.active{background:var(--pf-accent)!important;color:#0b1410!important}
+
+.portfolioPage .portfolioQuickActions button{
+  background:var(--pf-tile)!important;
+  color:var(--pf-text)!important;
+  border:1px solid var(--pf-border)!important;
+  border-radius:15px!important;
+}
+.portfolioPage .portfolioQuickActions button:hover{background:#223f2e!important}
+.portfolioPage .portfolioQuickActions button small{color:#9aaf9f!important}
+
+.portfolioPage .portfolioSectionHead h2,
+.portfolioPage .portfolioSectionHead h3,
+.portfolioPage .portfolioSectionHead b,
+.portfolioPage .portfolioSectionHead strong{color:var(--pf-text)!important}
+.portfolioPage .portfolioSectionHead small,
+.portfolioPage .portfolioSectionHead span{color:var(--pf-muted)!important}
+.portfolioPage .portfolioSectionHead button{
+  background:#13231a!important;
+  border:1px solid var(--pf-border)!important;
+  color:#8ca190!important;
 }
 
-/* Make generic buttons inside Portfolio dark unless they are intentionally action tiles */
-.portfolioPage button:not(.portfolioAction):not(.portfolioQuickAction):not(.portfolioActionCard){
-  box-shadow:none !important;
+.portfolioPage .portfolioAssetTableWrap{
+  background:var(--pf-surface)!important;
+  border:1px solid var(--pf-border)!important;
+  border-radius:14px!important;
+}
+.portfolioPage .portfolioAssetTable th{
+  background:#0c1812!important;
+  color:#78907f!important;
+  border-bottom:1px solid var(--pf-border)!important;
+}
+.portfolioPage .portfolioAssetTable td{
+  background:transparent!important;
+  color:#dfe9df!important;
+  border-bottom:1px solid rgba(123,182,113,.08)!important;
 }
 
-/* Remove remaining old white/glass values from known Portfolio classes */
-.portfolioPage .portfolioNetworkPill,
-.portfolioPage .portfolioHeader,
+.portfolioPage .portfolioEmpty,
+.portfolioPage .portfolioChartEmpty{
+  background:#122119!important;
+  background-image:none!important;
+  border:1px solid rgba(123,182,113,.09)!important;
+  color:#7f9585!important;
+  border-radius:12px!important;
+}
+.portfolioPage .portfolioEmpty b,
+.portfolioPage .portfolioChartEmpty b{color:#dce8dd!important}
+.portfolioPage .portfolioEmpty span,
+.portfolioPage .portfolioChartEmpty span{color:#738a7a!important}
+
+.portfolioPage .portfolioMiniAnalytics,
+.portfolioPage .portfolioAnalyticsCard{
+  background:var(--pf-surface)!important;
+  border:1px solid var(--pf-border)!important;
+  border-radius:14px!important;
+}
+.portfolioPage .portfolioMiniHead b{color:var(--pf-text)!important}
+.portfolioPage .portfolioMiniHead span,
+.portfolioPage .portfolioMiniHead small{color:var(--pf-muted)!important}
+.portfolioPage .portfolioAllocationBar{
+  background:#1a2b22!important;
+  border:1px solid rgba(123,182,113,.08)!important;
+}
+.portfolioPage .portfolioAllocationBar>span{background:var(--pf-accent)!important}
+.portfolioPage .portfolioMovers{background:transparent!important}
+.portfolioPage .portfolioMover{border-bottom:1px solid rgba(123,182,113,.08)!important;color:var(--pf-text)!important}
+.portfolioPage .portfolioMover>span{background:#1a2b22!important;border:1px solid rgba(123,182,113,.08)!important}
+
+.portfolioPage .portfolioNftGrid{background:transparent!important}
+.portfolioPage .portfolioNft{
+  background:var(--pf-surface)!important;
+  border:1px solid var(--pf-border)!important;
+  border-radius:14px!important;
+  color:var(--pf-text)!important;
+}
+.portfolioPage .portfolioNft>div{background:#182a20!important}
+
+.portfolioPage .portfolioActivityList{
+  background:var(--pf-surface)!important;
+  border:1px solid var(--pf-border)!important;
+  border-radius:14px!important;
+}
+.portfolioPage .portfolioActivityRow{
+  background:transparent!important;
+  border-bottom:1px solid rgba(123,182,113,.08)!important;
+  color:var(--pf-text)!important;
+}
+.portfolioPage .portfolioActivityRow:hover{background:#14251c!important}
+
+.portfolioPage input,
+.portfolioPage select,
+.portfolioPage textarea{
+  background:#111f18!important;
+  color:var(--pf-text)!important;
+  border:1px solid var(--pf-border)!important;
+}
+.portfolioPage .portfolioLive{
+  background:#183122!important;
+  color:#9ee9ad!important;
+  border:1px solid rgba(121,223,152,.15)!important;
+}
+
+/* eliminate any residual light/glass look inside portfolio */
 .portfolioPage .portfolioTopbar,
 .portfolioPage .portfolioTabs,
-.portfolioPage .portfolioNav,
+.portfolioPage .portfolioChartCard,
+.portfolioPage .portfolioChart,
 .portfolioPage .portfolioMiniAnalytics,
+.portfolioPage .portfolioAnalyticsCard,
 .portfolioPage .portfolioAssetTableWrap,
 .portfolioPage .portfolioActivityList,
-.portfolioPage .portfolioNft{
-  backdrop-filter:none !important;
-  -webkit-backdrop-filter:none !important;
+.portfolioPage .portfolioNft,
+.portfolioPage .portfolioQuickActions button,
+.portfolioPage .portfolioNetworkPill{
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
 }
 
-/* Ensure the whole visible portfolio canvas is uniformly dark */
-body.portfolio-active,
-body:has(.portfolioPage:not(.hidden)){
-  background:#0d1512 !important;
+/* broad safeguard for old light backgrounds in portfolio-specific classes */
+.portfolioPage [class^="portfolio"],
+.portfolioPage [class*=" portfolio"]{
+  border-color:var(--pf-border)!important;
 }
+.portfolioPage [class*="portfolio"][style*="background"]{
+  background-color:var(--pf-surface)!important;
+}
+
+@media(min-width:1200px){
+  .portfolioPage .portfolioDashboard{padding-left:40px!important;padding-right:40px!important}
+}
+@media(max-width:900px){
+  .portfolioPage .portfolioDashboard{padding:16px 12px 28px!important}
+}
+body:has(.portfolioPage:not(.hidden)){background:#09120e!important}
