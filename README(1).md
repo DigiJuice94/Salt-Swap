@@ -738,3 +738,14 @@ This update rebuilds the Portfolio information architecture around the current C
 - Market-cap accent text: army green.
 - Chart tooltip accent: army green.
 - No blue Fomo-era chart accents remain.
+
+## V1.11.07 — Deployment-proof Green Chart
+- Fixes the recurring issue where the deployed Swap chart could still render the old blue/purple Fomo line.
+- Army green is now applied in THREE independent layers:
+  1. directly in the generated SVG,
+  2. directly to the real rendered DOM through JavaScript using `style.setProperty(..., 'important')`,
+  3. final high-specificity CSS.
+- A MutationObserver automatically reapplies the Trenches colors whenever the chart SVG is redrawn.
+- The main history line, horizontal current-value guide, endpoint pulse, hover accents and right-side current-value tag are all army green.
+- Adds HTML meta no-cache controls, a new stylesheet version, and Vercel `no-store` headers for `/`, `/index.html` and `/styles.css`.
+- The chart DOM carries `data-build="1.11.07"` for deployment verification without adding visible UI clutter.
