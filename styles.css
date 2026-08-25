@@ -2659,3 +2659,31 @@ body.wallet-account-menu-open .walletAccountMenu{
 /* V1.10.89 — wallet chooser response feedback */
 .walletConnectRow.connecting{opacity:.72;transform:none!important;cursor:wait}
 .walletConnectRow.connecting .walletConnectState{font-weight:900;color:#5b6848}
+
+
+/* V1.10.91 — live micro-movement portfolio tracker */
+.portfolioChart svg circle.portfolioPulseRing{
+  fill:none!important;
+  stroke:#81e5aa!important;
+  stroke-width:2!important;
+  opacity:.58;
+  transform-box:fill-box;
+  transform-origin:center;
+  animation:portfolioTrackerPulse 1.9s ease-out infinite;
+  filter:drop-shadow(0 0 8px rgba(129,229,170,.48));
+}
+.portfolioChart svg circle.portfolioLastDot{
+  fill:#81e5aa!important;
+  filter:drop-shadow(0 0 7px rgba(129,229,170,.72))!important;
+}
+.portfolioChart svg path.portfolioValueLine{
+  filter:drop-shadow(0 0 6px rgba(105,213,154,.34))!important;
+}
+@keyframes portfolioTrackerPulse{
+  0%{opacity:.62;transform:scale(.72)}
+  62%{opacity:.13;transform:scale(2.25)}
+  100%{opacity:0;transform:scale(2.55)}
+}
+@media(prefers-reduced-motion:reduce){
+  .portfolioChart svg circle.portfolioPulseRing{animation:none;opacity:.28}
+}

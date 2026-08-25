@@ -574,3 +574,12 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Adds Apple touch icon, 192px/512px app icons, and a site webmanifest.
 - Adds The Trenches application/site metadata so wallet connection surfaces have consistent branding.
 - Uses the existing `trenches-sheep-social.png` artwork; no new mascot artwork was generated.
+
+## V1.10.91 — Live portfolio micro-movement tracker
+- Fixes the chart flattening tiny wallet-value changes.
+- Removes the old minimum 1-cent / 0.8% visual chart range and dynamically scales to the wallet's actual min/max movement.
+- Real value changes are no longer overwritten inside a five-minute snapshot window; each detected movement gets its own chart point.
+- While the Portfolio page is open, The Trenches refreshes the live Solana portfolio every 30 seconds and records real value movements automatically.
+- Adds a subtle pulsing live marker to the newest chart point.
+- The right-edge chart value uses extra decimal precision when small movements would otherwise round away.
+- No artificial/random movement is generated: a truly unchanged wallet remains flat.
