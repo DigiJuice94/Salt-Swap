@@ -749,3 +749,17 @@ This update rebuilds the Portfolio information architecture around the current C
 - The main history line, horizontal current-value guide, endpoint pulse, hover accents and right-side current-value tag are all army green.
 - Adds HTML meta no-cache controls, a new stylesheet version, and Vercel `no-store` headers for `/`, `/index.html` and `/styles.css`.
 - The chart DOM carries `data-build="1.11.07"` for deployment verification without adding visible UI clutter.
+
+## V1.11.08 — Clean Production Build
+Maintenance cleanup only — no intended feature redesign.
+
+- Extracted all inline base64 artwork from `index.html` and `styles.css` into normal files.
+- Moved the floating meme-coin artwork into `assets/floating/`.
+- Extracted the Solana inline SVG into `assets/solana-icon.svg`.
+- Deduplicated the current battlefield artwork so one asset serves the background instead of repeated multi-megabyte embedded copies.
+- Reused existing canonical logo / sheep assets when the embedded bytes were identical.
+- Removed the dead V1.10.33 battlefield implementation that V1.10.34 had already disabled.
+- Removed the stacked V1.10.99 → V1.11.07 Swap-chart CSS fixes and replaced them with one current off-white / army-green chart definition.
+- Removed runtime-unused duplicate top-level image assets: the-trenches-logo.png, trenches-logo.png, the-trenches-full-logo.png, the-trenches-exact-logo.png, verified-badge.png.
+- Updated the visible/current build identity to V1.11.08.
+- Preserved the current Swap, Social, Portfolio, Trending, wallet, scanner, chart, thesis, news and API behavior.
