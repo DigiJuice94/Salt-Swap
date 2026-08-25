@@ -671,3 +671,13 @@ This update rebuilds the Portfolio information architecture around the current C
 - Robinhood Chain keeps live DEX market information and an external market link when OHLCV is unavailable.
 - New / extremely fresh pools gracefully show a market-history-building state rather than inventing candle data.
 - Also removes the remaining visible scanner phrases that still said `Salt could verify`.
+
+## V1.10.99 — Reliable Line Chart History
+- Changes the post-scan chart from candlesticks to a simple historical price line, because this scanner chart is meant to show the coin's history at a glance rather than function as a full trading terminal.
+- Chart ranges are now 1D / 1W / 1M / 3M / 1Y.
+- Fixes the `Not enough candle history yet` problem from V1.10.98.
+- Root cause: V1.10.98 selected a pool from DEX Screener and then sent that pool address directly to GeckoTerminal. A valid DEX Screener pool is not guaranteed to be the same pool GeckoTerminal indexes, so mature tokens could incorrectly appear to have no history.
+- Birdeye token-level OHLCV is now the primary history source when `BIRDEYE_API_KEY` is configured.
+- GeckoTerminal remains the fallback, but it now first resolves GeckoTerminal's own top pool for the token before requesting OHLCV.
+- The line graph includes a light history fill, volume bars, live endpoint pulse, and hover price/time tooltip.
+- High / Low / Volume / Liquidity / DEX Pool stats remain below the chart.

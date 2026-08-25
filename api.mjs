@@ -366,19 +366,30 @@ async function scanEvm(address,pref){
 
 
 const SCAN_CHART_NETWORKS={
-  solana:{dex:'solana',gecko:'solana'},
-  ethereum:{dex:'ethereum',gecko:'eth'},
-  base:{dex:'base',gecko:'base'},
-  bnb:{dex:'bsc',gecko:'bsc'},
-  robinhood:{dex:'robinhood',gecko:null}
+  solana:{dex:'solana',gecko:'solana',birdeye:'solana'},
+  ethereum:{dex:'ethereum',gecko:'eth',birdeye:'ethereum'},
+  base:{dex:'base',gecko:'base',birdeye:'base'},
+  bnb:{dex:'bsc',gecko:'bsc',birdeye:'bsc'},
+  robinhood:{dex:'robinhood',gecko:null,birdeye:'robinhood'}
 };
 const SCAN_CHART_RANGES={
-  '5m':{timeframe:'minute',aggregate:1,limit:12,cutoff:5*60},
-  '1h':{timeframe:'minute',aggregate:5,limit:20,cutoff:60*60},
-  '6h':{timeframe:'minute',aggregate:15,limit:30,cutoff:6*60*60},
-  '24h':{timeframe:'hour',aggregate:1,limit:30,cutoff:24*60*60},
-  '7d':{timeframe:'hour',aggregate:4,limit:50,cutoff:7*24*60*60}
+  '1d':{seconds:24*60*60,birdeyeType:'5m',geckoTimeframe:'minute',geckoAggregate:15,geckoLimit:96},
+  '1w':{seconds:7*24*60*60,birdeyeType:'1H',geckoTimeframe:'hour',geckoAggregate:4,geckoLimit:42},
+  '1m':{seconds:30*24*60*60,birdeyeType:'1H',geckoTimeframe:'hour',geckoAggregate:12,geckoLimit:60},
+  '3m':{seconds:90*24*60*60,birdeyeType:'1D',geckoTimeframe:'day',geckoAggregate:1,geckoLimit:90},
+  '1y':{seconds:365*24*60*60,birdeyeType:'1D',geckoTimeframe:'day',geckoAggregate:1,geckoLimit:100}
 };
+function normalizeScanChartRows(rows){
+  return (Array.isArray(rows)?rows:[]).map(x=>{
+    if(Array.isArray(x)){
+      const a=x.slice(0,6).map(Number);return a.length===6&&a.every(Number.isFinite)?a:null
+    }
+    const t=number(x?.unixTime??x?.unix_time??x?.time??x?.timestamp),
+      o=number(x?.o??x?.open),h=number(x?.h??x?.high),l=number(x?.l??x?.low),
+      c=number(x?.c??x?.close),v=number(x?.v??x?.volume??x?.volumeUsd??x?.volume_usd)??0;
+    return [t,o,h,l,c,v].every(Number.isFinite)?[t,o,h,l,c,v]:null
+  }).filter(Boolean).sort((a,b)=>a[0]-b[0])
+}
 async function resolveScanChartPair(mint,chain){
   const cfg=SCAN_CHART_NETWORKS[chain];if(!cfg)return null;
   try{
@@ -391,63 +402,105 @@ async function resolveScanChartPair(mint,chain){
     const pair=candidates[0]||pairs[0];if(!pair)return null;
     const side=String(pair?.baseToken?.address||'').toLowerCase()===target?'base':'quote';
     return{
-      pairAddress:String(pair?.pairAddress||''),
-      dexId:String(pair?.dexId||''),
-      side,
-      priceUsd:number(pair?.priceUsd),
-      change24h:number(pair?.priceChange?.h24),
-      volume24h:number(pair?.volume?.h24),
-      liquidityUsd:number(pair?.liquidity?.usd),
-      marketCap:number(pair?.marketCap)??number(pair?.fdv),
-      pairUrl:String(pair?.url||'')
+      pairAddress:String(pair?.pairAddress||''),dexId:String(pair?.dexId||''),side,
+      priceUsd:number(pair?.priceUsd),change24h:number(pair?.priceChange?.h24),
+      volume24h:number(pair?.volume?.h24),liquidityUsd:number(pair?.liquidity?.usd),
+      marketCap:number(pair?.marketCap)??number(pair?.fdv),pairUrl:String(pair?.url||'')
     }
-  }catch(e){
-    console.warn('Scan chart pair resolve:',chain,errorText(e));return null
+  }catch(e){console.warn('Scan chart pair resolve:',chain,errorText(e));return null}
+}
+async function birdeyeScanChart(mint,chain,rc){
+  const key=process.env.BIRDEYE_API_KEY,cfg=SCAN_CHART_NETWORKS[chain];
+  if(!key||!cfg?.birdeye)return[];
+  const now=Math.floor(Date.now()/1000),from=now-rc.seconds;
+  const headers={accept:'application/json','X-API-KEY':key,'x-chain':cfg.birdeye};
+  const common=new URLSearchParams({
+    address:mint,type:rc.birdeyeType,currency:'usd',
+    time_from:String(from),time_to:String(now)
+  });
+  // V3 is primary. Legacy remains a compatibility fallback.
+  for(const path of [
+    `/defi/v3/ohlcv?${common.toString()}&mode=range&padding=false&outlier=true`,
+    `/defi/ohlcv?${common.toString()}`
+  ]){
+    try{
+      const j=await fetchJson(`${BIRDEYE_BASE}${path}`,{headers},12000),
+        data=j?.data??j,
+        rows=normalizeScanChartRows(data?.items??data?.list??data?.rows??data);
+      if(rows.length>=2)return rows
+    }catch(e){console.warn('Birdeye scan chart:',chain,rc.birdeyeType,errorText(e))}
   }
+  return[]
+}
+async function resolveGeckoChartPool(mint,chain,pair){
+  const cfg=SCAN_CHART_NETWORKS[chain];if(!cfg?.gecko)return null;
+  try{
+    const j=await fetchJson(
+      `https://api.geckoterminal.com/api/v2/networks/${encodeURIComponent(cfg.gecko)}/tokens/${encodeURIComponent(mint)}/pools?page=1`,
+      {headers:{accept:'application/json;version=20230203','user-agent':'The-Trenches/1.10.99'}},10000
+    );
+    const rows=Array.isArray(j?.data)?j.data:[],target=String(mint).toLowerCase();
+    const best=rows.sort((a,b)=>(number(b?.attributes?.reserve_in_usd)||0)-(number(a?.attributes?.reserve_in_usd)||0))[0];
+    if(best){
+      const baseId=String(best?.relationships?.base_token?.data?.id||'').toLowerCase(),
+        side=baseId.endsWith('_'+target)||baseId===target?'base':'quote';
+      return{poolAddress:String(best?.attributes?.address||''),side}
+    }
+  }catch(e){console.warn('Gecko token-pool resolve:',chain,errorText(e))}
+  // Last fallback: the DEX Screener pair may also be indexed by Gecko.
+  return pair?.pairAddress?{poolAddress:pair.pairAddress,side:pair.side||'base'}:null
+}
+async function geckoScanChart(mint,chain,rc,pair){
+  const cfg=SCAN_CHART_NETWORKS[chain];if(!cfg?.gecko)return[];
+  const resolved=await resolveGeckoChartPool(mint,chain,pair);
+  if(!resolved?.poolAddress)return[];
+  try{
+    const q=new URLSearchParams({
+      aggregate:String(rc.geckoAggregate),limit:String(Math.min(100,rc.geckoLimit)),
+      currency:'usd',token:resolved.side
+    });
+    const j=await fetchJson(
+      `https://api.geckoterminal.com/api/v2/networks/${encodeURIComponent(cfg.gecko)}/pools/${encodeURIComponent(resolved.poolAddress)}/ohlcv/${encodeURIComponent(rc.geckoTimeframe)}?${q.toString()}`,
+      {headers:{accept:'application/json;version=20230203','user-agent':'The-Trenches/1.10.99'}},10000
+    );
+    return normalizeScanChartRows(j?.data?.attributes?.ohlcv_list)
+  }catch(e){console.warn('Gecko scan chart:',chain,errorText(e));return[]}
 }
 async function scanChartHandler(req,res){
-  res.setHeader('Cache-Control','public, max-age=12, s-maxage=20');
+  res.setHeader('Cache-Control','public, max-age=15, s-maxage=25');
   try{
     if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});
-    const mint=String(req.query.mint||'').trim(),chain=String(req.query.chain||'').toLowerCase(),range=String(req.query.range||'1h').toLowerCase(),
-      cfg=SCAN_CHART_NETWORKS[chain],rc=SCAN_CHART_RANGES[range];
+    const mint=String(req.query.mint||'').trim(),chain=String(req.query.chain||'').toLowerCase(),
+      range=String(req.query.range||'1d').toLowerCase(),cfg=SCAN_CHART_NETWORKS[chain],rc=SCAN_CHART_RANGES[range];
     if(!mint||!cfg)return res.status(400).json({error:'Valid scanned token and chain are required.'});
     if(!rc)return res.status(400).json({error:'Unsupported chart timeframe.'});
-    const pair=await resolveScanChartPair(mint,chain);
-    if(!pair?.pairAddress)return res.status(200).json({mint,chain,range,candles:[],pair:null,source:'No indexed DEX pool yet',dexUrl:''});
 
-    const dexUrl=pair.pairUrl||`https://dexscreener.com/${encodeURIComponent(cfg.dex)}/${encodeURIComponent(pair.pairAddress)}`;
-    if(!cfg.gecko){
-      return res.status(200).json({mint,chain,range,candles:[],pair,source:'DEX Screener live market',dexUrl})
+    const pair=await resolveScanChartPair(mint,chain),
+      dexUrl=pair?.pairUrl||(pair?.pairAddress?`https://dexscreener.com/${encodeURIComponent(cfg.dex)}/${encodeURIComponent(pair.pairAddress)}`:'');
+
+    // Token-level Birdeye history avoids the exact bug in V1.10.98:
+    // a DEX Screener pool address was being handed to GeckoTerminal even
+    // when Gecko did not index that same pool ID.
+    let candles=await birdeyeScanChart(mint,chain,rc),source='';
+    if(candles.length>=2)source='Birdeye token history';
+    else{
+      candles=await geckoScanChart(mint,chain,rc,pair);
+      if(candles.length>=2)source='GeckoTerminal token-pool history'
     }
 
-    let candles=[];
-    try{
-      const q=new URLSearchParams({
-        aggregate:String(rc.aggregate),
-        limit:String(rc.limit),
-        currency:'usd',
-        token:pair.side
-      });
-      const j=await fetchJson(
-        `https://api.geckoterminal.com/api/v2/networks/${encodeURIComponent(cfg.gecko)}/pools/${encodeURIComponent(pair.pairAddress)}/ohlcv/${encodeURIComponent(rc.timeframe)}?${q.toString()}`,
-        {headers:{accept:'application/json;version=20230203','user-agent':'The-Trenches/1.10.98'}},
-        10000
-      );
-      const rows=Array.isArray(j?.data?.attributes?.ohlcv_list)?j.data.attributes.ohlcv_list:[],
-        cutoff=Math.floor(Date.now()/1000)-rc.cutoff;
-      candles=rows.map(x=>Array.isArray(x)?x.slice(0,6).map(Number):[])
-        .filter(x=>x.length===6&&x.every(Number.isFinite))
-        .sort((a,b)=>a[0]-b[0]);
-      const filtered=candles.filter(x=>x[0]>=cutoff);
-      if(filtered.length>=2)candles=filtered
-    }catch(e){
-      console.warn('Scan chart OHLCV:',chain,range,errorText(e))
-    }
+    const cutoff=Math.floor(Date.now()/1000)-rc.seconds;
+    const inWindow=candles.filter(x=>x[0]>=cutoff);
+    if(inWindow.length>=2)candles=inWindow;
+
     return res.status(200).json({
       mint,chain,range,candles,pair,
-      source:candles.length?'GeckoTerminal OHLCV + DEX Screener market':'DEX Screener live market',
-      dexUrl
+      source:source||(pair?'DEX Screener live market':'No indexed market'),
+      dexUrl,
+      message:candles.length<2
+        ?(process.env.BIRDEYE_API_KEY
+          ?'The historical providers did not return enough points for this token/range.'
+          :'Add BIRDEYE_API_KEY for the most reliable token-level price history; GeckoTerminal fallback was also checked.')
+        :''
     })
   }catch(e){
     console.error('Trenches scan chart:',e);
