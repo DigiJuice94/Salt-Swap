@@ -798,3 +798,10 @@ Maintenance cleanup only — no intended feature redesign.
 - Removes duplicate legacy APIs, Vite files, old HTML/CSS copies, old ZIPs, and stale Salt Swap assets.
 - Vercel Root Directory should be blank.
 - `/api/health` fingerprints this build with `version: 1.11.14` and `build: clean-repo-reset`.
+
+## V1.11.15 — Feed + Chart Cursor Fix
+- Fixes Social Feed failure caused by `socialPostId is not defined`.
+- Removes the fragile `socialPostId` dependency from feed hydration and uses a safe post-ID builder/fallback.
+- Keeps Like / Reply / Quote post IDs compatible with existing stored social data.
+- Fixes the Swap chart hover math so the mouse/crosshair snaps to the actual plotted green dot instead of appearing offset to the side.
+- No Vercel/root-directory restructuring in this update.

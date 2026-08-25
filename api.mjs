@@ -1172,6 +1172,83 @@ async function portfolioHandler(req,res){
   }catch(e){return res.status(Number(e?.status)||500).json({error:errorText(e)})}
 }
 
+
+// V1.11.09 — Social feed enrichment helpers.
+// These are intentionally defined together because Community Feed,
+// Profile Feed, posting, replies/quotes and token snapshot enrichment
+// all depend on the same post/token identity rules.
+const socialTokenSnapshotCache=new Map();
+
+function meaningfulSocialTokenName(value){
+  const s=String(value||'').replace(/\s+/g,' ').trim();
+  if(!s)return false;
+  const low=s.toLowerCase();
+  if(['token','contract token','unknown','unknown token','n/a','na','none','undefined','null'].includes(low))return false;
+  // A raw CA is not a meaningful display name.
+  if(/^0x[a-f0-9]{40}$/i.test(s)||/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(s))return false;
+  return true
+}
+function meaningfulSocialTokenSymbol(value){
+  const s=String(value||'').replace(/^\$/,'').trim();
+  if(!s)return false;
+  const low=s.toLowerCase();
+  if(['token','unknown','n/a','na','none','undefined','null','?','-'].includes(low))return false;
+  if(/^0x[a-f0-9]{40}$/i.test(s)||/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(s))return false;
+  return true
+}
+function applySocialPairSnapshot(snap,pair,target){
+  if(!snap||!pair)return snap;
+  const wanted=String(target||'').toLowerCase(),
+    base=pair?.baseToken||{},quote=pair?.quoteToken||{},
+    baseAddress=String(base?.address||'').toLowerCase(),
+    quoteAddress=String(quote?.address||'').toLowerCase(),
+    targetIsQuote=Boolean(wanted&&quoteAddress===wanted&&baseAddress!==wanted),
+    token=targetIsQuote?quote:base;
+
+  if(!meaningfulSocialTokenName(snap.name)&&meaningfulSocialTokenName(token?.name)){
+    snap.name=String(token.name).replace(/\s+/g,' ').trim().slice(0,100)
+  }
+  if(!meaningfulSocialTokenSymbol(snap.symbol)&&meaningfulSocialTokenSymbol(token?.symbol)){
+    snap.symbol=String(token.symbol).trim().replace(/^\$/,'').slice(0,20)
+  }
+
+  // DexScreener priceUsd describes the base token. When the requested token
+  // is the quote token, derive quote USD from base USD / base priceNative.
+  let livePrice=null;
+  if(!targetIsQuote){
+    livePrice=number(pair?.priceUsd)
+  }else{
+    const baseUsd=number(pair?.priceUsd),baseInQuote=number(pair?.priceNative);
+    if(baseUsd!=null&&baseInQuote!=null&&baseInQuote>0)livePrice=baseUsd/baseInQuote
+  }
+  if(livePrice!=null)snap.priceUsd=livePrice;
+
+  // DexScreener's pair image normally represents the base token, so don't
+  // incorrectly put that image on a quote-token post.
+  if(!snap.image&&!targetIsQuote){
+    snap.image=normalizeTokenIcon(pair?.info?.imageUrl)||''
+  }
+  return snap
+}
+function buildSocialPostId(wallet,chain,token){
+  return `${String(wallet||'').trim()}:${cleanChain(chain)}:${String(token||'').trim().toLowerCase()}`
+}
+function parseSocialPostId(postId){
+  const s=String(postId||'').trim(),first=s.indexOf(':'),second=first<0?-1:s.indexOf(':',first+1);
+  if(first<=0||second<=first+1)return null;
+  const wallet=safeSocialWallet(s.slice(0,first)),
+    chain=cleanChain(s.slice(first+1,second)),
+    token=cleanToken(s.slice(second+1));
+  return wallet&&chain&&token?{wallet,chain,token}:null
+}
+function cleanSocialComment(value){
+  return String(value||'')
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g,'')
+    .replace(/\r\n?/g,'\n')
+    .trim()
+    .slice(0,400)
+}
+
 async function socialTokenSnapshot(chain,token,fallback={}){
   let snap={name:String(fallback?.name||'').trim().slice(0,100),symbol:String(fallback?.symbol||'').trim().replace(/^\$/,'').slice(0,20),priceUsd:number(fallback?.priceUsd),image:normalizeTokenIcon(fallback?.image)||''},
     dsChain=chain==='bnb'?'bsc':chain,target=String(token||'').trim(),pairs=[];
@@ -1263,7 +1340,7 @@ async function enrichSocialReview(review,viewerWallet=''){
     const cached=socialTokenSnapshotCache.get(`${cleanChain(r.chain)}:${String(r.token).toLowerCase()}`);
     if(cached)r.currentPriceUsd=number(cached.value?.priceUsd)
   }
-  const postId=r.postId||socialPostId(r.wallet,r.chain,r.token),st=await readSocialPostState(postId,viewerWallet);
+  const postId=r.postId||`${String(r.wallet||'').trim()}:${cleanChain(r.chain)}:${String(r.token||'').trim().toLowerCase()}`,st=await readSocialPostState(postId,viewerWallet);
   return{...r,postId,likeCount:st.likeCount,replyCount:st.replyCount,quoteCount:st.quoteCount,liked:st.liked}
 }
 async function socialPostActionsHandler(req,res){res.setHeader('Cache-Control','no-store');try{const postId=String(req.method==='GET'?req.query.postId:(typeof req.body==='string'?JSON.parse(req.body||'{}')?.postId:req.body?.postId)||'').trim(),parsed=parseSocialPostId(postId);if(!parsed)return res.status(400).json({error:'Valid thesis post required.'});const reviewRaw=await kv('get',socialKey(parsed.chain,parsed.token)),reviewList=reviewRaw?JSON.parse(reviewRaw):[],original=reviewList.find(r=>String(r.wallet)===parsed.wallet);if(!original)return res.status(404).json({error:'That thesis is no longer available.'});const viewer=await socialSessionWallet(req);if(req.method==='GET'){const st=await readSocialPostState(postId,viewer);return res.status(200).json({...st,likes:undefined})}if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});if(!viewer)return res.status(401).json({error:'Connect your Trenches Social wallet to interact.'});const body=typeof req.body==='string'?JSON.parse(req.body):req.body||{},action=String(body.action||'').toLowerCase(),text=cleanSocialComment(body.text),profileRaw=await kv('get',`salt:social:profile:${viewer}`);if(!profileRaw)return res.status(403).json({error:'Create a Trenches profile first.'});const profile=JSON.parse(profileRaw),state=await readSocialPostState(postId,viewer);if(action==='like'){const i=state.likes.indexOf(viewer);if(i>=0)state.likes.splice(i,1);else state.likes.push(viewer)}else if(action==='reply'||action==='quote'){if(text.length<1)return res.status(400).json({error:`Write something before you ${action}.`});const list=action==='reply'?state.replies:state.quotes;list.push({id:`${Date.now()}-${Math.random().toString(36).slice(2,8)}`,wallet:viewer,username:profile.username,avatar:profile.avatar||'',text,createdAt:new Date().toISOString()});if(list.length>250)list.splice(0,list.length-250)}else return res.status(400).json({error:'Unknown post action.'});await kv('set',`salt:social:post:${postId}`,JSON.stringify({likes:state.likes,replies:state.replies,quotes:state.quotes}));const updated=await readSocialPostState(postId,viewer);return res.status(200).json({...updated,likes:undefined})}catch(e){return res.status(Number(e?.status)||500).json({error:errorText(e)})}}
@@ -1285,11 +1362,11 @@ let wallet=await socialSessionWallet(req);
 if(!wallet){const legacyWallet=safeSocialWallet(b.wallet),message=String(b.message||''),signature=String(b.signature||''),expected=`The Trenches review\nWallet: ${legacyWallet}\nChain: ${chain}\nToken: ${token}\nRating: ${rating}\nText: ${text}\nLink: ${link}`,legacyExpected=`Salt Swap review\nWallet: ${legacyWallet}\nChain: ${chain}\nToken: ${token}\nRating: ${rating}\nText: ${text}\nLink: ${link}`;if(legacyWallet&&signature&&(message===expected||message===legacyExpected)&&await verifySolMessage(legacyWallet,message,signature)){wallet=legacyWallet;await setSocialSession(res,req,wallet)}}
 if(!wallet)return res.status(401).json({error:'Your Trenches Social session expired. Connect your Solana wallet and sign in once to keep posting.'});
 const claimed=safeSocialWallet(b.wallet);if(claimed&&claimed!==wallet)return res.status(403).json({error:'The connected social session does not match that profile wallet.'});
-const pr=await kv('get',`salt:social:profile:${wallet}`);if(!pr)return res.status(403).json({error:'Create a Trenches profile before posting theses.'});const profile=JSON.parse(pr),key=socialKey(chain,token),raw=await kv('get',key),reviews=raw?JSON.parse(raw):[],now=new Date().toISOString(),i=reviews.findIndex(r=>r.wallet===wallet),fallbackSnapshot={name:String(b.tokenName||'').slice(0,100),symbol:String(b.symbol||'').slice(0,20),priceUsd:number(b.priceUsd),image:String(b.tokenImage||'')},snapshot=await cachedSocialTokenSnapshot(chain,token,fallbackSnapshot),postId=socialPostId(wallet,chain,token),review={wallet,username:profile.username,avatar:profile.avatar||'',chain,token,postId,rating,text,link,tokenName:snapshot.name||reviews[i]?.tokenName||'',symbol:snapshot.symbol||reviews[i]?.symbol||'',priceAtPost:number(snapshot.priceUsd)??number(reviews[i]?.priceAtPost),tokenImage:snapshot.image||reviews[i]?.tokenImage||'',createdAt:i>=0?reviews[i].createdAt:now,updatedAt:now};if(i>=0)reviews[i]=review;else reviews.push(review);await kv('set',key,JSON.stringify(reviews.slice(-500)));const feedKey=`salt:social:feed:${wallet}`,feedRaw=await kv('get',feedKey),feed=feedRaw?JSON.parse(feedRaw):[],fi=feed.findIndex(r=>r.chain===chain&&r.token===token);if(fi>=0)feed[fi]=review;else feed.push(review);await kv('set',feedKey,JSON.stringify(feed.slice(-250)));const globalKey='salt:social:community-feed',globalRaw=await kv('get',globalKey),globalFeed=globalRaw?JSON.parse(globalRaw):[],gi=globalFeed.findIndex(r=>r.wallet===wallet&&r.chain===chain&&r.token===token);if(gi>=0)globalFeed[gi]=review;else globalFeed.push(review);await kv('set',globalKey,JSON.stringify(globalFeed.slice(-1000)));const avg=reviews.reduce((a,r)=>a+Number(r.rating||0),0)/reviews.length;return res.status(200).json({ok:true,review,average:avg,count:reviews.length})}catch(e){return res.status(Number(e?.status)||500).json({error:errorText(e)})}}
+const pr=await kv('get',`salt:social:profile:${wallet}`);if(!pr)return res.status(403).json({error:'Create a Trenches profile before posting theses.'});const profile=JSON.parse(pr),key=socialKey(chain,token),raw=await kv('get',key),reviews=raw?JSON.parse(raw):[],now=new Date().toISOString(),i=reviews.findIndex(r=>r.wallet===wallet),fallbackSnapshot={name:String(b.tokenName||'').slice(0,100),symbol:String(b.symbol||'').slice(0,20),priceUsd:number(b.priceUsd),image:String(b.tokenImage||'')},snapshot=await cachedSocialTokenSnapshot(chain,token,fallbackSnapshot),postId=buildSocialPostId(wallet,chain,token),review={wallet,username:profile.username,avatar:profile.avatar||'',chain,token,postId,rating,text,link,tokenName:snapshot.name||reviews[i]?.tokenName||'',symbol:snapshot.symbol||reviews[i]?.symbol||'',priceAtPost:number(snapshot.priceUsd)??number(reviews[i]?.priceAtPost),tokenImage:snapshot.image||reviews[i]?.tokenImage||'',createdAt:i>=0?reviews[i].createdAt:now,updatedAt:now};if(i>=0)reviews[i]=review;else reviews.push(review);await kv('set',key,JSON.stringify(reviews.slice(-500)));const feedKey=`salt:social:feed:${wallet}`,feedRaw=await kv('get',feedKey),feed=feedRaw?JSON.parse(feedRaw):[],fi=feed.findIndex(r=>r.chain===chain&&r.token===token);if(fi>=0)feed[fi]=review;else feed.push(review);await kv('set',feedKey,JSON.stringify(feed.slice(-250)));const globalKey='salt:social:community-feed',globalRaw=await kv('get',globalKey),globalFeed=globalRaw?JSON.parse(globalRaw):[],gi=globalFeed.findIndex(r=>r.wallet===wallet&&r.chain===chain&&r.token===token);if(gi>=0)globalFeed[gi]=review;else globalFeed.push(review);await kv('set',globalKey,JSON.stringify(globalFeed.slice(-1000)));const avg=reviews.reduce((a,r)=>a+Number(r.rating||0),0)/reviews.length;return res.status(200).json({ok:true,review,average:avg,count:reviews.length})}catch(e){return res.status(Number(e?.status)||500).json({error:errorText(e)})}}
 
 async function healthHandler(req,res){
   res.setHeader('Cache-Control','no-store');
-  return res.status(200).json({ok:true,service:'The Trenches scanner',version:'1.9.9',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY),zerox:Boolean(process.env.ZEROX_API_KEY),social:Boolean(process.env.UPSTASH_REDIS_REST_URL&&process.env.UPSTASH_REDIS_REST_TOKEN)}});
+  return res.status(200).json({ok:true,service:'The Trenches scanner',version:'1.11.15',build:'feed-chart-fix',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY),zerox:Boolean(process.env.ZEROX_API_KEY),social:Boolean(process.env.UPSTASH_REDIS_REST_URL&&process.env.UPSTASH_REDIS_REST_TOKEN)}});
 }
 
 export default async function handler(req,res){
