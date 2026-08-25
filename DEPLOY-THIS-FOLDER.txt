@@ -1,0 +1,62 @@
+THE TRENCHES V1.11.10 — GITHUB / VERCEL RESET
+
+THIS FIX IS DESIGNED FOR YOUR CURRENT GITHUB REPOSITORY.
+
+Your GitHub root contains old Salt Swap files and newer Trenches files together.
+This build prevents those old files from interfering without requiring you to
+manually delete the entire repository.
+
+1. UPLOAD THIS WHOLE FOLDER
+Upload the ENTIRE folder named:
+
+    trenches-app
+
+to the ROOT of your GitHub repository.
+
+When done, GitHub should show:
+    trenches-app/
+    api.js                 <- old root file can stay
+    health.js              <- old root file can stay
+    index.js               <- old root file can stay
+    ...other old files...
+
+2. CHANGE VERCEL ROOT DIRECTORY
+In Vercel go to:
+
+    Project -> Settings -> Build and Deployment -> Root Directory -> Edit
+
+Set Root Directory to EXACTLY:
+
+    trenches-app
+
+Save it.
+
+3. REDEPLOY
+Go to Deployments and redeploy the newest MAIN deployment.
+If Vercel offers build-cache reuse, choose a fresh redeploy / do not reuse
+the old build cache.
+
+4. VERIFY THE BACKEND
+Open:
+
+    https://YOUR-DOMAIN/api/health
+
+It MUST contain all three of these:
+
+    "version":"1.11.10"
+    "build":"trenches-app-root"
+    "router":"api/router.mjs"
+
+If those appear, the deployment problem is fixed.
+
+5. FUTURE UPDATES
+From now on, every update should replace files INSIDE:
+
+    trenches-app/
+
+Do not switch the Vercel Root Directory back to the repository root.
+
+WHY THIS WORKS
+Vercel will only build files inside trenches-app. The old root api.js,
+health.js, app.js, index.js, Vite files, old ZIPs, and older Salt Swap
+files become invisible to the production build.

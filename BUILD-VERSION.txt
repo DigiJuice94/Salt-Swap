@@ -1,0 +1,4 @@
+The Trenches V1.11.10
+Vercel Root Directory: trenches-app
+API Router: api/router.mjs
+Expected /api/health version: 1.11.10
