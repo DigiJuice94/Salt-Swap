@@ -801,3 +801,10 @@ This update rebuilds the Portfolio information architecture around the current C
 - Blocks accidental self-following on both frontend and backend.
 - Follow / Unfollow updates in place and stays on the viewed profile.
 - No Vercel configuration changes.
+
+## V1.11.25 — Dark Portfolio
+- Restores Portfolio to the dark army-green terminal theme used alongside Trending.
+- Removes the rolled-back off-white Portfolio surfaces.
+- Darkens the Portfolio shell, tabs, cards, chart area, action tiles, tables, inputs, and asset rows.
+- Preserves V1.11.24 profile discovery, Follow/Following, Feed fixes, chart cursor fix, and deployment configuration.
+- Vercel configuration unchanged.

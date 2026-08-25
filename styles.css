@@ -3613,3 +3613,180 @@ body.trending-active::before{opacity:.045!important}
   fill:#596447!important;
   color:#596447!important;
 }
+
+/* V1.11.25 — Dark Portfolio restoration */
+#portfolioView,
+.portfolioView,
+.portfolioPage,
+.portfolioShell,
+.portfolioWrap{
+  background:#0f1714 !important;
+  color:#edf2e8 !important;
+}
+
+#portfolioView .portfolioShell,
+#portfolioView .portfolioWrap,
+#portfolioView .portfolioDashboard,
+#portfolioView .portfolioMain,
+.portfolioPage .portfolioShell,
+.portfolioPage .portfolioWrap{
+  background:#0f1714 !important;
+  border-color:rgba(192,214,163,.14) !important;
+  box-shadow:none !important;
+}
+
+#portfolioView .portfolioHeader,
+#portfolioView .portfolioTopbar,
+#portfolioView .portfolioTabs,
+#portfolioView .portfolioNav,
+#portfolioView .portfolioCard,
+#portfolioView .portfolioPanel,
+#portfolioView .portfolioSummaryCard,
+#portfolioView .portfolioAssetsCard,
+#portfolioView .portfolioAssetRow,
+#portfolioView .portfolioTable,
+#portfolioView .portfolioActionCard,
+#portfolioView .portfolioStatCard,
+#portfolioView .portfolioMetricCard,
+#portfolioView .portfolioChartCard,
+.portfolioPage .portfolioHeader,
+.portfolioPage .portfolioTopbar,
+.portfolioPage .portfolioTabs,
+.portfolioPage .portfolioNav,
+.portfolioPage .portfolioCard,
+.portfolioPage .portfolioPanel,
+.portfolioPage .portfolioSummaryCard,
+.portfolioPage .portfolioAssetsCard,
+.portfolioPage .portfolioAssetRow,
+.portfolioPage .portfolioTable,
+.portfolioPage .portfolioActionCard,
+.portfolioPage .portfolioStatCard,
+.portfolioPage .portfolioMetricCard,
+.portfolioPage .portfolioChartCard{
+  background:#16221d !important;
+  color:#edf2e8 !important;
+  border-color:rgba(192,214,163,.16) !important;
+}
+
+#portfolioView .portfolioTabs button,
+#portfolioView .portfolioNav button,
+.portfolioPage .portfolioTabs button,
+.portfolioPage .portfolioNav button{
+  color:#aebca8 !important;
+  background:transparent !important;
+  border-color:transparent !important;
+}
+
+#portfolioView .portfolioTabs button.active,
+#portfolioView .portfolioNav button.active,
+.portfolioPage .portfolioTabs button.active,
+.portfolioPage .portfolioNav button.active{
+  color:#f4f7ef !important;
+  background:#233229 !important;
+  border-color:rgba(194,222,160,.18) !important;
+}
+
+#portfolioView .portfolioActionCard,
+#portfolioView .portfolioQuickAction,
+#portfolioView .portfolioAction,
+.portfolioPage .portfolioActionCard,
+.portfolioPage .portfolioQuickAction,
+.portfolioPage .portfolioAction{
+  background:#24352a !important;
+  border-color:rgba(190,220,155,.16) !important;
+  color:#f1f5ec !important;
+}
+
+#portfolioView .portfolioActionCard:hover,
+#portfolioView .portfolioQuickAction:hover,
+#portfolioView .portfolioAction:hover,
+.portfolioPage .portfolioActionCard:hover,
+.portfolioPage .portfolioQuickAction:hover,
+.portfolioPage .portfolioAction:hover{
+  background:#2b4132 !important;
+}
+
+#portfolioView .portfolioChart,
+#portfolioView .portfolioChartCard,
+#portfolioView canvas,
+.portfolioPage .portfolioChart,
+.portfolioPage .portfolioChartCard,
+.portfolioPage canvas{
+  background:#10201c !important;
+}
+
+#portfolioView h1,
+#portfolioView h2,
+#portfolioView h3,
+#portfolioView h4,
+#portfolioView strong,
+#portfolioView b,
+#portfolioView .portfolioValue,
+#portfolioView .portfolioTotal,
+.portfolioPage h1,
+.portfolioPage h2,
+.portfolioPage h3,
+.portfolioPage h4,
+.portfolioPage strong,
+.portfolioPage b,
+.portfolioPage .portfolioValue,
+.portfolioPage .portfolioTotal{
+  color:#f1f5ec !important;
+}
+
+#portfolioView p,
+#portfolioView small,
+#portfolioView .muted,
+#portfolioView .portfolioMeta,
+#portfolioView .portfolioSub,
+#portfolioView .portfolioLabel,
+.portfolioPage p,
+.portfolioPage small,
+.portfolioPage .muted,
+.portfolioPage .portfolioMeta,
+.portfolioPage .portfolioSub,
+.portfolioPage .portfolioLabel{
+  color:#9cae9e !important;
+}
+
+#portfolioView table,
+#portfolioView thead,
+#portfolioView tbody,
+#portfolioView tr,
+#portfolioView td,
+#portfolioView th,
+.portfolioPage table,
+.portfolioPage thead,
+.portfolioPage tbody,
+.portfolioPage tr,
+.portfolioPage td,
+.portfolioPage th{
+  background:transparent !important;
+  color:#e7eee5 !important;
+  border-color:rgba(187,211,161,.12) !important;
+}
+
+#portfolioView input,
+#portfolioView select,
+#portfolioView button.secondaryBtn,
+.portfolioPage input,
+.portfolioPage select,
+.portfolioPage button.secondaryBtn{
+  background:#18251f !important;
+  color:#edf2e8 !important;
+  border-color:rgba(190,214,166,.18) !important;
+}
+
+#portfolioView .positive,
+#portfolioView .portfolioPositive,
+.portfolioPage .positive,
+.portfolioPage .portfolioPositive{
+  color:#9ee384 !important;
+}
+
+#portfolioView .negative,
+#portfolioView .portfolioNegative,
+.portfolioPage .negative,
+.portfolioPage .portfolioNegative{
+  color:#ff9c8e !important;
+}
