@@ -719,3 +719,11 @@ This update rebuilds the Portfolio information architecture around the current C
 - Writes the army-green stroke directly into the SVG `style` attribute with `!important`, so older Fomo CSS cannot override it.
 - Cache-busts `styles.css` again and adds `Cache-Control: no-store` for the homepage and stylesheet in Vercel.
 - Keeps the off-white chart, green/red volume bars, and army-green current-value marker.
+
+## V1.11.05 — Army-green History Line Only
+- Clarifies the intended chart styling.
+- The **main wavy historical market-cap line** is now hard-locked to Trenches army green.
+- The soft fill underneath the history line is also army green.
+- The **blue current-value box on the right stays blue**, matching the Fomo reference the user liked.
+- The horizontal dotted current-value guide and endpoint pulse also stay blue so they visually belong to the current-value marker.
+- No purple / blue gradient remains on the actual historical line.
