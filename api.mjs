@@ -676,30 +676,108 @@ async function swapBalanceHandler(req,res){
 async function socialHoldingsHandler(req,res){res.setHeader('Cache-Control','no-store');try{if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});const wallet=safeSocialWallet(req.query.wallet),key=process.env.HELIUS_API_KEY;if(!wallet)return res.status(400).json({error:'Valid Solana wallet required.'});if(!key)return res.status(503).json({error:'Wallet holdings need HELIUS_API_KEY configured in Vercel.'});const rpc=`https://mainnet.helius-rpc.com/?api-key=${encodeURIComponent(key)}`,j=await fetchJson(rpc,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:'salt-social-holdings',method:'getAssetsByOwner',params:{ownerAddress:wallet,page:1,limit:100,displayOptions:{showFungible:true,showNativeBalance:true}}})},12000),rows=[];for(const a of (j?.result?.items||[])){const ti=a?.token_info||{},dec=Number(ti.decimals||0),raw=Number(ti.balance||0),bal=dec>=0?raw/(10**dec):raw,iface=String(a?.interface||'').toLowerCase();if(!Number.isFinite(bal)||bal<=0||(!iface.includes('fungible')&&!ti.balance))continue;const symbol=String(a?.content?.metadata?.symbol||a?.content?.metadata?.name||'TOKEN').slice(0,20),name=String(a?.content?.metadata?.name||symbol).slice(0,60);rows.push({mint:String(a.id||''),symbol,name,balance:bal,displayBalance:bal>=1000000?(bal/1000000).toFixed(2)+'M':bal>=1000?(bal/1000).toFixed(2)+'K':bal>=1?bal.toLocaleString(undefined,{maximumFractionDigits:4}):bal.toPrecision(3),image:heliusAssetImage(a)})}rows.sort((a,b)=>b.balance-a.balance);await enrichHoldingImages(rows);return res.status(200).json({items:rows.slice(0,30)})}catch(e){return res.status(Number(e?.status)||500).json({error:errorText(e)})}}
 
 
-async function portfolioHandler(req,res){res.setHeader('Cache-Control','no-store');try{if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});const wallet=safeSocialWallet(req.query.wallet),key=process.env.HELIUS_API_KEY;if(!wallet)return res.status(400).json({error:'Valid Solana wallet required.'});if(!key)return res.status(503).json({error:'Portfolio needs HELIUS_API_KEY configured in Vercel.'});const rpc=`https://mainnet.helius-rpc.com/?api-key=${encodeURIComponent(key)}`;const [assets,activityRaw]=await Promise.all([fetchJson(rpc,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:'trenches-portfolio',method:'getAssetsByOwner',params:{ownerAddress:wallet,page:1,limit:250,displayOptions:{showFungible:true,showNativeBalance:true}}})},14000),fetchJson(`https://api.helius.xyz/v0/addresses/${encodeURIComponent(wallet)}/transactions?api-key=${encodeURIComponent(key)}&limit=20`,{headers:{accept:'application/json'}},12000).catch(()=>[])]);const result=assets?.result||{},rows=[];const native=result?.nativeBalance||{},lamports=number(native?.lamports)??0,solBalance=lamports/1e9,solPrice=number(native?.price_per_sol??native?.pricePerSol),solValue=number(native?.total_price??native?.totalPrice)??(solPrice!=null?solBalance*solPrice:null);if(solBalance>0)rows.push({mint:'SOL',symbol:'SOL',name:'Solana',balance:solBalance,displayBalance:solBalance.toLocaleString(undefined,{maximumFractionDigits:6}),image:'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/solana/info/logo.png',priceUsd:solPrice,valueUsd:solValue,native:true});for(const asset of (result?.items||[])){const ti=asset?.token_info||{},dec=Number(ti.decimals||0),raw=Number(ti.balance||0),bal=dec>=0?raw/(10**dec):raw,iface=String(asset?.interface||'').toLowerCase();if(!Number.isFinite(bal)||bal<=0||(!iface.includes('fungible')&&!ti.balance))continue;const pi=ti?.price_info||{},price=number(pi?.price_per_token??pi?.pricePerToken),value=number(pi?.total_price??pi?.totalPrice)??(price!=null?bal*price:null),symbol=String(asset?.content?.metadata?.symbol||asset?.content?.metadata?.name||'TOKEN').slice(0,20),name=String(asset?.content?.metadata?.name||symbol).slice(0,60);rows.push({mint:String(asset.id||''),symbol,name,balance:bal,displayBalance:bal>=1e6?(bal/1e6).toFixed(2)+'M':bal>=1e3?(bal/1e3).toFixed(2)+'K':bal>=1?bal.toLocaleString(undefined,{maximumFractionDigits:4}):bal.toPrecision(3),image:heliusAssetImage(asset),priceUsd:price,valueUsd:value,native:false})}rows.sort((x,y)=>{const xv=number(x.valueUsd),yv=number(y.valueUsd);if(xv!=null||yv!=null)return (yv??-1)-(xv??-1);return Number(y.balance||0)-Number(x.balance||0)});await enrichHoldingImages(rows);const priced=rows.filter(x=>number(x.valueUsd)!=null),totalUsd=priced.reduce((sum,x)=>sum+Number(x.valueUsd||0),0),activity=(Array.isArray(activityRaw)?activityRaw:[]).slice(0,20).map(tx=>({signature:String(tx?.signature||''),timestamp:number(tx?.timestamp),type:String(tx?.type||'TRANSACTION').slice(0,60),source:String(tx?.source||'').slice(0,60),description:String(tx?.description||'').replace(/\s+/g,' ').trim().slice(0,220),fee:number(tx?.fee)}));return res.status(200).json({wallet,network:'solana',totalUsd,pricedAssets:priced.length,items:rows.slice(0,100),activity,updatedAt:new Date().toISOString()})}catch(e){return res.status(Number(e?.status)||500).json({error:errorText(e)})}}
 
-function socialPostId(wallet,chain,token){return `${String(wallet||'')}:${String(chain||'')}:${String(token||'').toLowerCase()}`}
-function parseSocialPostId(postId){const parts=String(postId||'').split(':');if(parts.length<3)return null;const wallet=safeSocialWallet(parts.shift()),chain=cleanChain(parts.shift()),token=cleanToken(parts.join(':'));return wallet&&chain&&token?{wallet,chain,token}:null}
-function cleanSocialComment(v){return String(v||'').trim().slice(0,400)}
-const socialTokenSnapshotCache=new Map();
-function meaningfulSocialTokenName(v){v=String(v||'').trim();return Boolean(v&&!/^(token|contract token|unknown token)$/i.test(v))}
-function meaningfulSocialTokenSymbol(v){v=String(v||'').trim().replace(/^\$/,'');return Boolean(v&&!/^(token|unknown)$/i.test(v))}
-function applySocialPairSnapshot(snap,pair,token){
-  if(!pair)return snap;
-  const target=String(token||'').toLowerCase(),base=pair?.baseToken,quote=pair?.quoteToken,
-    baseMatch=String(base?.address||'').toLowerCase()===target,
-    quoteMatch=String(quote?.address||'').toLowerCase()===target,
-    tok=baseMatch?base:quoteMatch?quote:base;
-  if(tok){
-    if(meaningfulSocialTokenName(tok?.name))snap.name=String(tok.name).trim().slice(0,100);
-    if(meaningfulSocialTokenSymbol(tok?.symbol))snap.symbol=String(tok.symbol).trim().replace(/^\$/,'').slice(0,20)
-  }
-  // DexScreener priceUsd is the base-token price. Only attach it when the
-  // contract being discussed is actually the base token for that pair.
-  if(baseMatch)snap.priceUsd=number(pair?.priceUsd)??snap.priceUsd;
-  snap.image=normalizeTokenIcon(pair?.info?.imageUrl)||snap.image;
-  return snap
+function portfolioHistoryRangeMs(range){return ({'24h':86400000,'1w':604800000,'1m':2592000000,'3m':7776000000,'1y':31536000000})[String(range||'24h').toLowerCase()]||null}
+function portfolioHistoryBucketMs(range){return ({'24h':5*60*1000,'1w':60*60*1000,'1m':6*60*60*1000,'3m':24*60*60*1000,'1y':24*60*60*1000,'all':7*24*60*60*1000})[String(range||'24h').toLowerCase()]||5*60*1000}
+function downsamplePortfolioHistory(rows,range){
+  rows=(rows||[]).filter(x=>Number.isFinite(Number(x?.t))&&Number.isFinite(Number(x?.v))).sort((a,b)=>a.t-b.t);
+  const bucket=portfolioHistoryBucketMs(range),out=[],map=new Map();
+  for(const x of rows){const k=Math.floor(Number(x.t)/bucket)*bucket;map.set(k,{t:Number(x.t),v:Number(x.v)})}
+  for(const x of map.values())out.push(x);return out.sort((a,b)=>a.t-b.t)
 }
+async function recordPersistentPortfolioSnapshot(wallet,totalUsd,items){
+  if(!socialReady()||!Number.isFinite(Number(totalUsd)))return;
+  const now=Date.now(),histKey=`trenches:portfolio:history:${wallet}`,lastKey=`trenches:portfolio:last:${wallet}`;
+  try{
+    const last=Number(await kv('get',lastKey)||0);
+    if(!last||now-last>=5*60*1000){
+      await kv('zadd',histKey,String(now),JSON.stringify({t:now,v:Number(totalUsd)}));
+      await kv('set',lastKey,String(now),'ex',String(400*24*60*60));
+      await kv('zremrangebyscore',histKey,'0',String(now-400*24*60*60*1000)).catch(()=>null)
+    }
+    const d=new Date(now),day=`${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`,dayKey=`trenches:portfolio:day:${wallet}:${day}`;
+    const daily={
+      t:now,totalUsd:Number(totalUsd),
+      items:(items||[]).slice(0,100).map(x=>({mint:x.mint,symbol:x.symbol,name:x.name,balance:x.balance,displayBalance:x.displayBalance,image:x.image,imageFallbacks:x.imageFallbacks||[],priceUsd:x.priceUsd,valueUsd:x.valueUsd,change24h:x.change24h,marketCap:x.marketCap}))
+    };
+    await kv('set',dayKey,JSON.stringify(daily),'nx','ex',String(400*24*60*60)).catch(()=>null)
+  }catch(e){console.warn('Portfolio persistent snapshot:',errorText(e))}
+}
+async function persistentPortfolioHistory(wallet,range){
+  if(!socialReady())return[];
+  try{
+    const now=Date.now(),ms=portfolioHistoryRangeMs(range),min=ms?now-ms:0,key=`trenches:portfolio:history:${wallet}`,raw=await kv('zrangebyscore',key,String(min),String(now));
+    return downsamplePortfolioHistory((Array.isArray(raw)?raw:[]).map(x=>{try{return JSON.parse(x)}catch{return null}}).filter(Boolean),range)
+  }catch{return[]}
+}
+async function portfolioHistoryHandler(req,res){
+  res.setHeader('Cache-Control','no-store');
+  try{
+    if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});
+    const wallet=safeSocialWallet(req.query.wallet),range=String(req.query.range||'24h').toLowerCase();
+    if(!wallet)return res.status(400).json({error:'Valid Solana wallet required.'});
+    if(!['24h','1w','1m','3m','1y','all'].includes(range))return res.status(400).json({error:'Invalid portfolio history range.'});
+    const items=await persistentPortfolioHistory(wallet,range);
+    return res.status(200).json({wallet,range,items,persistent:socialReady()})
+  }catch(e){return res.status(Number(e?.status)||500).json({error:errorText(e)})}
+}
+async function portfolioTimeMachineHandler(req,res){
+  res.setHeader('Cache-Control','no-store');
+  try{
+    if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});
+    const wallet=safeSocialWallet(req.query.wallet),date=String(req.query.date||'');
+    if(!wallet)return res.status(400).json({error:'Valid Solana wallet required.'});
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return res.status(400).json({error:'Use YYYY-MM-DD for Time Machine.'});
+    if(!socialReady())return res.status(200).json({wallet,date,snapshot:null,persistent:false});
+    const raw=await kv('get',`trenches:portfolio:day:${wallet}:${date}`);
+    return res.status(200).json({wallet,date,snapshot:raw?JSON.parse(raw):null,persistent:true})
+  }catch(e){return res.status(Number(e?.status)||500).json({error:errorText(e)})}
+}
+async function enrichPortfolioMarket(rows){
+  const targets=(rows||[]).filter(x=>x?.mint).slice(0,60),mintMap=new Map();
+  for(const r of targets){const queryMint=r.mint==='SOL'?'So11111111111111111111111111111111111111112':r.mint;mintMap.set(queryMint,r)}
+  const mints=[...mintMap.keys()];if(!mints.length)return rows;
+  try{
+    for(let i=0;i<mints.length;i+=25){
+      const chunk=mints.slice(i,i+25),ds=await fetchJson(`https://api.dexscreener.com/tokens/v1/solana/${chunk.map(encodeURIComponent).join(',')}`,{headers:{accept:'application/json'}},8000).catch(()=>[]);
+      for(const mint of chunk){
+        const row=mintMap.get(mint),pairs=(Array.isArray(ds)?ds:[]).filter(p=>String(p?.baseToken?.address||'')===mint).sort((a,b)=>(number(b?.liquidity?.usd)||0)-(number(a?.liquidity?.usd)||0)),best=pairs[0];if(!row||!best)continue;
+        row.change24h=number(best?.priceChange?.h24);
+        row.marketCap=number(best?.marketCap)??number(best?.fdv);
+        row.liquidityUsd=number(best?.liquidity?.usd);
+        if(number(row.priceUsd)==null)row.priceUsd=number(best?.priceUsd);
+        if(number(row.valueUsd)==null&&number(row.priceUsd)!=null)row.valueUsd=Number(row.balance||0)*Number(row.priceUsd)
+      }
+    }
+  }catch(e){console.warn('Portfolio market enrichment:',errorText(e))}
+  return rows
+}
+async function portfolioHandler(req,res){
+  res.setHeader('Cache-Control','no-store');
+  try{
+    if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});
+    const wallet=safeSocialWallet(req.query.wallet),key=process.env.HELIUS_API_KEY;if(!wallet)return res.status(400).json({error:'Valid Solana wallet required.'});if(!key)return res.status(503).json({error:'Portfolio needs HELIUS_API_KEY configured in Vercel.'});
+    const rpc=`https://mainnet.helius-rpc.com/?api-key=${encodeURIComponent(key)}`;
+    const [assets,activityRaw]=await Promise.all([
+      fetchJson(rpc,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:'trenches-portfolio',method:'getAssetsByOwner',params:{ownerAddress:wallet,page:1,limit:250,displayOptions:{showFungible:true,showNativeBalance:true}}})},14000),
+      fetchJson(`https://api.helius.xyz/v0/addresses/${encodeURIComponent(wallet)}/transactions?api-key=${encodeURIComponent(key)}&limit=50`,{headers:{accept:'application/json'}},12000).catch(()=>[])
+    ]);
+    const result=assets?.result||{},rows=[],native=result?.nativeBalance||{},lamports=number(native?.lamports)??0,solBalance=lamports/1e9,solPrice=number(native?.price_per_sol??native?.pricePerSol),solValue=number(native?.total_price??native?.totalPrice)??(solPrice!=null?solBalance*solPrice:null);
+    if(solBalance>0)rows.push({mint:'SOL',symbol:'SOL',name:'Solana',balance:solBalance,displayBalance:solBalance.toLocaleString(undefined,{maximumFractionDigits:6}),image:'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/solana/info/logo.png',priceUsd:solPrice,valueUsd:solValue,native:true,avgBuyUsd:null,pnlUsd:null});
+    for(const asset of (result?.items||[])){
+      const ti=asset?.token_info||{},dec=Number(ti.decimals||0),raw=Number(ti.balance||0),bal=dec>=0?raw/(10**dec):raw,iface=String(asset?.interface||'').toLowerCase();if(!Number.isFinite(bal)||bal<=0||(!iface.includes('fungible')&&!ti.balance))continue;
+      const pi=ti?.price_info||{},price=number(pi?.price_per_token??pi?.pricePerToken),value=number(pi?.total_price??pi?.totalPrice)??(price!=null?bal*price:null),symbol=String(asset?.content?.metadata?.symbol||asset?.content?.metadata?.name||'TOKEN').slice(0,20),name=String(asset?.content?.metadata?.name||symbol).slice(0,60);
+      rows.push({mint:String(asset.id||''),symbol,name,balance:bal,displayBalance:bal>=1e6?(bal/1e6).toFixed(2)+'M':bal>=1e3?(bal/1e3).toFixed(2)+'K':bal>=1?bal.toLocaleString(undefined,{maximumFractionDigits:4}):bal.toPrecision(3),image:heliusAssetImage(asset),priceUsd:price,valueUsd:value,native:false,avgBuyUsd:null,pnlUsd:null})
+    }
+    await Promise.all([enrichHoldingImages(rows),enrichPortfolioMarket(rows)]);
+    rows.sort((x,y)=>{const xv=number(x.valueUsd),yv=number(y.valueUsd);if(xv!=null||yv!=null)return(yv??-1)-(xv??-1);return Number(y.balance||0)-Number(x.balance||0)});
+    const priced=rows.filter(x=>number(x.valueUsd)!=null),totalUsd=priced.reduce((sum,x)=>sum+Number(x.valueUsd||0),0);
+    const activity=(Array.isArray(activityRaw)?activityRaw:[]).slice(0,50).map(tx=>({signature:String(tx?.signature||''),timestamp:number(tx?.timestamp),type:String(tx?.type||'TRANSACTION').slice(0,60),source:String(tx?.source||'').slice(0,60),description:String(tx?.description||'').replace(/\s+/g,' ').trim().slice(0,260),fee:number(tx?.fee)}));
+    await recordPersistentPortfolioSnapshot(wallet,totalUsd,rows);
+    return res.status(200).json({wallet,network:'solana',totalUsd,pricedAssets:priced.length,items:rows.slice(0,100),activity,updatedAt:new Date().toISOString(),historyPersistent:socialReady()})
+  }catch(e){return res.status(Number(e?.status)||500).json({error:errorText(e)})}
+}
+
 async function socialTokenSnapshot(chain,token,fallback={}){
   let snap={name:String(fallback?.name||'').trim().slice(0,100),symbol:String(fallback?.symbol||'').trim().replace(/^\$/,'').slice(0,20),priceUsd:number(fallback?.priceUsd),image:normalizeTokenIcon(fallback?.image)||''},
     dsChain=chain==='bnb'?'bsc':chain,target=String(token||'').trim(),pairs=[];
@@ -839,7 +917,9 @@ export default async function handler(req,res){
     if(route==='social-nfts')return socialNftsHandler(req,res);
     if(route==='social-nft-detail')return socialNftDetailHandler(req,res);
     if(route==='swap-balance')return swapBalanceHandler(req,res);
-    if(route==='portfolio')return portfolioHandler(req,res);     if(route==='social-holdings')return socialHoldingsHandler(req,res);
+    if(route==='portfolio')return portfolioHandler(req,res);
+    if(route==='portfolio-history')return portfolioHistoryHandler(req,res);
+    if(route==='portfolio-time-machine')return portfolioTimeMachineHandler(req,res);     if(route==='social-holdings')return socialHoldingsHandler(req,res);
     if(route==='social-profile-feed')return socialProfileFeedHandler(req,res);
     if(route==='social-community-feed')return socialCommunityFeedHandler(req,res);
     if(route==='social-market')return socialMarketHandler(req,res);

@@ -583,3 +583,33 @@ V1.10.44 fixes: real full-width white Social canvas; hides floating background a
 - Adds a subtle pulsing live marker to the newest chart point.
 - The right-edge chart value uses extra decimal precision when small movements would otherwise round away.
 - No artificial/random movement is generated: a truly unchanged wallet remains flat.
+
+## V1.10.92 — CoinStats-style Portfolio behavior
+This update rebuilds the Portfolio information architecture around the current CoinStats model while retaining The Trenches branding and data-integrity rule.
+
+### Dashboard
+- Dashboard / Analytics / Assets / DeFi / Transactions navigation.
+- Total Worth plus selected-range change.
+- Portfolio Value chart with CoinStats-style 24H / 1W / 1M / 3M / 1Y / All ranges.
+- Hover crosshair + exact value/time tooltip.
+- Force Sync and Time Machine controls.
+- Assets preview with Name, Amount, 24h Change, Price, Total, Avg Buy and P/L columns.
+- Charts preview for allocation and 24h movers.
+- NFT and transaction previews.
+
+### Analytics
+- Coin allocation bar + donut.
+- Portfolio value, tracked P/L, pricing coverage, and a transparent concentration/diversification health metric.
+- Top and bottom 24h assets.
+- Cumulative tracked P/L chart.
+
+### Persistent history / Time Machine
+- Portfolio total-value snapshots persist in Upstash Redis every five minutes when Social storage is configured.
+- History is downsampled by timeframe to keep charts responsive.
+- A daily asset snapshot is saved for Time Machine.
+- Historical data starts accumulating after this version is deployed; no fake backfill is generated.
+
+### Data integrity
+- DexScreener market data enriches holdings with 24h change, market cap, liquidity, and fallback pricing.
+- Avg Buy / realized / unrealized P&L are intentionally left blank until verifiable cost basis can be reconstructed. The Trenches does not fabricate purchase prices.
+- DeFi positions are not inferred from normal token balances.

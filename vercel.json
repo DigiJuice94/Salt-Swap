@@ -77,6 +77,14 @@
       "dest": "/api.mjs?route=portfolio"
     },
     {
+      "src": "/api/portfolio-history",
+      "dest": "/api.mjs?route=portfolio-history"
+    },
+    {
+      "src": "/api/portfolio-time-machine",
+      "dest": "/api.mjs?route=portfolio-time-machine"
+    },
+    {
       "src": "/api/social-profile",
       "dest": "/api.mjs?route=social-profile"
     },

@@ -296,82 +296,175 @@
         <div class="portfolioConnectArt"><span>⌁</span><span>◈</span><span>◎</span><span>✦</span></div>
         <div class="portfolioConnectCopy">
           <small>THE TRENCHES PORTFOLIO</small>
-          <h1>Your wallet, without leaving the trenches.</h1>
-          <p>Connect a Solana wallet to see live token balances, NFT holdings, and recent wallet activity. Viewing your portfolio never needs a message signature.</p>
+          <h1>Everything your wallet is doing. One dashboard.</h1>
+          <p>Connect a Solana wallet to track live value, performance, allocations, assets, NFTs, and transactions. Viewing your portfolio never needs a message signature.</p>
           <button id="portfolioConnectBtn" class="portfolioConnectBtn" type="button">Connect Solana Wallet</button>
           <span id="portfolioConnectStatus">Public on-chain data only · no transaction is created.</span>
         </div>
       </div>
 
       <div id="portfolioDashboard" class="portfolioDashboard hidden">
-        <div class="portfolioHeaderRow">
+        <div class="portfolioHeaderRow coinstatsPortfolioHeader">
           <div class="portfolioWalletIdentity">
             <div id="portfolioAvatar" class="portfolioAvatar">W</div>
-            <div><b id="portfolioWalletName">Main Wallet</b><button id="portfolioCopyWallet" type="button">— ⧉</button></div>
+            <div>
+              <b id="portfolioWalletName">Main Wallet</b>
+              <button id="portfolioCopyWallet" type="button">— ⧉</button>
+            </div>
           </div>
-          <div class="portfolioNetworkPill">◎ <span>Solana</span><small>LIVE</small></div>
+          <div class="portfolioHeaderActions">
+            <button id="portfolioTimeMachineBtn" type="button">◷ Time Machine</button>
+            <button id="portfolioRefreshBtn" type="button">↻ Force Sync</button>
+            <div class="portfolioNetworkPill">◎ <span>Solana</span><small>LIVE</small></div>
+          </div>
         </div>
 
-        <div class="portfolioTabs" role="tablist" aria-label="Portfolio sections">
-          <button class="active" data-portfolio-tab="overview" type="button">Overview</button>
-          <button data-portfolio-tab="tokens" type="button">Tokens</button>
-          <button data-portfolio-tab="nfts" type="button">NFTs <span id="portfolioNftCount"></span></button>
-          <button data-portfolio-tab="activity" type="button">Activity</button>
+        <div class="portfolioTabs coinstatsPortfolioTabs" role="tablist" aria-label="Portfolio sections">
+          <button class="active" data-portfolio-tab="dashboard" type="button">Dashboard</button>
+          <button data-portfolio-tab="analytics" type="button">Analytics</button>
+          <button data-portfolio-tab="assets" type="button">Assets</button>
+          <button data-portfolio-tab="defi" type="button">DeFi</button>
+          <button data-portfolio-tab="transactions" type="button">Transactions</button>
         </div>
 
-        <div class="portfolioPanel" data-portfolio-panel="overview">
-          <div class="portfolioBalanceLine">
+        <div id="portfolioTimeMachine" class="portfolioTimeMachine hidden">
+          <button id="portfolioTimePrev" type="button" aria-label="Previous day">←</button>
+          <label>Portfolio Time Machine <input id="portfolioTimeDate" type="date" /></label>
+          <button id="portfolioTimeNext" type="button" aria-label="Next day">→</button>
+          <span id="portfolioTimeMachineStatus">Daily snapshots begin after this update is deployed.</span>
+          <button id="portfolioTimeClose" type="button">Close</button>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div class="portfolioPanel" data-portfolio-panel="dashboard">
+          <div class="portfolioBalanceLine coinstatsBalanceLine">
             <div class="portfolioValueBlock">
-              <small>PORTFOLIO VALUE</small>
+              <small>TOTAL WORTH</small>
               <strong id="portfolioTotal">—</strong>
-              <span id="portfolioRangeChange" class="portfolioRangeChange neutral">$0.00 (0.00%) · 1D</span>
+              <span id="portfolioRangeChange" class="portfolioRangeChange neutral">$0.00 (0.00%) · 24H</span>
               <em id="portfolioCoverage">Loading live balances…</em>
             </div>
             <div class="portfolioUpdated"><span class="portfolioLiveDot"></span><span id="portfolioUpdatedAt">Live</span></div>
           </div>
 
-          <div class="portfolioOverviewGrid">
-            <div class="portfolioChartCard">
+          <div class="portfolioOverviewGrid coinstatsOverviewGrid">
+            <div class="portfolioChartCard coinstatsChartCard">
               <div class="portfolioChartHead">
-                <div><b>Wallet value</b><small id="portfolioChartCaption">Real wallet snapshots · 1D</small></div>
-                <button id="portfolioRefreshBtn" type="button">↻ Refresh</button>
+                <div>
+                  <b>Portfolio Value</b>
+                  <small id="portfolioChartCaption">Loading portfolio history…</small>
+                </div>
               </div>
               <div id="portfolioChart" class="portfolioChart"><div class="portfolioChartEmpty">Loading portfolio…</div></div>
-              <div class="portfolioRangeTabs" aria-label="Portfolio chart range">
-                <button type="button" data-portfolio-range="1h">1H</button>
-                <button type="button" class="active" data-portfolio-range="1d">1D</button>
+              <div class="portfolioRangeTabs coinstatsRangeTabs" aria-label="Portfolio chart range">
+                <button type="button" class="active" data-portfolio-range="24h">24H</button>
                 <button type="button" data-portfolio-range="1w">1W</button>
                 <button type="button" data-portfolio-range="1m">1M</button>
+                <button type="button" data-portfolio-range="3m">3M</button>
                 <button type="button" data-portfolio-range="1y">1Y</button>
                 <button type="button" data-portfolio-range="all">All</button>
               </div>
             </div>
-            <div class="portfolioQuickActions">
-              <button id="portfolioSendBtn" type="button"><span>↗</span><b>Send</b><small>Multi-chain</small></button>
-              <button id="portfolioReceiveBtn" type="button"><span>↙</span><b>Receive</b><small>5 networks</small></button>
-              <button id="portfolioSwapBtn" type="button"><span>⇄</span><b>Swap</b><small>Trade</small></button>
-              <button id="portfolioMoreBtn" type="button"><span>•••</span><b>More</b><small>Refresh</small></button>
+
+            <div class="portfolioQuickActions coinstatsQuickActions">
+              <button id="portfolioReceiveBtn" type="button"><span>↙</span><b>Receive</b><small>Wallet address</small></button>
+              <button id="portfolioSwapBtn" type="button"><span>⇄</span><b>Swap</b><small>Best route</small></button>
+              <button id="portfolioSendBtn" type="button"><span>↗</span><b>Send</b><small>Transfer</small></button>
+              <button id="portfolioMoreBtn" type="button"><span>•••</span><b>More</b><small>Sync portfolio</small></button>
             </div>
           </div>
 
-          <div class="portfolioSectionHead"><div><small>ASSETS</small><h2>Top holdings</h2></div><button type="button" data-open-portfolio-tab="tokens">View all</button></div>
-          <div id="portfolioTopTokens" class="portfolioTokenList"><div class="portfolioEmpty">Loading wallet holdings…</div></div>
+          <div class="portfolioSectionHead"><div><small>ASSETS</small><h2>Your assets</h2></div><button type="button" data-open-portfolio-tab="assets">See More Assets</button></div>
+          <div class="portfolioAssetTableWrap">
+            <div class="portfolioTableHead coinstatsAssetColumns dashboardAssetHead">
+              <span>Name</span><span>Amount</span><span>24h Change</span><span>Price</span><span>Total</span><span>Avg Buy</span><span>P/L</span>
+            </div>
+            <div id="portfolioTopTokens" class="portfolioTokenList coinstatsAssetList"><div class="portfolioEmpty">Loading wallet holdings…</div></div>
+          </div>
+
+          <div class="portfolioSectionHead"><div><small>CHARTS</small><h2>Portfolio analytics</h2></div><button type="button" data-open-portfolio-tab="analytics">See More Charts</button></div>
+          <div class="portfolioDashboardCharts">
+            <article class="portfolioMiniAnalytics">
+              <div class="portfolioMiniHead"><b>Asset Allocation</b><span id="portfolioAllocationTotal">—</span></div>
+              <div id="portfolioAllocationBar" class="portfolioAllocationBar"></div>
+              <div id="portfolioAllocationLegend" class="portfolioAllocationLegend"></div>
+            </article>
+            <article class="portfolioMiniAnalytics">
+              <div class="portfolioMiniHead"><b>24H Movers</b><span>Live market</span></div>
+              <div id="portfolioMoversPreview" class="portfolioMovers"></div>
+            </article>
+          </div>
+
+          <div class="portfolioSectionHead"><div><small>NFTs</small><h2>Collectibles</h2></div><span id="portfolioNftCount"></span></div>
+          <div id="portfolioNftPreview" class="portfolioNftGrid portfolioNftPreview"><div class="portfolioEmpty">Loading NFTs…</div></div>
+
+          <div class="portfolioSectionHead"><div><small>TRANSACTIONS</small><h2>Recent activity</h2></div><button type="button" data-open-portfolio-tab="transactions">See More Activity</button></div>
+          <div id="portfolioActivityPreview" class="portfolioActivityList"><div class="portfolioEmpty">Loading activity…</div></div>
         </div>
 
-        <div class="portfolioPanel hidden" data-portfolio-panel="tokens">
-          <div class="portfolioSectionHead"><div><small>WALLET HOLDINGS</small><h2>Tokens</h2></div><span id="portfolioTokenCount">—</span></div>
-          <div class="portfolioTableHead"><span>Asset</span><span>Price</span><span>Balance</span><span>Value</span></div>
-          <div id="portfolioTokens" class="portfolioTokenList"><div class="portfolioEmpty">Loading tokens…</div></div>
+        <!-- ANALYTICS -->
+        <div class="portfolioPanel hidden" data-portfolio-panel="analytics">
+          <div class="portfolioSectionHead portfolioAnalyticsTitle"><div><small>ANALYTICS</small><h2>Portfolio Analytics</h2></div><span>Live + tracked history</span></div>
+
+          <div class="portfolioAnalyticsSummary">
+            <article><small>Portfolio Value</small><strong id="analyticsPortfolioValue">—</strong><span id="analyticsPortfolioChange">—</span></article>
+            <article><small>Tracked P/L</small><strong id="analyticsTrackedPnl">—</strong><span id="analyticsTrackedPnlPct">—</span></article>
+            <article><small>Pricing Coverage</small><strong id="analyticsCoverage">—</strong><span>Priced holdings</span></article>
+            <article><small>Health Score</small><strong id="analyticsHealth">—</strong><span id="analyticsHealthText">Building</span></article>
+          </div>
+
+          <div class="portfolioAnalyticsGrid">
+            <article class="portfolioAnalyticsCard">
+              <div class="portfolioMiniHead"><div><small>ASSET ALLOCATIONS</small><b>Coin Allocation</b></div><span id="analyticsAllocationTotal">—</span></div>
+              <div class="portfolioAllocationDonutWrap">
+                <div id="portfolioAllocationDonut" class="portfolioAllocationDonut"><span>—</span></div>
+                <div id="portfolioAllocationLegendFull" class="portfolioAllocationLegend full"></div>
+              </div>
+            </article>
+            <article class="portfolioAnalyticsCard">
+              <div class="portfolioMiniHead"><div><small>PORTFOLIO PERFORMANCE</small><b>Top / Bottom Assets</b></div><span>24H</span></div>
+              <div id="portfolioAnalyticsMovers" class="portfolioMovers large"></div>
+            </article>
+          </div>
+
+          <article class="portfolioAnalyticsCard portfolioPerformanceCard">
+            <div class="portfolioMiniHead"><div><small>PROFIT & LOSS</small><b>Cumulative tracked P/L</b></div><span id="portfolioTrackedSince">Tracking history</span></div>
+            <div id="portfolioPnlChart" class="portfolioPnlChart"></div>
+            <p class="portfolioAnalyticsNote">The Trenches never guesses a historical cost basis. Realized / unrealized P&amp;L and Avg Buy remain unavailable until enough verifiable trade history exists.</p>
+          </article>
         </div>
 
-        <div class="portfolioPanel hidden" data-portfolio-panel="nfts">
-          <div class="portfolioSectionHead"><div><small>COLLECTIBLES</small><h2>NFTs</h2></div><span>Wallet owned</span></div>
-          <div id="portfolioNfts" class="portfolioNftGrid"><div class="portfolioEmpty">Loading NFTs…</div></div>
+        <!-- ASSETS -->
+        <div class="portfolioPanel hidden" data-portfolio-panel="assets">
+          <div class="portfolioSectionHead"><div><small>ASSETS</small><h2>All Assets</h2></div><span id="portfolioTokenCount">—</span></div>
+          <div class="portfolioAssetsToolbar">
+            <label>⌕ <input id="portfolioAssetSearch" type="search" placeholder="Search assets" /></label>
+            <button id="portfolioHideSmall" type="button">Hide small balances</button>
+          </div>
+          <div class="portfolioAssetTableWrap">
+            <div class="portfolioTableHead coinstatsAssetColumns">
+              <span>Name</span><span>Amount</span><span>24h Change</span><span>Price</span><span>Total</span><span>Avg Buy</span><span>P/L</span>
+            </div>
+            <div id="portfolioTokens" class="portfolioTokenList coinstatsAssetList"><div class="portfolioEmpty">Loading tokens…</div></div>
+          </div>
+          <p class="portfolioAssetsDisclosure">Avg Buy and all-time P/L are shown only when The Trenches can verify transaction cost basis. Unknown values stay blank rather than being estimated.</p>
         </div>
 
-        <div class="portfolioPanel hidden" data-portfolio-panel="activity">
-          <div class="portfolioSectionHead"><div><small>ON-CHAIN</small><h2>Recent activity</h2></div><span>Solana</span></div>
-          <div id="portfolioActivity" class="portfolioActivityList"><div class="portfolioEmpty">Loading activity…</div></div>
+        <!-- DEFI -->
+        <div class="portfolioPanel hidden" data-portfolio-panel="defi">
+          <div class="portfolioSectionHead"><div><small>DEFI</small><h2>DeFi Positions</h2></div><span>Solana</span></div>
+          <div class="portfolioDefiEmpty">
+            <span>⌁</span>
+            <b>No verified DeFi positions yet.</b>
+            <p>CoinStats automatically groups lending, staking, farming, liquidity and rewards. The Trenches will use the same model once a reliable Solana DeFi position provider is connected — we will not invent positions from token balances.</p>
+          </div>
+        </div>
+
+        <!-- TRANSACTIONS -->
+        <div class="portfolioPanel hidden" data-portfolio-panel="transactions">
+          <div class="portfolioSectionHead"><div><small>TRANSACTIONS</small><h2>Wallet Activity</h2></div><span>Newest first</span></div>
+          <div class="portfolioTransactionHead"><span>Type</span><span>Transaction</span><span>Date</span></div>
+          <div id="portfolioActivity" class="portfolioActivityList coinstatsTransactions"><div class="portfolioEmpty">Loading activity…</div></div>
         </div>
       </div>
     </section>
@@ -1242,75 +1335,66 @@ let cryptoNewsArticles=[],cryptoNewsPage=0;function renderCryptoNewsPage(){const
 async function loadCommunityFeed(){const el=$('saltCommunityFeed');if(!el)return;try{const j=await socialApi('/api/social-community-feed');const rows=j.reviews||[];el.innerHTML=rows.length?rows.map(r=>feedPostCard(r,'feed')).join(''):'<div class="socialTimelineEmpty"><b>Your Trenches feed is ready.</b><span>Community ratings and theses will appear here as Trenches profiles post them.</span></div>';bindSocialPostCards(el)}catch(e){el.innerHTML=`<div class="socialTimelineEmpty"><b>Feed unavailable.</b><span>${socialEsc(readableError(e))}</span></div>`}}
 async function submitFeedThesis(e){e.preventDefault();try{if(!saltProfile)throw new Error('Connect your Trenches profile first.');const token=$('feedTokenInput').value.trim(),rating=Number($('feedRating').value),text=$('feedThesisText').value.trim(),link=$('feedThesisLink').value.trim();if(!token)throw new Error('Paste a Solana token contract address first.');if(text.length<5)throw new Error('Write at least a few words for your thesis.');const chain='solana',signer=await ensureSocialAuthSession(),btn=e.target.querySelector('button[type=submit]');btn.disabled=true;btn.textContent='Posting…';await socialApi('/api/social-reviews',{method:'POST',body:JSON.stringify({wallet:signer.wallet,chain,token,rating,text,link})});$('feedThesisText').value='';$('feedThesisLink').value='';btn.disabled=false;btn.textContent='Post Thesis';await loadCommunityFeed();await loadProfileTheses()}catch(err){const btn=e.target.querySelector('button[type=submit]');if(btn){btn.disabled=false;btn.textContent='Post Thesis'}alert(readableError(err))}}
 
-let portfolioState={wallet:'',data:null,nfts:[],tab:'overview',loading:false,range:'1d',history:[],valueKnown:false,emptyWallet:false};
+
+let portfolioState={
+  wallet:'',data:null,nfts:[],tab:'dashboard',loading:false,range:'24h',
+  history:[],serverHistory:[],valueKnown:false,emptyWallet:false,
+  hideSmall:false,assetSearch:'',timeMachineDate:''
+};
 let portfolioTrackerTimer=null,portfolioTrackerBusy=false;
+
 function portfolioWalletAddress(){let a='';const p=getRememberedSocialProfile?.();if(p?.wallet)a=p.wallet;if(!a&&scanSocialWallet)a=scanSocialWallet;if(!a&&walletKind==='solana'&&walletAddress)a=walletAddress;if(!a){try{a=localStorage.getItem('salt:lastSolanaWallet')||''}catch{}}return String(a||'')}
 function portfolioUsd(v){v=Number(v);if(!Number.isFinite(v))return '—';return '$'+v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:v>=1000?2:v>=1?2:6})}
-function portfolioTokenPrice(v){v=Number(v);if(!Number.isFinite(v)||v<=0)return '—';if(v>=1)return '$'+v.toLocaleString(undefined,{maximumFractionDigits:4});if(v>=.01)return '$'+v.toFixed(4);return '$'+v.toPrecision(4)}
+function portfolioSignedUsd(v){v=Number(v);if(!Number.isFinite(v))return '—';return `${v>0?'+':v<0?'−':''}${portfolioUsd(Math.abs(v))}`}
+function portfolioTokenPrice(v){v=Number(v);if(!Number.isFinite(v)||v<=0)return '—';if(v>=1000)return '$'+v.toLocaleString(undefined,{maximumFractionDigits:2});if(v>=1)return '$'+v.toLocaleString(undefined,{maximumFractionDigits:4});if(v>=.01)return '$'+v.toFixed(4);return '$'+v.toPrecision(4)}
+function portfolioPct(v){v=Number(v);if(!Number.isFinite(v))return '—';return `${v>0?'+':''}${v.toFixed(2)}%`}
 function portfolioHistoryKey(wallet){return `trenches:portfolio:history:${wallet}`}
+
 function recordPortfolioHistory(wallet,value){
-  value=Number(value);
-  if(!wallet||!Number.isFinite(value)||value<0)return[];
-  let rows=[];
-  try{rows=JSON.parse(localStorage.getItem(portfolioHistoryKey(wallet))||'[]')}catch{}
+  value=Number(value);if(!wallet||!Number.isFinite(value)||value<0)return[];
+  let rows=[];try{rows=JSON.parse(localStorage.getItem(portfolioHistoryKey(wallet))||'[]')}catch{}
   rows=Array.isArray(rows)?rows.filter(x=>Number.isFinite(Number(x?.t))&&Number.isFinite(Number(x?.v))).sort((a,b)=>Number(a.t)-Number(b.t)):[];
-  const now=Date.now(),last=rows[rows.length-1],lastValue=Number(last?.v),lastTime=Number(last?.t||0);
-  // Keep tiny changes. The old tracker replaced the last point for five minutes,
-  // which made small moves disappear and produced long flat lines.
-  const epsilon=Math.max(0.00000001,Math.abs(value)*0.000000001);
+  const now=Date.now(),last=rows[rows.length-1],lastValue=Number(last?.v),lastTime=Number(last?.t||0),epsilon=Math.max(.00000001,Math.abs(value)*.000000001);
   const moved=!last||Math.abs(value-lastValue)>epsilon;
   if(!last)rows.push({t:now,v:value});
-  else if(moved){
-    // A real value change always becomes its own point.
-    if(now-lastTime<1000)rows[rows.length-1]={t:now,v:value};
-    else rows.push({t:now,v:value})
-  }else if(now-lastTime>=2*60*1000){
-    // Add an occasional heartbeat so a genuinely flat wallet still advances in time.
-    rows.push({t:now,v:value})
-  }
-  // Enough high-resolution history for a full week at ~30-second live tracking.
-  // Older history naturally remains until this generous cap is reached.
-  rows=rows.slice(-22000);
-  try{localStorage.setItem(portfolioHistoryKey(wallet),JSON.stringify(rows))}catch{}
-  return rows
+  else if(moved){if(now-lastTime<1000)rows[rows.length-1]={t:now,v:value};else rows.push({t:now,v:value})}
+  else if(now-lastTime>=2*60*1000)rows.push({t:now,v:value});
+  rows=rows.slice(-22000);try{localStorage.setItem(portfolioHistoryKey(wallet),JSON.stringify(rows))}catch{}return rows
 }
 function getPortfolioHistory(wallet){try{const rows=JSON.parse(localStorage.getItem(portfolioHistoryKey(wallet))||'[]');return Array.isArray(rows)?rows:[]}catch{return[]}}
-function portfolioRangeMs(range){
-  return { '1h':60*60*1000,'1d':24*60*60*1000,'1w':7*24*60*60*1000,'1m':30*24*60*60*1000,'1y':365*24*60*60*1000 }[range]||null
+function mergePortfolioHistory(...groups){
+  const map=new Map();
+  for(const rows of groups)for(const x of (Array.isArray(rows)?rows:[])){
+    const t=Number(x?.t),v=Number(x?.v);if(!Number.isFinite(t)||!Number.isFinite(v))continue;
+    map.set(Math.round(t/1000)*1000,{t,v})
+  }
+  return [...map.values()].sort((a,b)=>a.t-b.t)
 }
-function portfolioRangeLabel(range){return ({'1h':'1H','1d':'1D','1w':'1W','1m':'1M','1y':'1Y','all':'ALL'})[range]||'1D'}
+function portfolioRangeMs(range){
+  return {'24h':24*60*60*1000,'1w':7*24*60*60*1000,'1m':30*24*60*60*1000,'3m':90*24*60*60*1000,'1y':365*24*60*60*1000}[range]||null
+}
+function portfolioRangeLabel(range){return ({'24h':'24H','1w':'1W','1m':'1M','3m':'3M','1y':'1Y','all':'ALL'})[range]||'24H'}
 function portfolioRangeRows(history,range){
-  const rows=(history||[]).filter(x=>Number.isFinite(Number(x?.t))&&Number.isFinite(Number(x?.v))).sort((a,b)=>Number(a.t)-Number(b.t));
-  const ms=portfolioRangeMs(range);
-  if(!ms||!rows.length)return rows;
-  const cutoff=Date.now()-ms;
-  return rows.filter(x=>Number(x.t)>=cutoff)
+  const rows=(history||[]).filter(x=>Number.isFinite(Number(x?.t))&&Number.isFinite(Number(x?.v))).sort((a,b)=>Number(a.t)-Number(b.t)),ms=portfolioRangeMs(range);
+  if(!ms||!rows.length)return rows;const cutoff=Date.now()-ms;return rows.filter(x=>Number(x.t)>=cutoff)
 }
 function portfolioAxisWindow(rows,range){
-  const now=Date.now(),ms=portfolioRangeMs(range);
-  if(ms)return [now-ms,now];
-  if(rows.length>1)return [Number(rows[0].t),Number(rows[rows.length-1].t)];
-  return [now-24*60*60*1000,now]
+  const now=Date.now(),ms=portfolioRangeMs(range);if(ms)return[now-ms,now];
+  if(rows.length>1)return[Number(rows[0].t),Number(rows[rows.length-1].t)];return[now-24*60*60*1000,now]
 }
 function portfolioAxisLabel(ts,range,span){
   const d=new Date(ts);
-  if(range==='1h')return d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
-  if(range==='1d')return d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
-  if(range==='1w')return d.toLocaleDateString([],{weekday:'short',day:'numeric'});
-  if(range==='1m')return d.toLocaleDateString([],{month:'short',day:'numeric'});
+  if(range==='24h')return d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+  if(range==='1w')return d.toLocaleDateString([],{weekday:'short'});
+  if(range==='1m'||range==='3m')return d.toLocaleDateString([],{month:'short',day:'numeric'});
   if(range==='1y')return d.toLocaleDateString([],{month:'short'});
-  if(span<=2*24*60*60*1000)return d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
   if(span<=45*24*60*60*1000)return d.toLocaleDateString([],{month:'short',day:'numeric'});
   return d.toLocaleDateString([],{month:'short',year:'2-digit'})
 }
 function portfolioRangeChange(history,range,emptyWallet=false){
   const el=$('portfolioRangeChange');if(!el)return;
-  let rows=portfolioRangeRows(history,range);
-  if(emptyWallet||!rows.length){
-    el.className='portfolioRangeChange neutral';
-    el.textContent=`$0.00 (0.00%) · ${portfolioRangeLabel(range)}`;
-    return
-  }
+  const rows=portfolioRangeRows(history,range);
+  if(emptyWallet||!rows.length){el.className='portfolioRangeChange neutral';el.textContent=`$0.00 (0.00%) · ${portfolioRangeLabel(range)}`;return}
   const first=Number(rows[0].v),last=Number(rows[rows.length-1].v),delta=last-first,pct=first>0?(delta/first)*100:0;
   const sign=delta>0?'+':delta<0?'−':'';
   el.className='portfolioRangeChange '+(delta>0?'up':delta<0?'down':'neutral');
@@ -1318,143 +1402,166 @@ function portfolioRangeChange(history,range,emptyWallet=false){
 }
 function renderPortfolioChart(history,valueKnown,emptyWallet=false){
   const el=$('portfolioChart');if(!el)return;
-  const range=portfolioState.range||'1d';
+  const range=portfolioState.range||'24h';
   document.querySelectorAll('[data-portfolio-range]').forEach(b=>b.classList.toggle('active',b.dataset.portfolioRange===range));
   portfolioRangeChange(history,range,emptyWallet);
-
-  let all=(history||[]).filter(x=>Number.isFinite(Number(x?.t))&&Number.isFinite(Number(x?.v))).sort((a,b)=>Number(a.t)-Number(b.t));
-  let rows=portfolioRangeRows(all,range);
-  const [axisStart,axisEnd]=portfolioAxisWindow(rows,range);
-  const axisSpan=Math.max(1,axisEnd-axisStart);
-
-  if(!valueKnown&&!emptyWallet){
-    el.innerHTML='<div class="portfolioChartEmpty"><b>Wallet connected.</b><span>Live balances loaded, but USD pricing is unavailable for these assets.</span></div>';
-    return
-  }
-
-  const w=820,h=260,left=10,right=54,top=18,bottom=42,plotBottom=h-bottom,plotRight=w-right;
+  let rows=portfolioRangeRows(history,range);
+  const [axisStart,axisEnd]=portfolioAxisWindow(rows,range),axisSpan=Math.max(1,axisEnd-axisStart);
+  if(!valueKnown&&!emptyWallet){el.innerHTML='<div class="portfolioChartEmpty"><b>Wallet connected.</b><span>Live balances loaded, but USD pricing is unavailable for these assets.</span></div>';return}
+  const w=900,h=290,left=14,right=66,top=18,bottom=46,plotBottom=h-bottom,plotRight=w-right;
   let zeroMode=emptyWallet||(!rows.length&&valueKnown);
-  if(zeroMode){
-    rows=[{t:axisStart,v:0},{t:axisEnd,v:0}]
-  }else if(rows.length===1){
-    rows=[{t:axisStart,v:Number(rows[0].v)},rows[0]]
-  }
-
-  const vals=rows.map(x=>Number(x.v));
-  const mn=Math.min(...vals),mx=Math.max(...vals),actualSpread=Math.max(0,mx-mn);
-  // Dynamic "micro movement" scaling: never force a 1-cent / 0.8% minimum range.
-  // If the wallet moved by only fractions of a cent, use that real movement as
-  // the chart range so it is still visually readable.
-  const center=(mn+mx)/2;
-  const flatFloor=Math.max(0.0000001,Math.abs(center)*0.00002);
-  const visualSpread=zeroMode?1:(actualSpread>0?actualSpread:flatFloor);
-  const pad=visualSpread*.22;
-  const lo=zeroMode?-0.5:(mn-pad),hi=zeroMode?0.5:(mx+pad);
-
-  const pts=rows.map(x=>{
-    const t=Math.max(axisStart,Math.min(axisEnd,Number(x.t)));
-    const xx=left+(plotRight-left)*((t-axisStart)/axisSpan);
-    const yy=top+(plotBottom-top)*(1-(Number(x.v)-lo)/(hi-lo));
-    return [xx,yy]
-  });
-  const line=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
-  const area=line+` L ${pts[pts.length-1][0].toFixed(1)} ${plotBottom} L ${pts[0][0].toFixed(1)} ${plotBottom} Z`;
-
-  const xCount=6;
-  const xLabels=Array.from({length:xCount},(_,i)=>{
-    const t=axisStart+(axisSpan*i/(xCount-1));
-    const x=left+(plotRight-left)*(i/(xCount-1));
-    const anchor=i===0?'start':i===xCount-1?'end':'middle';
-    return `<text x="${x.toFixed(1)}" y="${h-9}" text-anchor="${anchor}" class="portfolioAxisText">${socialEsc(portfolioAxisLabel(t,range,axisSpan))}</text>`
-  }).join('');
-
-  let grid='';
-  for(let i=0;i<4;i++){
-    const y=top+(plotBottom-top)*(i/3);
-    grid+=`<line x1="${left}" x2="${plotRight}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}"/>`
-  }
-  for(let i=0;i<8;i++){
-    const x=left+(plotRight-left)*(i/7);
-    grid+=`<line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${top}" y2="${plotBottom}"/>`
-  }
-
-  const lastVal=Number(rows[rows.length-1].v);
-  const movementSpan=Math.max(0,mx-mn);
-  const yLabel=zeroMode?'$0':('$'+lastVal.toLocaleString(undefined,{
-    minimumFractionDigits:2,
-    maximumFractionDigits:movementSpan>0&&movementSpan<0.01?6:lastVal<10?4:2
-  }));
-  const last=pts[pts.length-1];
-
+  if(zeroMode)rows=[{t:axisStart,v:0},{t:axisEnd,v:0}];
+  else if(rows.length===1)rows=[{t:axisStart,v:Number(rows[0].v)},rows[0]];
+  const vals=rows.map(x=>Number(x.v)),mn=Math.min(...vals),mx=Math.max(...vals),actualSpread=Math.max(0,mx-mn),center=(mn+mx)/2,flatFloor=Math.max(.0000001,Math.abs(center)*.00002),visualSpread=zeroMode?1:(actualSpread>0?actualSpread:flatFloor),pad=visualSpread*.22,lo=zeroMode?-.5:mn-pad,hi=zeroMode?.5:mx+pad;
+  const pts=rows.map(x=>{const t=Math.max(axisStart,Math.min(axisEnd,Number(x.t))),xx=left+(plotRight-left)*((t-axisStart)/axisSpan),yy=top+(plotBottom-top)*(1-(Number(x.v)-lo)/(hi-lo));return[xx,yy]});
+  const line=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' '),area=line+` L ${pts[pts.length-1][0].toFixed(1)} ${plotBottom} L ${pts[0][0].toFixed(1)} ${plotBottom} Z`;
+  const xCount=6,xLabels=Array.from({length:xCount},(_,i)=>{const t=axisStart+(axisSpan*i/(xCount-1)),x=left+(plotRight-left)*(i/(xCount-1)),anchor=i===0?'start':i===xCount-1?'end':'middle';return`<text x="${x.toFixed(1)}" y="${h-9}" text-anchor="${anchor}" class="portfolioAxisText">${socialEsc(portfolioAxisLabel(t,range,axisSpan))}</text>`}).join('');
+  let grid='';for(let i=0;i<4;i++){const y=top+(plotBottom-top)*(i/3);grid+=`<line x1="${left}" x2="${plotRight}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}"/>`}for(let i=0;i<8;i++){const x=left+(plotRight-left)*(i/7);grid+=`<line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${top}" y2="${plotBottom}"/>`}
+  const lastVal=Number(rows[rows.length-1].v),movementSpan=Math.max(0,mx-mn),yLabel=zeroMode?'$0':('$'+lastVal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:movementSpan>0&&movementSpan<.01?6:lastVal<10?4:2})),last=pts[pts.length-1];
   el.innerHTML=`<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Portfolio value ${portfolioRangeLabel(range)} chart">
-    <defs><linearGradient id="portfolioArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4e8a5b" stop-opacity=".22"/><stop offset="1" stop-color="#4e8a5b" stop-opacity="0"/></linearGradient></defs>
-    <g class="portfolioChartGrid">${grid}</g>
-    ${zeroMode?'':`<path d="${area}" fill="url(#portfolioArea)"/>`}
+    <defs><linearGradient id="portfolioArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4e8a5b" stop-opacity=".28"/><stop offset="1" stop-color="#4e8a5b" stop-opacity="0"/></linearGradient></defs>
+    <g class="portfolioChartGrid">${grid}</g>${zeroMode?'':`<path d="${area}" fill="url(#portfolioArea)"/>`}
     <path class="portfolioValueLine" d="${line}" fill="none" stroke="#4e8a5b" stroke-width="${zeroMode?2.5:3.25}" stroke-linecap="round" stroke-linejoin="round"/>
-    <circle class="portfolioPulseRing" cx="${last[0]}" cy="${last[1]}" r="${zeroMode?5:7}"/>
-    <circle class="portfolioLastDot" cx="${last[0]}" cy="${last[1]}" r="${zeroMode?3:4.5}" fill="#4e8a5b"/>
-    <text x="${w-6}" y="${last[1]+4}" text-anchor="end" class="portfolioValueAxis">${socialEsc(yLabel)}</text>
-    ${xLabels}
-  </svg>`
+    <line id="portfolioHoverLine" class="portfolioHoverLine" x1="0" x2="0" y1="${top}" y2="${plotBottom}" visibility="hidden"/>
+    <circle id="portfolioHoverDot" class="portfolioHoverDot" cx="0" cy="0" r="5" visibility="hidden"/>
+    <circle class="portfolioPulseRing" cx="${last[0]}" cy="${last[1]}" r="${zeroMode?5:7}"/><circle class="portfolioLastDot" cx="${last[0]}" cy="${last[1]}" r="${zeroMode?3:4.5}" fill="#4e8a5b"/>
+    <text x="${w-6}" y="${last[1]+4}" text-anchor="end" class="portfolioValueAxis">${socialEsc(yLabel)}</text>${xLabels}
+  </svg><div id="portfolioChartTooltip" class="portfolioChartTooltip hidden"></div>`;
+  const tip=$('portfolioChartTooltip'),hoverLine=$('portfolioHoverLine'),hoverDot=$('portfolioHoverDot');
+  const hide=()=>{tip?.classList.add('hidden');hoverLine?.setAttribute('visibility','hidden');hoverDot?.setAttribute('visibility','hidden')};
+  el.onpointerleave=hide;
+  el.onpointermove=e=>{
+    if(!rows.length||zeroMode)return;
+    const rect=el.getBoundingClientRect(),pct=Math.max(0,Math.min(1,(e.clientX-rect.left)/Math.max(1,rect.width))),target=axisStart+pct*axisSpan;
+    let best=0,dist=Infinity;for(let i=0;i<rows.length;i++){const d=Math.abs(Number(rows[i].t)-target);if(d<dist){dist=d;best=i}}
+    const row=rows[best],p=pts[best];if(!p)return;
+    hoverLine?.setAttribute('x1',p[0]);hoverLine?.setAttribute('x2',p[0]);hoverLine?.setAttribute('visibility','visible');hoverDot?.setAttribute('cx',p[0]);hoverDot?.setAttribute('cy',p[1]);hoverDot?.setAttribute('visibility','visible');
+    if(tip){tip.innerHTML=`<b>${portfolioUsd(row.v)}</b><span>${new Date(row.t).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</span>`;tip.classList.remove('hidden');tip.style.left=`${Math.max(8,Math.min(rect.width-132,(p[0]/w)*rect.width-55))}px`;tip.style.top=`${Math.max(36,(p[1]/h)*rect.height-62)}px`}
+  };
+  renderPortfolioPnlChart(rows)
 }
-function portfolioAssetRow(a){const value=Number(a.valueUsd),price=Number(a.priceUsd),img=holdingIconMarkup(a);return `<button class="portfolioTokenRow" type="button" data-portfolio-mint="${socialEsc(a.mint||'')}"><div class="portfolioAssetIdentity"><div class="portfolioAssetIcon">${img}</div><div><b>${socialEsc(a.symbol||'TOKEN')}</b><small>${socialEsc(a.name||'Token')}</small></div></div><div class="portfolioPrice">${portfolioTokenPrice(price)}</div><div class="portfolioBalance"><b>${socialEsc(a.displayBalance||String(a.balance||'—'))}</b><small>${socialEsc(a.symbol||'')}</small></div><div class="portfolioValue"><b>${Number.isFinite(value)?portfolioUsd(value):'—'}</b><small>${Number.isFinite(value)?'Live value':'Price unavailable'}</small></div></button>`}
-function renderPortfolioTokens(items){items=Array.isArray(items)?items:[];const all=$('portfolioTokens'),top=$('portfolioTopTokens'),count=$('portfolioTokenCount');if(count)count.textContent=`${items.length} asset${items.length===1?'':'s'}`;const empty='<div class="portfolioEmpty"><b>No fungible assets found.</b><span>This wallet has no token balances Helius could return.</span></div>';if(all)all.innerHTML=items.length?items.map(portfolioAssetRow).join(''):empty;if(top)top.innerHTML=items.length?items.slice(0,5).map(portfolioAssetRow).join(''):empty;document.querySelectorAll('[data-portfolio-mint]').forEach(b=>b.addEventListener('click',()=>{const mint=b.dataset.portfolioMint;if(!mint||mint==='SOL')return;$('mintInput').value=mint;if($('chainSelect'))$('chainSelect').value='solana';$('swapNavBtn')?.click();scan()}))}
-function renderPortfolioNfts(items){items=Array.isArray(items)?items:[];portfolioState.nfts=items;const el=$('portfolioNfts'),count=$('portfolioNftCount');if(count)count.textContent=items.length?String(items.length):'';if(!el)return;el.innerHTML=items.length?items.map(n=>`<article class="portfolioNft"><div>${n.image?`<img src="${socialEsc(n.image)}" alt="${socialEsc(n.name||'NFT')}" loading="lazy">`:''}</div><b>${socialEsc(n.name||'NFT')}</b><small>${socialEsc(n.collection||'Wallet NFT')}</small></article>`).join(''):'<div class="portfolioEmpty"><b>No NFTs found.</b><span>Wallet-owned NFTs will appear here.</span></div>'}
+function renderPortfolioPnlChart(rows){
+  const el=$('portfolioPnlChart');if(!el)return;rows=Array.isArray(rows)?rows:[];if(rows.length<2){el.innerHTML='<div class="portfolioEmpty">Tracked P/L appears after portfolio history builds.</div>';return}
+  const base=Number(rows[0].v),pnl=rows.map(x=>({t:Number(x.t),v:Number(x.v)-base})),min=Math.min(...pnl.map(x=>x.v)),max=Math.max(...pnl.map(x=>x.v)),span=Math.max(.000001,max-min),w=820,h=180,pad=18;
+  const pts=pnl.map((x,i)=>[pad+(w-pad*2)*(i/Math.max(1,pnl.length-1)),pad+(h-pad*2)*(1-(x.v-min)/span)]),path=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  el.innerHTML=`<svg viewBox="0 0 ${w} ${h}"><line x1="${pad}" x2="${w-pad}" y1="${pad+(h-pad*2)*(1-(0-min)/span)}" y2="${pad+(h-pad*2)*(1-(0-min)/span)}" class="pnlZero"/><path d="${path}" fill="none" class="${pnl[pnl.length-1].v>=0?'positive':'negative'}"/></svg>`
+}
+function portfolioTokenChangeClass(v){v=Number(v);return Number.isFinite(v)?(v>0?'up':v<0?'down':'neutral'):'neutral'}
+function portfolioAssetTableRow(a){
+  const value=Number(a.valueUsd),price=Number(a.priceUsd),change=Number(a.change24h),avg=Number(a.avgBuyUsd),pnl=Number(a.pnlUsd),img=holdingIconMarkup(a);
+  return `<button class="portfolioTokenRow coinstatsAssetRow" type="button" data-portfolio-mint="${socialEsc(a.mint||'')}">
+    <div class="portfolioAssetIdentity"><div class="portfolioAssetIcon">${img}</div><div><b>${socialEsc(a.name||a.symbol||'Token')}</b><small>${socialEsc(a.symbol||'TOKEN')}</small></div></div>
+    <div class="portfolioAmount"><b>${socialEsc(a.displayBalance||String(a.balance||'—'))}</b><small>${socialEsc(a.symbol||'')}</small></div>
+    <div class="portfolioChange ${portfolioTokenChangeClass(change)}">${Number.isFinite(change)?portfolioPct(change):'—'}</div>
+    <div class="portfolioPrice">${portfolioTokenPrice(price)}</div>
+    <div class="portfolioValue"><b>${Number.isFinite(value)?portfolioUsd(value):'—'}</b><small>${Number.isFinite(value)&&portfolioState.data?.totalUsd>0?`${(value/portfolioState.data.totalUsd*100).toFixed(1)}%`:'—'}</small></div>
+    <div class="portfolioAvgBuy">${Number.isFinite(avg)?portfolioTokenPrice(avg):'—'}</div>
+    <div class="portfolioPnl ${portfolioTokenChangeClass(pnl)}">${Number.isFinite(pnl)?portfolioSignedUsd(pnl):'—'}</div>
+  </button>`
+}
+function portfolioMatchesAsset(a){
+  const q=portfolioState.assetSearch.toLowerCase().trim();if(q&&!`${a.name||''} ${a.symbol||''} ${a.mint||''}`.toLowerCase().includes(q))return false;
+  if(portfolioState.hideSmall&&Number(a.valueUsd||0)<1)return false;return true
+}
+function bindPortfolioAssetClicks(){
+  document.querySelectorAll('[data-portfolio-mint]').forEach(b=>b.addEventListener('click',()=>{const mint=b.dataset.portfolioMint;if(!mint||mint==='SOL')return;$('mintInput').value=mint;if($('chainSelect'))$('chainSelect').value='solana';$('swapNavBtn')?.click();scan()}))
+}
+function renderPortfolioTokens(items){
+  items=Array.isArray(items)?items:[];const all=$('portfolioTokens'),top=$('portfolioTopTokens'),count=$('portfolioTokenCount');
+  if(count)count.textContent=`${items.length} asset${items.length===1?'':'s'}`;
+  const empty='<div class="portfolioEmpty"><b>No fungible assets found.</b><span>This wallet has no token balances Helius could return.</span></div>';
+  if(all){const filtered=items.filter(portfolioMatchesAsset);all.innerHTML=filtered.length?filtered.map(portfolioAssetTableRow).join(''):'<div class="portfolioEmpty"><b>No matching assets.</b><span>Change your search or small-balance filter.</span></div>'}
+  if(top)top.innerHTML=items.length?items.slice(0,8).map(portfolioAssetTableRow).join(''):empty;
+  bindPortfolioAssetClicks()
+}
+function renderPortfolioNfts(items){
+  items=Array.isArray(items)?items:[];portfolioState.nfts=items;const count=$('portfolioNftCount'),preview=$('portfolioNftPreview');if(count)count.textContent=items.length?`${items.length} NFT${items.length===1?'':'s'}`:'0 NFTs';
+  const markup=items.length?items.slice(0,6).map(n=>`<article class="portfolioNft"><div>${n.image?`<img src="${socialEsc(n.image)}" alt="${socialEsc(n.name||'NFT')}" loading="lazy">`:''}</div><b>${socialEsc(n.name||'NFT')}</b><small>${socialEsc(n.collection||'Wallet NFT')}</small></article>`).join(''):'<div class="portfolioEmpty"><b>No NFTs found.</b><span>Wallet-owned NFTs will appear here.</span></div>';
+  if(preview)preview.innerHTML=markup
+}
 function portfolioActivityTitle(a){const t=String(a?.type||'Transaction').replaceAll('_',' ').toLowerCase();return t.replace(/\b\w/g,c=>c.toUpperCase())}
-function renderPortfolioActivity(rows){const el=$('portfolioActivity');if(!el)return;rows=Array.isArray(rows)?rows:[];el.innerHTML=rows.length?rows.map(a=>{const when=a.timestamp?new Date(Number(a.timestamp)*1000).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'Recent',sig=String(a.signature||''),href=sig?`https://solscan.io/tx/${encodeURIComponent(sig)}`:'#';return `<a class="portfolioActivityRow" href="${href}" ${sig?'target="_blank" rel="noopener noreferrer"':''}><span class="portfolioActivityIcon">↗</span><div><b>${socialEsc(portfolioActivityTitle(a))}</b><small>${socialEsc(a.description||'Solana wallet activity')}</small></div><time>${socialEsc(when)}</time></a>`}).join(''):'<div class="portfolioEmpty"><b>No recent activity returned.</b><span>Recent Solana transactions will appear here.</span></div>'}
-function showPortfolioTab(tab='overview'){const allowed=['overview','tokens','nfts','activity'];if(!allowed.includes(tab))tab='overview';portfolioState.tab=tab;document.querySelectorAll('[data-portfolio-tab]').forEach(b=>b.classList.toggle('active',b.dataset.portfolioTab===tab));document.querySelectorAll('[data-portfolio-panel]').forEach(p=>p.classList.toggle('hidden',p.dataset.portfolioPanel!==tab))}
-
+function portfolioActivityMarkup(rows,limit=0){
+  rows=Array.isArray(rows)?rows:[];if(limit)rows=rows.slice(0,limit);
+  return rows.length?rows.map(a=>{const when=a.timestamp?new Date(Number(a.timestamp)*1000).toLocaleString([], {month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}):'Recent',sig=String(a.signature||''),href=sig?`https://solscan.io/tx/${encodeURIComponent(sig)}`:'#';return `<a class="portfolioActivityRow coinstatsTransactionRow" href="${href}" ${sig?'target="_blank" rel="noopener noreferrer"':''}><span class="portfolioActivityIcon">${String(a.type||'').toUpperCase().includes('SWAP')?'⇄':'↗'}</span><div><b>${socialEsc(portfolioActivityTitle(a))}</b><small>${socialEsc(a.description||'Solana wallet activity')}</small></div><time>${socialEsc(when)}</time></a>`}).join(''):'<div class="portfolioEmpty"><b>No recent activity returned.</b><span>Recent Solana transactions will appear here.</span></div>'
+}
+function renderPortfolioActivity(rows){const el=$('portfolioActivity'),preview=$('portfolioActivityPreview');if(el)el.innerHTML=portfolioActivityMarkup(rows);if(preview)preview.innerHTML=portfolioActivityMarkup(rows,5)}
+function portfolioAllocation(items){
+  const priced=(items||[]).filter(x=>Number.isFinite(Number(x.valueUsd))&&Number(x.valueUsd)>0),total=priced.reduce((s,x)=>s+Number(x.valueUsd),0);
+  return{total,rows:priced.map(x=>({...x,pct:total?Number(x.valueUsd)/total*100:0})).sort((a,b)=>b.pct-a.pct)}
+}
+function renderPortfolioAllocation(items){
+  const {total,rows}=portfolioAllocation(items),bar=$('portfolioAllocationBar'),legend=$('portfolioAllocationLegend'),full=$('portfolioAllocationLegendFull'),donut=$('portfolioAllocationDonut');
+  if($('portfolioAllocationTotal'))$('portfolioAllocationTotal').textContent=portfolioUsd(total);if($('analyticsAllocationTotal'))$('analyticsAllocationTotal').textContent=portfolioUsd(total);
+  const palette=['#6bd69a','#9fcf74','#d9c46b','#7ab8c9','#9b8dc5','#d28c79','#708d80','#b5a27b'];
+  const top=rows.slice(0,7),other=rows.slice(7).reduce((s,x)=>s+x.pct,0),segments=[...top.map((x,i)=>({...x,color:palette[i%palette.length]})),...(other>0?[{name:'Other',symbol:'Other',pct:other,color:'#79857d'}]:[])];
+  if(bar)bar.innerHTML=segments.length?segments.map(x=>`<span style="width:${Math.max(.3,x.pct)}%;background:${x.color}" title="${socialEsc(x.symbol||x.name)} ${x.pct.toFixed(1)}%"></span>`).join(''):'<span class="empty"></span>';
+  const lm=segments.length?segments.map(x=>`<span><i style="background:${x.color}"></i><b>${socialEsc(x.symbol||x.name)}</b><em>${x.pct.toFixed(1)}%</em></span>`).join(''):'<span>No priced assets</span>';if(legend)legend.innerHTML=lm;if(full)full.innerHTML=lm;
+  if(donut){let at=0;const stops=segments.map(x=>{const s=at,e=at+x.pct;at=e;return`${x.color} ${s}% ${e}%`}).join(',');donut.style.background=segments.length?`conic-gradient(${stops})`:'#e8e2d2';donut.innerHTML=`<span><b>${rows.length}</b><small>assets</small></span>`}
+}
+function renderPortfolioMovers(items){
+  const rows=(items||[]).filter(x=>Number.isFinite(Number(x.change24h))).sort((a,b)=>Number(b.change24h)-Number(a.change24h)),preview=$('portfolioMoversPreview'),full=$('portfolioAnalyticsMovers');
+  const picks=[...rows.slice(0,3),...rows.slice(-3).reverse().filter(x=>!rows.slice(0,3).includes(x))].slice(0,6);
+  const markup=picks.length?picks.map(x=>`<div class="portfolioMover"><span>${holdingIconMarkup(x)}</span><div><b>${socialEsc(x.symbol||'TOKEN')}</b><small>${socialEsc(x.name||'Token')}</small></div><strong class="${portfolioTokenChangeClass(x.change24h)}">${portfolioPct(x.change24h)}</strong></div>`).join(''):'<div class="portfolioEmpty">24H market movement is unavailable for these assets.</div>';
+  if(preview)preview.innerHTML=markup;if(full)full.innerHTML=markup
+}
+function renderPortfolioAnalytics(data){
+  const items=data?.items||[],hist=portfolioRangeRows(portfolioState.history,portfolioState.range),total=Number(data?.totalUsd),priced=Number(data?.pricedAssets||0),all=items.length;
+  if($('analyticsPortfolioValue'))$('analyticsPortfolioValue').textContent=portfolioUsd(total);
+  if(hist.length){const first=Number(hist[0].v),last=Number(hist[hist.length-1].v),delta=last-first,pct=first?delta/first*100:0;if($('analyticsPortfolioChange'))$('analyticsPortfolioChange').textContent=`${portfolioSignedUsd(delta)} · ${portfolioPct(pct)} ${portfolioRangeLabel(portfolioState.range)}`;if($('analyticsTrackedPnl'))$('analyticsTrackedPnl').textContent=portfolioSignedUsd(delta);if($('analyticsTrackedPnlPct'))$('analyticsTrackedPnlPct').textContent=`${portfolioPct(pct)} since range start`;if($('portfolioTrackedSince'))$('portfolioTrackedSince').textContent=`Tracked from ${new Date(hist[0].t).toLocaleDateString()}`}
+  else{if($('analyticsPortfolioChange'))$('analyticsPortfolioChange').textContent='History building';if($('analyticsTrackedPnl'))$('analyticsTrackedPnl').textContent='—';if($('analyticsTrackedPnlPct'))$('analyticsTrackedPnlPct').textContent='History building'}
+  const coverage=all?priced/all*100:0;if($('analyticsCoverage'))$('analyticsCoverage').textContent=`${coverage.toFixed(0)}%`;
+  const alloc=portfolioAllocation(items),largest=alloc.rows[0]?.pct||0,diversity=Math.min(100,alloc.rows.length*12),health=Math.max(0,Math.min(100,Math.round(coverage*.55+diversity*.25+(100-largest)*.20)));if($('analyticsHealth'))$('analyticsHealth').textContent=all?String(health):'—';if($('analyticsHealthText'))$('analyticsHealthText').textContent=!all?'No assets':health>=80?'Strong':health>=60?'Balanced':health>=40?'Concentrated':'High concentration';
+  renderPortfolioAllocation(items);renderPortfolioMovers(items)
+}
+function showPortfolioTab(tab='dashboard'){
+  const allowed=['dashboard','analytics','assets','defi','transactions'];if(!allowed.includes(tab))tab='dashboard';portfolioState.tab=tab;
+  document.querySelectorAll('[data-portfolio-tab]').forEach(b=>b.classList.toggle('active',b.dataset.portfolioTab===tab));document.querySelectorAll('[data-portfolio-panel]').forEach(p=>p.classList.toggle('hidden',p.dataset.portfolioPanel!==tab));
+  if(tab==='analytics')renderPortfolioAnalytics(portfolioState.data||{});if(tab==='assets')$('portfolioAssetSearch')?.focus()
+}
+async function loadPortfolioHistory(range=portfolioState.range){
+  const wallet=portfolioWalletAddress();if(!wallet)return;
+  try{const j=await socialApi(`/api/portfolio-history?wallet=${encodeURIComponent(wallet)}&range=${encodeURIComponent(range)}`);portfolioState.serverHistory=Array.isArray(j.items)?j.items:[]}catch{portfolioState.serverHistory=[]}
+  portfolioState.history=mergePortfolioHistory(portfolioState.serverHistory,getPortfolioHistory(wallet));
+  renderPortfolioChart(portfolioState.history,portfolioState.valueKnown,portfolioState.emptyWallet);renderPortfolioAnalytics(portfolioState.data||{});
+  const cap=$('portfolioChartCaption');if(cap)cap.textContent=`${jitterHistoryLabel(portfolioState.serverHistory)} · ${portfolioRangeLabel(range)}`
+}
+function jitterHistoryLabel(serverRows){return serverRows?.length?'Persistent portfolio history':'Live history building'}
 function applyPortfolioLiveData(data,wallet,{renderLists=true}={}){
-  if(!data||wallet!==portfolioWalletAddress())return;
-  portfolioState.data=data;
-  const total=Number(data.totalUsd),itemCount=data.items?.length||0,emptyWallet=itemCount===0,
-    known=Number.isFinite(total)&&Number(data.pricedAssets||0)>0,
-    displayKnown=known||emptyWallet,shownTotal=known?total:(emptyWallet?0:NaN);
-
-  $('portfolioTotal').textContent=displayKnown?portfolioUsd(shownTotal):'—';
-  $('portfolioCoverage').textContent=emptyWallet?'No holdings yet':known
-    ?`${data.pricedAssets} priced asset${data.pricedAssets===1?'':'s'} · ${itemCount} total holdings`
-    :`${itemCount} holdings · USD prices unavailable for some assets`;
-  $('portfolioUpdatedAt').textContent='Live · '+new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit',second:'2-digit'});
-
-  if(renderLists){
-    renderPortfolioTokens(data.items||[]);
-    renderPortfolioActivity(data.activity||[])
-  }
-
-  const hist=displayKnown?recordPortfolioHistory(wallet,shownTotal):getPortfolioHistory(wallet);
-  portfolioState.history=hist;
-  portfolioState.valueKnown=displayKnown||hist.length>0;
-  portfolioState.emptyWallet=emptyWallet;
-  renderPortfolioChart(hist,portfolioState.valueKnown,emptyWallet);
-
-  const cap=$('portfolioChartCaption');
-  if(cap)cap.textContent=`Live wallet snapshots · ${portfolioRangeLabel(portfolioState.range)} · tracking every 30s`
+  if(!data||wallet!==portfolioWalletAddress())return;portfolioState.data=data;
+  const total=Number(data.totalUsd),itemCount=data.items?.length||0,emptyWallet=itemCount===0,known=Number.isFinite(total)&&Number(data.pricedAssets||0)>0,displayKnown=known||emptyWallet,shownTotal=known?total:(emptyWallet?0:NaN);
+  $('portfolioTotal').textContent=displayKnown?portfolioUsd(shownTotal):'—';$('portfolioCoverage').textContent=emptyWallet?'No holdings yet':known?`${data.pricedAssets} priced asset${data.pricedAssets===1?'':'s'} · ${itemCount} total holdings`:`${itemCount} holdings · USD prices unavailable for some assets`;$('portfolioUpdatedAt').textContent='Live · '+new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit',second:'2-digit'});
+  if(renderLists){renderPortfolioTokens(data.items||[]);renderPortfolioActivity(data.activity||[]);renderPortfolioAllocation(data.items||[]);renderPortfolioMovers(data.items||[])}
+  const local=displayKnown?recordPortfolioHistory(wallet,shownTotal):getPortfolioHistory(wallet);portfolioState.history=mergePortfolioHistory(portfolioState.serverHistory,local);portfolioState.valueKnown=displayKnown||portfolioState.history.length>0;portfolioState.emptyWallet=emptyWallet;renderPortfolioChart(portfolioState.history,portfolioState.valueKnown,emptyWallet);renderPortfolioAnalytics(data)
 }
 async function portfolioTrackerTick(){
-  if(portfolioTrackerBusy||portfolioState.loading||document.hidden||!document.body.classList.contains('portfolio-active'))return;
-  const wallet=portfolioWalletAddress();
-  if(!wallet)return;
-  portfolioTrackerBusy=true;
+  if(portfolioTrackerBusy||portfolioState.loading||document.hidden||!document.body.classList.contains('portfolio-active'))return;const wallet=portfolioWalletAddress();if(!wallet)return;portfolioTrackerBusy=true;
+  try{const data=await socialApi('/api/portfolio?wallet='+encodeURIComponent(wallet));applyPortfolioLiveData(data,wallet,{renderLists:true})}catch{}finally{portfolioTrackerBusy=false}
+}
+function setPortfolioLiveTracker(active){if(portfolioTrackerTimer){clearInterval(portfolioTrackerTimer);portfolioTrackerTimer=null}if(!active)return;portfolioTrackerTimer=setInterval(portfolioTrackerTick,30000)}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&document.body.classList.contains('portfolio-active'))portfolioTrackerTick()});
+async function connectPortfolioWallet(){const p=findSolWallet();if(!p)throw new Error('No Solana wallet detected. Choose a Solana wallet from Connect Wallet.');const r=await p.connect(),addr=String(r?.publicKey||p.publicKey||'');if(!addr)throw new Error('Wallet connected but no address was returned.');if(walletAddress!==addr)saltProfile=null;walletProvider=p;walletKind='solana';walletAddress=addr;scanSocialProvider=p;scanSocialWallet=addr;rememberSocialWallet();const cached=getCachedProfileForWallet(addr);saltProfile=cached&&cached.wallet===addr?cached:null;renderProfile();updateHeaderWallet();portfolioState.wallet=addr;return addr}
+async function loadPortfolio(force=false){
+  if(portfolioState.loading&&!force)return;let wallet=portfolioWalletAddress();const hero=$('portfolioConnectHero'),dash=$('portfolioDashboard'),status=$('portfolioConnectStatus');if(!wallet){hero?.classList.remove('hidden');dash?.classList.add('hidden');return}
+  portfolioState.loading=true;portfolioState.wallet=wallet;hero?.classList.add('hidden');dash?.classList.remove('hidden');const p=getRememberedSocialProfile?.(),name=$('portfolioWalletName'),walletEl=$('portfolioCopyWallet'),avatar=$('portfolioAvatar');if(name)name.textContent=p?.wallet===wallet&&p?.username?'@'+p.username:'Main Wallet';if(walletEl)walletEl.textContent=shortWallet(wallet)+' ⧉';if(avatar){if(p?.wallet===wallet&&p?.avatar)avatar.innerHTML=`<img src="${socialEsc(p.avatar)}" alt="">`;else avatar.textContent=p?.wallet===wallet&&p?.username?String(p.username)[0].toUpperCase():'W'}$('portfolioCoverage').textContent='Syncing portfolio…';
   try{
-    const data=await socialApi('/api/portfolio?wallet='+encodeURIComponent(wallet));
-    applyPortfolioLiveData(data,wallet,{renderLists:true})
-  }catch{}
-  finally{portfolioTrackerBusy=false}
+    const [data,nfts]=await Promise.all([socialApi('/api/portfolio?wallet='+encodeURIComponent(wallet)+(force?'&refresh=1':'')),socialApi('/api/social-nfts?wallet='+encodeURIComponent(wallet)).catch(()=>({items:[]}))]);
+    portfolioState.nfts=nfts?.items||[];applyPortfolioLiveData(data,wallet,{renderLists:true});renderPortfolioNfts(portfolioState.nfts);await loadPortfolioHistory(portfolioState.range)
+  }catch(e){$('portfolioTotal').textContent='—';$('portfolioCoverage').textContent=readableError(e);portfolioState.history=[];portfolioState.valueKnown=false;portfolioState.emptyWallet=false;renderPortfolioChart([],false,false);portfolioRangeChange([],portfolioState.range,false);renderPortfolioTokens([]);renderPortfolioNfts([]);renderPortfolioActivity([])}
+  finally{portfolioState.loading=false}
 }
-function setPortfolioLiveTracker(active){
-  if(portfolioTrackerTimer){clearInterval(portfolioTrackerTimer);portfolioTrackerTimer=null}
-  if(!active)return;
-  portfolioTrackerTimer=setInterval(portfolioTrackerTick,30000)
-}
-document.addEventListener('visibilitychange',()=>{
-  if(!document.hidden&&document.body.classList.contains('portfolio-active'))portfolioTrackerTick()
-});
-
-async function connectPortfolioWallet(){const p=findSolWallet();if(!p)throw new Error('No Solana wallet detected. Install Phantom or Solflare.');const r=await p.connect(),addr=String(r?.publicKey||p.publicKey||'');if(!addr)throw new Error('Wallet connected but no address was returned.');if(walletAddress!==addr)saltProfile=null;walletProvider=p;walletKind='solana';walletAddress=addr;scanSocialProvider=p;scanSocialWallet=addr;rememberSocialWallet();const cached=getCachedProfileForWallet(addr);saltProfile=cached&&cached.wallet===addr?cached:null;renderProfile();updateHeaderWallet();portfolioState.wallet=addr;return addr}
-async function loadPortfolio(force=false){if(portfolioState.loading&&!force)return;let wallet=portfolioWalletAddress();const hero=$('portfolioConnectHero'),dash=$('portfolioDashboard'),status=$('portfolioConnectStatus');if(!wallet){hero?.classList.remove('hidden');dash?.classList.add('hidden');return}portfolioState.loading=true;portfolioState.wallet=wallet;hero?.classList.add('hidden');dash?.classList.remove('hidden');const p=getRememberedSocialProfile?.(),name=$('portfolioWalletName'),walletEl=$('portfolioCopyWallet'),avatar=$('portfolioAvatar');if(name)name.textContent=p?.wallet===wallet&&p?.username?'@'+p.username:'Main Wallet';if(walletEl)walletEl.textContent=shortWallet(wallet)+' ⧉';if(avatar){if(p?.wallet===wallet&&p?.avatar)avatar.innerHTML=`<img src="${socialEsc(p.avatar)}" alt="">`;else avatar.textContent=p?.wallet===wallet&&p?.username?String(p.username)[0].toUpperCase():'W'}$('portfolioCoverage').textContent='Refreshing live wallet data…';try{const [data,nfts]=await Promise.all([socialApi('/api/portfolio?wallet='+encodeURIComponent(wallet)+(force?'&refresh=1':'')),socialApi('/api/social-nfts?wallet='+encodeURIComponent(wallet)).catch(()=>({items:[]}))]);portfolioState.nfts=nfts?.items||[];applyPortfolioLiveData(data,wallet,{renderLists:true});renderPortfolioNfts(portfolioState.nfts)}catch(e){$('portfolioTotal').textContent='—';$('portfolioCoverage').textContent=readableError(e);portfolioState.history=[];portfolioState.valueKnown=false;portfolioState.emptyWallet=false;renderPortfolioChart([],false,false);portfolioRangeChange([],portfolioState.range,false);renderPortfolioTokens([]);renderPortfolioNfts([]);renderPortfolioActivity([])}finally{portfolioState.loading=false}}
 async function portfolioEnsureConnected(){const target=portfolioState.wallet||portfolioWalletAddress();if(walletKind==='solana'&&walletAddress&&(!target||walletAddress===target))return walletAddress;const addr=await connectPortfolioWallet();if(target&&addr!==target)throw new Error(`Connect ${shortWallet(target)} to use wallet actions for this portfolio.`);return addr}
 async function portfolioOpenTransfer(mode){const p=getCachedProfileForWallet(transferSolanaAddress());if(p&&!saltProfile)saltProfile=p;openSolTransfer(mode)}
+function portfolioDateString(d){const x=new Date(d);return`${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`}
+async function loadPortfolioTimeMachine(date){
+  const wallet=portfolioWalletAddress(),status=$('portfolioTimeMachineStatus');if(!wallet||!date)return;
+  if(status)status.textContent='Loading daily snapshot…';
+  try{
+    const j=await socialApi(`/api/portfolio-time-machine?wallet=${encodeURIComponent(wallet)}&date=${encodeURIComponent(date)}`);
+    if(!j?.snapshot){status.textContent='No snapshot exists for this date yet. Daily snapshots begin after V1.10.92 is deployed.';return}
+    const s=j.snapshot,total=Number(s.totalUsd),items=Array.isArray(s.items)?s.items:[];status.textContent=`${new Date(s.t).toLocaleDateString()} · ${portfolioUsd(total)} · ${items.length} assets`;
+    $('portfolioTotal').textContent=portfolioUsd(total);renderPortfolioTokens(items)
+  }catch(e){if(status)status.textContent=readableError(e)}
+}
 
 function initSalt(){
   $('refreshCryptoNews')?.addEventListener('click',()=>loadCryptoNews(true));$('cryptoNewsPrev')?.addEventListener('click',()=>{const n=Math.min(4,Math.ceil(cryptoNewsArticles.length/5));if(n>1){cryptoNewsPage=(cryptoNewsPage-1+n)%n;renderCryptoNewsPage()}});$('cryptoNewsNext')?.addEventListener('click',()=>{const n=Math.min(4,Math.ceil(cryptoNewsArticles.length/5));if(n>1){cryptoNewsPage=(cryptoNewsPage+1)%n;renderCryptoNewsPage()}});$('addTickerBtn')?.addEventListener('click',()=>{$('addTickerPanel')?.classList.toggle('hidden');$('addTickerSearch')?.focus()});$('profileWatchAddBtn')?.addEventListener('click',addProfileWatchTicker);$('profileWatchInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addProfileWatchTicker()}});let tickerTimer;$('addTickerSearch')?.addEventListener('input',e=>{clearTimeout(tickerTimer);tickerTimer=setTimeout(()=>searchTicker(e.target.value),250)});$('feedComposer')?.addEventListener('submit',submitFeedThesis);document.querySelectorAll('[data-feed-filter]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-feed-filter]').forEach(x=>x.classList.toggle('active',x===b));if(b.dataset.feedFilter==='following')showSocialTab('following');else loadCommunityFeed()}));
@@ -1462,8 +1569,16 @@ function initSalt(){
   $('portfolioCopyWallet')?.addEventListener('click',async()=>{const a=portfolioState.wallet||portfolioWalletAddress();if(!a)return;try{await navigator.clipboard.writeText(a);const b=$('portfolioCopyWallet'),old=b.textContent;b.textContent='Copied ✓';setTimeout(()=>b.textContent=old,1100)}catch{}});
   $('portfolioRefreshBtn')?.addEventListener('click',()=>loadPortfolio(true));$('portfolioMoreBtn')?.addEventListener('click',()=>loadPortfolio(true));
   $('portfolioSendBtn')?.addEventListener('click',()=>portfolioOpenTransfer('send'));$('portfolioReceiveBtn')?.addEventListener('click',()=>portfolioOpenTransfer('receive'));$('portfolioSwapBtn')?.addEventListener('click',()=>showMainPage('swap'));
-  document.querySelectorAll('[data-portfolio-range]').forEach(b=>b.addEventListener('click',()=>{portfolioState.range=b.dataset.portfolioRange||'1d';renderPortfolioChart(portfolioState.history,portfolioState.valueKnown,portfolioState.emptyWallet);const cap=$('portfolioChartCaption');if(cap)cap.textContent=`Live wallet snapshots · ${portfolioRangeLabel(portfolioState.range)} · tracking every 30s`}));
+  document.querySelectorAll('[data-portfolio-range]').forEach(b=>b.addEventListener('click',async()=>{portfolioState.range=b.dataset.portfolioRange||'24h';document.querySelectorAll('[data-portfolio-range]').forEach(x=>x.classList.toggle('active',x===b));await loadPortfolioHistory(portfolioState.range)}));
   document.querySelectorAll('[data-portfolio-tab]').forEach(b=>b.addEventListener('click',()=>showPortfolioTab(b.dataset.portfolioTab)));document.querySelectorAll('[data-open-portfolio-tab]').forEach(b=>b.addEventListener('click',()=>showPortfolioTab(b.dataset.openPortfolioTab)));
+  $('portfolioAssetSearch')?.addEventListener('input',e=>{portfolioState.assetSearch=String(e.target.value||'');renderPortfolioTokens(portfolioState.data?.items||[])});
+  $('portfolioHideSmall')?.addEventListener('click',e=>{portfolioState.hideSmall=!portfolioState.hideSmall;e.currentTarget.classList.toggle('active',portfolioState.hideSmall);e.currentTarget.textContent=portfolioState.hideSmall?'Show all balances':'Hide small balances';renderPortfolioTokens(portfolioState.data?.items||[])});
+  $('portfolioTimeMachineBtn')?.addEventListener('click',()=>{const bar=$('portfolioTimeMachine');bar?.classList.toggle('hidden');if(!bar?.classList.contains('hidden')){const input=$('portfolioTimeDate'),d=portfolioState.timeMachineDate||portfolioDateString(new Date());input.value=d;portfolioState.timeMachineDate=d;loadPortfolioTimeMachine(d)}});
+  $('portfolioTimeClose')?.addEventListener('click',()=>{$('portfolioTimeMachine')?.classList.add('hidden');loadPortfolio(true)});
+  $('portfolioTimeDate')?.addEventListener('change',e=>{portfolioState.timeMachineDate=e.target.value;loadPortfolioTimeMachine(e.target.value)});
+  $('portfolioTimePrev')?.addEventListener('click',()=>{const i=$('portfolioTimeDate'),d=new Date((i.value||portfolioDateString(new Date()))+'T12:00:00');d.setDate(d.getDate()-1);i.value=portfolioDateString(d);portfolioState.timeMachineDate=i.value;loadPortfolioTimeMachine(i.value)});
+  $('portfolioTimeNext')?.addEventListener('click',()=>{const i=$('portfolioTimeDate'),d=new Date((i.value||portfolioDateString(new Date()))+'T12:00:00');d.setDate(d.getDate()+1);const max=new Date();if(d>max)d.setTime(max.getTime());i.value=portfolioDateString(d);portfolioState.timeMachineDate=i.value;loadPortfolioTimeMachine(i.value)});
+
   ensureTokenModalRoot();
   restoreSaltSocialSession();
   const sol=findSolWallet();

@@ -2687,3 +2687,92 @@ body.wallet-account-menu-open .walletAccountMenu{
 @media(prefers-reduced-motion:reduce){
   .portfolioChart svg circle.portfolioPulseRing{animation:none;opacity:.28}
 }
+
+
+/* V1.10.92 — CoinStats-style portfolio information architecture */
+.coinstatsPortfolioHeader{gap:16px}
+.portfolioHeaderActions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.portfolioHeaderActions>button{
+  border:1px solid rgba(96,115,94,.22);border-radius:10px;background:rgba(255,255,255,.48);
+  color:#355263;padding:9px 11px;font-size:9px;font-weight:850;cursor:pointer
+}
+.portfolioHeaderActions>button:hover{background:#fffaf0}
+.coinstatsPortfolioTabs{width:100%!important;display:flex!important;justify-content:flex-start!important}
+.coinstatsPortfolioTabs button{font-size:11px!important}
+.coinstatsBalanceLine{margin-top:0!important}
+.coinstatsOverviewGrid{grid-template-columns:minmax(0,1fr) 220px!important;align-items:stretch!important}
+.coinstatsQuickActions{grid-template-columns:1fr 1fr!important;align-content:stretch!important}
+.coinstatsQuickActions button{min-height:105px!important}
+.coinstatsChartCard{min-height:405px!important}
+.coinstatsRangeTabs{margin-top:8px!important}
+.portfolioHoverLine{stroke:#a6c9ba;stroke-width:1;stroke-dasharray:4 5;opacity:.6}
+.portfolioHoverDot{fill:#8ae1aa!important;stroke:#10221c;stroke-width:2}
+.portfolioChartTooltip{
+  position:absolute;z-index:5;min-width:120px;padding:8px 10px;border:1px solid rgba(144,189,167,.26);
+  border-radius:10px;background:rgba(13,28,27,.94);box-shadow:0 10px 30px rgba(0,0,0,.28);
+  color:#dceee5;pointer-events:none;display:grid;gap:2px
+}
+.portfolioChartTooltip b{font-size:12px;font-variant-numeric:tabular-nums}.portfolioChartTooltip span{font-size:8px;color:#8cac9f}
+.portfolioChartTooltip.hidden{display:none!important}
+
+.portfolioAssetTableWrap{overflow:auto;border-radius:18px}
+.coinstatsAssetColumns{
+  grid-template-columns:minmax(190px,1.6fr) .75fr .78fr .78fr .82fr .78fr .78fr!important;
+  min-width:900px;padding-left:16px!important;padding-right:16px!important
+}
+.coinstatsAssetRow{
+  grid-template-columns:minmax(190px,1.6fr) .75fr .78fr .78fr .82fr .78fr .78fr!important;
+  min-width:900px
+}
+.coinstatsAssetRow>div:not(:first-child){text-align:right}
+.portfolioAmount,.portfolioAvgBuy,.portfolioPnl,.portfolioChange{font-size:10px;font-variant-numeric:tabular-nums}
+.portfolioAmount{display:grid;gap:2px}.portfolioAmount b{font-size:11px}.portfolioAmount small{font-size:8px;color:#849397}
+.portfolioChange.up,.portfolioPnl.up{color:#31885a}.portfolioChange.down,.portfolioPnl.down{color:#bc5a55}.portfolioChange.neutral,.portfolioPnl.neutral{color:#7f8e90}
+.dashboardAssetHead{margin-top:4px}
+.coinstatsAssetList{border-radius:18px!important}
+
+.portfolioDashboardCharts{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.portfolioMiniAnalytics,.portfolioAnalyticsCard{
+  border:1px solid rgba(104,124,105,.23);border-radius:18px;background:rgba(255,255,255,.48);
+  box-shadow:0 12px 28px rgba(49,60,52,.055),inset 0 1px 0 rgba(255,255,255,.68);padding:16px
+}
+.portfolioMiniHead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.portfolioMiniHead>div{display:grid;gap:3px}.portfolioMiniHead small{font-size:8px;color:#7d8c8b;letter-spacing:.12em;font-weight:900}.portfolioMiniHead b{font-size:12px}.portfolioMiniHead>span{font-size:9px;color:#7d8c8f}
+.portfolioAllocationBar{height:13px;border-radius:999px;overflow:hidden;display:flex;background:#e5dfd0;margin:10px 0 12px}
+.portfolioAllocationBar>span{height:100%;display:block}.portfolioAllocationLegend{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.portfolioAllocationLegend>span{display:grid;grid-template-columns:auto 1fr auto;gap:6px;align-items:center;font-size:8px;color:#788788}
+.portfolioAllocationLegend i{width:8px;height:8px;border-radius:50%}.portfolioAllocationLegend b{font-size:9px;color:#314b57}.portfolioAllocationLegend em{font-style:normal}
+.portfolioMovers{display:grid;gap:7px}.portfolioMover{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(108,126,108,.12)}.portfolioMover:last-child{border-bottom:0}
+.portfolioMover>span{width:28px;height:28px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:#e7eadc}.portfolioMover>span img{width:100%;height:100%;object-fit:cover}.portfolioMover>div{display:grid;gap:1px}.portfolioMover b{font-size:9px}.portfolioMover small{font-size:7px;color:#849294}.portfolioMover strong{font-size:9px}.portfolioMover strong.up{color:#31885a}.portfolioMover strong.down{color:#bd5952}
+.portfolioNftPreview{grid-template-columns:repeat(6,minmax(0,1fr))!important}
+
+.portfolioAnalyticsTitle{margin-top:0!important}
+.portfolioAnalyticsSummary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.portfolioAnalyticsSummary article{display:grid;gap:4px;padding:14px;border:1px solid rgba(101,121,103,.22);border-radius:16px;background:rgba(255,255,255,.48)}
+.portfolioAnalyticsSummary small{font-size:8px;color:#7b8a89;letter-spacing:.08em}.portfolioAnalyticsSummary strong{font-size:21px;color:#153548;letter-spacing:-.035em}.portfolioAnalyticsSummary span{font-size:8px;color:#819091}
+.portfolioAnalyticsGrid{display:grid;grid-template-columns:1.15fr .85fr;gap:14px}.portfolioAllocationDonutWrap{display:grid;grid-template-columns:150px 1fr;gap:20px;align-items:center}
+.portfolioAllocationDonut{width:150px;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;position:relative}.portfolioAllocationDonut:after{content:"";position:absolute;width:68%;height:68%;border-radius:50%;background:#f2ecdd;box-shadow:inset 0 0 0 1px rgba(87,109,96,.12)}
+.portfolioAllocationDonut>span{position:relative;z-index:1;display:grid;text-align:center}.portfolioAllocationDonut b{font-size:24px}.portfolioAllocationDonut small{font-size:8px;color:#7d8b8c}
+.portfolioAllocationLegend.full{grid-template-columns:1fr}
+.portfolioPerformanceCard{margin-top:14px}.portfolioPnlChart{min-height:180px;background:rgba(26,48,43,.035);border-radius:12px;overflow:hidden}.portfolioPnlChart svg{width:100%;height:180px}.portfolioPnlChart path{stroke-width:3;filter:drop-shadow(0 0 4px rgba(80,151,105,.18))}.portfolioPnlChart path.positive{stroke:#55b87d}.portfolioPnlChart path.negative{stroke:#bf625b}.portfolioPnlChart .pnlZero{stroke:#a8b2ad;stroke-dasharray:4 6;opacity:.55}.portfolioAnalyticsNote,.portfolioAssetsDisclosure{font-size:8px;color:#7b898b;line-height:1.5;margin:10px 2px 0}
+
+.portfolioAssetsToolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px}
+.portfolioAssetsToolbar label{display:flex;align-items:center;gap:7px;flex:1;max-width:420px;border:1px solid #d5c9aa;border-radius:11px;background:#fffaf0;padding:0 10px;color:#7f8d8f}
+.portfolioAssetsToolbar input{width:100%;border:0;background:transparent;outline:0;padding:10px 0;color:#18394a;font-size:10px}
+.portfolioAssetsToolbar button{border:1px solid #d5c9aa;border-radius:10px;background:#fffaf0;color:#556249;font-size:9px;font-weight:850;padding:9px 11px;cursor:pointer}.portfolioAssetsToolbar button.active{background:#465139;color:#fff7d8;border-color:#465139}
+.portfolioTransactionHead{display:grid;grid-template-columns:48px 1fr 170px;gap:12px;padding:0 16px 8px;color:#839091;font-size:8px;text-transform:uppercase;letter-spacing:.1em}.portfolioTransactionHead span:last-child{text-align:right}
+.coinstatsTransactionRow{grid-template-columns:34px minmax(0,1fr) auto!important}
+.portfolioDefiEmpty{min-height:310px;display:grid;place-items:center;place-content:center;text-align:center;gap:9px;border:1px dashed rgba(96,120,103,.28);border-radius:20px;background:rgba(255,255,255,.32);padding:30px}
+.portfolioDefiEmpty>span{width:58px;height:58px;border-radius:18px;display:grid;place-items:center;background:#e4e8d6;color:#506044;font-size:28px}.portfolioDefiEmpty b{font-size:14px}.portfolioDefiEmpty p{max-width:620px;margin:0;color:#768688;font-size:9px;line-height:1.6}
+.portfolioTimeMachine{display:grid;grid-template-columns:auto auto auto 1fr auto;align-items:center;gap:8px;padding:11px 12px;border:1px solid rgba(99,118,102,.22);border-radius:14px;background:rgba(255,251,240,.76);margin:-14px 0 18px}
+.portfolioTimeMachine label{display:flex;align-items:center;gap:8px;font-size:9px;font-weight:850;color:#344f5b}.portfolioTimeMachine input{border:1px solid #d2c5a5;border-radius:8px;background:#fffaf0;padding:7px;color:#344f5b}.portfolioTimeMachine button{border:1px solid #d2c5a5;border-radius:8px;background:#fffaf0;color:#526047;padding:7px 9px;font-size:9px;cursor:pointer}.portfolioTimeMachine>span{font-size:8px;color:#7c898b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+@media(max-width:980px){
+  .coinstatsOverviewGrid{grid-template-columns:1fr!important}.coinstatsQuickActions{grid-template-columns:repeat(4,1fr)!important}.coinstatsQuickActions button{min-height:88px!important}
+  .portfolioAnalyticsSummary{grid-template-columns:1fr 1fr}.portfolioAnalyticsGrid,.portfolioDashboardCharts{grid-template-columns:1fr}.portfolioNftPreview{grid-template-columns:repeat(3,1fr)!important}
+}
+@media(max-width:680px){
+  .portfolioHeaderActions{width:100%}.portfolioNetworkPill{margin-left:auto}.coinstatsPortfolioTabs{overflow:auto!important}.coinstatsPortfolioTabs button{white-space:nowrap}
+  .coinstatsQuickActions{grid-template-columns:1fr 1fr!important}.portfolioAnalyticsSummary{grid-template-columns:1fr 1fr}.portfolioAllocationDonutWrap{grid-template-columns:1fr;justify-items:center}.portfolioNftPreview{grid-template-columns:1fr 1fr!important}
+  .portfolioTimeMachine{grid-template-columns:auto 1fr auto}.portfolioTimeMachine>span{grid-column:1/-1}.portfolioTimeMachine #portfolioTimeClose{grid-column:1/-1}
+}
