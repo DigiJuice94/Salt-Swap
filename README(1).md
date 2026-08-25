@@ -761,3 +761,11 @@ This update rebuilds the Portfolio information architecture around the current C
 - Makes the username on Social Feed posts clickable.
 - Clicking a username such as `@TrenchReady` opens that wallet/user's Social Profile.
 - Keeps the V1.11.18 restored visual build, Feed fix, chart cursor fix, and original deployment configuration unchanged.
+
+## V1.11.20 — Profile Discovery
+- Feed usernames and avatars are now real clickable profile targets.
+- Clicking a trader opens a public Trenches profile viewer with avatar, banner, bio, wallet, joined date, post count, and recent posts.
+- Reply/quote thread usernames and community review usernames are also clickable.
+- Public profile data is loaded by wallet from the existing Social Profile API.
+- Recent posts load from the existing Social Profile Feed API.
+- Keeps the V1.11.18/19 known-good Vercel configuration unchanged.
