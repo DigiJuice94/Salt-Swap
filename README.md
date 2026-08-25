@@ -813,3 +813,9 @@ Maintenance cleanup only — no intended feature redesign.
 - Keeps the V1.11.15 Social Feed fix.
 - Keeps the V1.11.15 chart cursor alignment fix.
 - No Root Directory changes and no repo restructuring.
+
+## V1.11.17 — Root Asset Deploy Fix
+- Deployment-only correction.
+- Publishes the current root-level Trenches images/icons that V1.11.16 failed to include.
+- Keeps the current page, Social Feed fix, chart hover fix, API code, and routing unchanged.
+- No Root Directory or repository architecture changes.
