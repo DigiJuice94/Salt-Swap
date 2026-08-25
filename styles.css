@@ -4314,3 +4314,95 @@ body:has(.portfolioPage:not(.hidden)){
   color:#ffffff !important;
   -webkit-text-fill-color:#ffffff !important;
 }
+
+/* V1.11.43 — Fomo-style Portfolio chart */
+.portfolioPage .portfolioChart{
+  width:100% !important;
+  min-height:430px !important;
+  height:430px !important;
+  padding:0 !important;
+  margin:0 !important;
+  overflow:hidden !important;
+  background:#09150f !important;
+  border-radius:12px !important;
+}
+
+.portfolioPage .portfolioChart .fomoPortfolioChart{
+  display:block !important;
+  width:100% !important;
+  height:100% !important;
+}
+
+.portfolioPage .portfolioGridLine{
+  stroke:rgba(133,208,123,.14) !important;
+  stroke-width:1 !important;
+  stroke-dasharray:3 6 !important;
+  vector-effect:non-scaling-stroke !important;
+}
+
+.portfolioPage .portfolioGridLine.vertical{
+  stroke:rgba(133,208,123,.10) !important;
+}
+
+.portfolioPage .portfolioValueLine{
+  filter:drop-shadow(0 0 5px rgba(121,223,152,.22)) !important;
+}
+
+.portfolioPage .portfolioLastHalo{
+  fill:rgba(121,223,152,.12) !important;
+  stroke:rgba(121,223,152,.26) !important;
+  stroke-width:2 !important;
+}
+
+.portfolioPage .portfolioLastDot{
+  fill:#9ff0b1 !important;
+  stroke:#2c6841 !important;
+  stroke-width:2 !important;
+}
+
+.portfolioPage .portfolioYAxisLabel{
+  fill:#d5e6d8 !important;
+  font-size:13px !important;
+  font-weight:700 !important;
+}
+
+.portfolioPage .portfolioXAxisLabel{
+  fill:#8fa594 !important;
+  font-size:12px !important;
+  font-weight:600 !important;
+}
+
+.portfolioPage .portfolioLastPriceBg{
+  fill:#173623 !important;
+  stroke:rgba(121,223,152,.28) !important;
+  stroke-width:1 !important;
+}
+
+.portfolioPage .portfolioLastPriceText{
+  fill:#ffffff !important;
+  font-size:13px !important;
+  font-weight:800 !important;
+}
+
+/* Let the chart itself use the full card width */
+.portfolioPage .polyPerformanceCard,
+.portfolioPage .portfolioChartCard{
+  padding:16px !important;
+}
+
+.portfolioPage .portfolioChartHead{
+  margin-bottom:10px !important;
+}
+
+@media(max-width:720px){
+  .portfolioPage .portfolioChart{
+    min-height:340px !important;
+    height:340px !important;
+  }
+  .portfolioPage .portfolioYAxisLabel{
+    font-size:11px !important;
+  }
+  .portfolioPage .portfolioXAxisLabel{
+    font-size:10px !important;
+  }
+}

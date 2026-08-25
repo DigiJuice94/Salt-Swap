@@ -16,7 +16,7 @@
   <link rel="shortcut icon" href="/favicon.ico?v=11090" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=11090" />
   <link rel="manifest" href="/site.webmanifest?v=11090" />
-  <link rel="stylesheet" href="/styles.css?v=11142" />
+  <link rel="stylesheet" href="/styles.css?v=11143" />
   <script defer src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.4/lib/index.iife.min.js"></script>
 
 <style>
@@ -1968,44 +1968,101 @@ function portfolioRangeChange(history,range,emptyWallet=false){
   el.textContent=`${sign}${portfolioUsd(Math.abs(delta))} (${sign}${Math.abs(pct).toFixed(2)}%) · ${portfolioRangeLabel(range)}`
 }
 function renderPortfolioChart(history,valueKnown,emptyWallet=false){
-  const el=$('portfolioChart');if(!el)return;
-  const range=portfolioState.range||'24h';
-  document.querySelectorAll('[data-portfolio-range]').forEach(b=>b.classList.toggle('active',b.dataset.portfolioRange===range));
-  portfolioRangeChange(history,range,emptyWallet);
-  let rows=portfolioRangeRows(history,range);
-  const [axisStart,axisEnd]=portfolioAxisWindow(rows,range),axisSpan=Math.max(1,axisEnd-axisStart);
-  if(!valueKnown&&!emptyWallet){el.innerHTML='<div class="portfolioChartEmpty"><b>Wallet connected.</b><span>Live balances loaded, but USD pricing is unavailable for these assets.</span></div>';return}
-  const w=900,h=290,left=14,right=66,top=18,bottom=46,plotBottom=h-bottom,plotRight=w-right;
-  let zeroMode=emptyWallet||(!rows.length&&valueKnown);
-  if(zeroMode)rows=[{t:axisStart,v:0},{t:axisEnd,v:0}];
-  else if(rows.length===1)rows=[{t:axisStart,v:Number(rows[0].v)},rows[0]];
-  const vals=rows.map(x=>Number(x.v)),mn=Math.min(...vals),mx=Math.max(...vals),actualSpread=Math.max(0,mx-mn),center=(mn+mx)/2,flatFloor=Math.max(.0000001,Math.abs(center)*.00002),visualSpread=zeroMode?1:(actualSpread>0?actualSpread:flatFloor),pad=visualSpread*.22,lo=zeroMode?-.5:mn-pad,hi=zeroMode?.5:mx+pad;
-  const pts=rows.map(x=>{const t=Math.max(axisStart,Math.min(axisEnd,Number(x.t))),xx=left+(plotRight-left)*((t-axisStart)/axisSpan),yy=top+(plotBottom-top)*(1-(Number(x.v)-lo)/(hi-lo));return[xx,yy]});
-  const line=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' '),area=line+` L ${pts[pts.length-1][0].toFixed(1)} ${plotBottom} L ${pts[0][0].toFixed(1)} ${plotBottom} Z`;
-  const xCount=6,xLabels=Array.from({length:xCount},(_,i)=>{const t=axisStart+(axisSpan*i/(xCount-1)),x=left+(plotRight-left)*(i/(xCount-1)),anchor=i===0?'start':i===xCount-1?'end':'middle';return`<text x="${x.toFixed(1)}" y="${h-9}" text-anchor="${anchor}" class="portfolioAxisText">${socialEsc(portfolioAxisLabel(t,range,axisSpan))}</text>`}).join('');
-  let grid='';for(let i=0;i<4;i++){const y=top+(plotBottom-top)*(i/3);grid+=`<line x1="${left}" x2="${plotRight}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}"/>`}for(let i=0;i<8;i++){const x=left+(plotRight-left)*(i/7);grid+=`<line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${top}" y2="${plotBottom}"/>`}
-  const lastVal=Number(rows[rows.length-1].v),movementSpan=Math.max(0,mx-mn),yLabel=zeroMode?'$0':('$'+lastVal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:movementSpan>0&&movementSpan<.01?6:lastVal<10?4:2})),last=pts[pts.length-1];
-  el.innerHTML=`<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Portfolio value ${portfolioRangeLabel(range)} chart">
-    <defs><linearGradient id="portfolioArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4e8a5b" stop-opacity=".28"/><stop offset="1" stop-color="#4e8a5b" stop-opacity="0"/></linearGradient></defs>
-    <g class="portfolioChartGrid">${grid}</g>${zeroMode?'':`<path d="${area}" fill="url(#portfolioArea)"/>`}
-    <path class="portfolioValueLine" d="${line}" fill="none" stroke="#4e8a5b" stroke-width="${zeroMode?2.5:3.25}" stroke-linecap="round" stroke-linejoin="round"/>
-    <line id="portfolioHoverLine" class="portfolioHoverLine" x1="0" x2="0" y1="${top}" y2="${plotBottom}" visibility="hidden"/>
-    <circle id="portfolioHoverDot" class="portfolioHoverDot" cx="0" cy="0" r="5" visibility="hidden"/>
-    <circle class="portfolioPulseRing" cx="${last[0]}" cy="${last[1]}" r="${zeroMode?5:7}"/><circle class="portfolioLastDot" cx="${last[0]}" cy="${last[1]}" r="${zeroMode?3:4.5}" fill="#4e8a5b"/>
-    <text x="${w-6}" y="${last[1]+4}" text-anchor="end" class="portfolioValueAxis">${socialEsc(yLabel)}</text>${xLabels}
-  </svg><div id="portfolioChartTooltip" class="portfolioChartTooltip hidden"></div>`;
-  const tip=$('portfolioChartTooltip'),hoverLine=$('portfolioHoverLine'),hoverDot=$('portfolioHoverDot');
-  const hide=()=>{tip?.classList.add('hidden');hoverLine?.setAttribute('visibility','hidden');hoverDot?.setAttribute('visibility','hidden')};
-  el.onpointerleave=hide;
-  el.onpointermove=e=>{
-    if(!rows.length||zeroMode)return;
-    const rect=el.getBoundingClientRect(),pct=Math.max(0,Math.min(1,(e.clientX-rect.left)/Math.max(1,rect.width))),target=axisStart+pct*axisSpan;
-    let best=0,dist=Infinity;for(let i=0;i<rows.length;i++){const d=Math.abs(Number(rows[i].t)-target);if(d<dist){dist=d;best=i}}
-    const row=rows[best],p=pts[best];if(!p)return;
-    hoverLine?.setAttribute('x1',p[0]);hoverLine?.setAttribute('x2',p[0]);hoverLine?.setAttribute('visibility','visible');hoverDot?.setAttribute('cx',p[0]);hoverDot?.setAttribute('cy',p[1]);hoverDot?.setAttribute('visibility','visible');
-    if(tip){tip.innerHTML=`<b>${portfolioUsd(row.v)}</b><span>${new Date(row.t).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</span>`;tip.classList.remove('hidden');tip.style.left=`${Math.max(8,Math.min(rect.width-132,(p[0]/w)*rect.width-55))}px`;tip.style.top=`${Math.max(36,(p[1]/h)*rect.height-62)}px`}
+  const el=$('portfolioChart');
+  if(!el)return;
+  const rows=portfolioRangeRows(portfolioState.history,portfolioState.range);
+  if(!rows.length){
+    el.innerHTML='<div class="portfolioChartEmpty">Portfolio history will appear here as snapshots build.</div>';
+    return;
+  }
+
+  const vals=rows.map(r=>Number(r.v)).filter(Number.isFinite);
+  if(!vals.length){
+    el.innerHTML='<div class="portfolioChartEmpty">No portfolio history available.</div>';
+    return;
+  }
+
+  const W=1200,H=430;
+  const pad={l:18,r:92,t:18,b:44};
+  const plotW=W-pad.l-pad.r, plotH=H-pad.t-pad.b;
+
+  let min=Math.min(...vals), max=Math.max(...vals);
+  if(min===max){
+    const bump=Math.max(1,Math.abs(max)*0.12);
+    min=Math.max(0,min-bump);
+    max=max+bump;
+  }else{
+    const range=max-min;
+    min=Math.max(0,min-range*.08);
+    max=max+range*.08;
+  }
+
+  const span=Math.max(1e-9,max-min);
+  const x=i=>pad.l+(rows.length===1?plotW/2:(i/(rows.length-1))*plotW);
+  const y=v=>pad.t+((max-v)/span)*plotH;
+
+  const pts=rows.map((r,i)=>[x(i),y(Number(r.v))]);
+  const path=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(2)+' '+p[1].toFixed(2)).join(' ');
+
+  const yTicks=8;
+  const gridY=Array.from({length:yTicks},(_,i)=>{
+    const t=i/(yTicks-1);
+    const v=max-(span*t);
+    const yy=pad.t+plotH*t;
+    return {v,yy};
+  });
+
+  const xTicks=Math.min(7,Math.max(4,rows.length));
+  const xIdx=Array.from({length:xTicks},(_,i)=>Math.round((rows.length-1)*(i/(xTicks-1))));
+
+  const fmtUsd=v=>{
+    const a=Math.abs(v);
+    if(a>=1e9)return '$'+(v/1e9).toFixed(a>=1e10?1:2)+'B';
+    if(a>=1e6)return '$'+(v/1e6).toFixed(a>=1e7?1:2)+'M';
+    if(a>=1e3)return '$'+(v/1e3).toFixed(a>=1e4?1:2)+'K';
+    if(a>=1)return '$'+v.toFixed(a>=100?0:a>=10?1:2);
+    return '$'+v.toFixed(2);
   };
-  renderPortfolioPnlChart(rows)
+
+  const fmtTime=t=>{
+    const d=new Date(t);
+    return d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+  };
+
+  const last=rows[rows.length-1];
+  const lastX=x(rows.length-1), lastY=y(Number(last.v));
+
+  el.innerHTML=`<svg class="portfolioValueSvg fomoPortfolioChart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-label="Portfolio value chart">
+    <defs>
+      <linearGradient id="portfolioLineGlow" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#64d989"/>
+        <stop offset="55%" stop-color="#82e9a1"/>
+        <stop offset="100%" stop-color="#9ff0b1"/>
+      </linearGradient>
+      <filter id="portfolioGlow" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur stdDeviation="3.2" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+
+    <rect x="0" y="0" width="${W}" height="${H}" rx="12" fill="#09150f"/>
+
+    ${gridY.map(g=>`<line class="portfolioGridLine" x1="${pad.l}" y1="${g.yy}" x2="${pad.l+plotW}" y2="${g.yy}" />`).join('')}
+    ${xIdx.map(i=>`<line class="portfolioGridLine vertical" x1="${x(i)}" y1="${pad.t}" x2="${x(i)}" y2="${pad.t+plotH}" />`).join('')}
+
+    <path class="portfolioValueLine" d="${path}" fill="none" stroke="url(#portfolioLineGlow)" stroke-width="3.2" vector-effect="non-scaling-stroke"/>
+
+    <circle class="portfolioLastHalo" cx="${lastX}" cy="${lastY}" r="11"/>
+    <circle class="portfolioLastDot" cx="${lastX}" cy="${lastY}" r="4.8"/>
+
+    ${gridY.map(g=>`<text class="portfolioYAxisLabel" x="${W-12}" y="${g.yy+4}" text-anchor="end">${fmtUsd(g.v)}</text>`).join('')}
+    ${xIdx.map(i=>`<text class="portfolioXAxisLabel" x="${x(i)}" y="${H-13}" text-anchor="${i===0?'start':i===rows.length-1?'end':'middle'}">${fmtTime(rows[i].t)}</text>`).join('')}
+
+    <g class="portfolioLastPriceGroup">
+      <rect class="portfolioLastPriceBg" x="${W-84}" y="${Math.max(8,Math.min(H-34,lastY-13))}" width="72" height="26" rx="5"/>
+      <text class="portfolioLastPriceText" x="${W-48}" y="${Math.max(25,Math.min(H-17,lastY+5))}" text-anchor="middle">${fmtUsd(Number(last.v))}</text>
+    </g>
+  </svg>`;
 }
 function renderPortfolioPnlChart(rows){
   const el=$('portfolioPnlChart');if(!el)return;rows=Array.isArray(rows)?rows:[];if(rows.length<2){el.innerHTML='<div class="portfolioEmpty">Tracked P/L appears after portfolio history builds.</div>';return}

@@ -915,3 +915,11 @@ This update rebuilds the Portfolio information architecture around the current C
 - Only `#portfolioAllocationDonut` receives the light-green circular outline.
 - Removes the original cream inner disc from `#portfolioAllocationDonut::after`.
 - Vercel configuration unchanged.
+
+## V1.11.43 — Fomo-Style Portfolio Chart
+- Portfolio value chart now fills the entire chart panel.
+- Adds 8 horizontal price grid lines and denser vertical time grid lines.
+- Adds a right-side USD price axis like the Fomo reference.
+- Adds a current-price tag aligned to the final chart point.
+- Keeps the Trenches dark green/light green visual system.
+- Vercel configuration unchanged.
