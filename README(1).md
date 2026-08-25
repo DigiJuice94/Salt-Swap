@@ -769,3 +769,11 @@ This update rebuilds the Portfolio information architecture around the current C
 - Public profile data is loaded by wallet from the existing Social Profile API.
 - Recent posts load from the existing Social Profile Feed API.
 - Keeps the V1.11.18/19 known-good Vercel configuration unchanged.
+
+## V1.11.21 — Full Profile View
+- Clicking a username/avatar now opens that trader in the same full Social Profile layout used for your own profile.
+- Shows their banner, avatar, username, bio, wallet, joined date, favorite NFTs, wallet holdings, and full thesis history.
+- Public profiles are view-only: edit/banner/send/receive/NFT-edit controls are hidden.
+- Your own private/local Watch List is hidden while viewing someone else.
+- Adds `Back to my profile` to return to your own profile.
+- Keeps the V1.11.20 known-good deployment configuration unchanged.

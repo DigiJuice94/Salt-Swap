@@ -68,6 +68,12 @@ button.feedPostAvatar,button.trenchThreadAvatar,button.reviewAvatar{display:grid
 body.publicProfileOpen{overflow:hidden}
 </style>
 
+
+<style>
+.favoriteNftSlot.publicProfileNft{cursor:default}
+.favoriteNftSlot.publicProfileNft:hover{transform:none}
+</style>
+
 </head>
 <body>
   <img src="assets/trenches-sheep.png" alt="" class="trenchLogoAsset" aria-hidden="true" />
@@ -278,7 +284,7 @@ body.publicProfileOpen{overflow:hidden}
               <div id="saltProfileBanner" class="saltProfileBanner"><button id="editBannerBtn" type="button">Change banner</button><input id="bannerInput" type="file" accept="image/jpeg,image/png,image/webp" hidden /></div>
               <div class="saltProfileIdentityRow">
                 <div id="saltProfileAvatar" class="saltProfileAvatar">S</div>
-                <div class="saltProfileActions"><button id="editSaltProfileBtn" class="secondaryBtn" type="button">⚙ Edit profile</button><button id="sendSolBtn" class="solActionBtn sendSolProfileBtn" type="button">↑ <span>Send Crypto<small>Multi-chain</small></span></button><button id="receiveSolBtn" class="solActionBtn receiveSolProfileBtn" type="button">↓ <span>Receive Crypto<small>5 networks</small></span></button></div>
+                <div class="saltProfileActions"><button id="backToOwnProfileBtn" class="secondaryBtn hidden" type="button">← Back to my profile</button><button id="editSaltProfileBtn" class="secondaryBtn" type="button">⚙ Edit profile</button><button id="sendSolBtn" class="solActionBtn sendSolProfileBtn" type="button">↑ <span>Send Crypto<small>Multi-chain</small></span></button><button id="receiveSolBtn" class="solActionBtn receiveSolProfileBtn" type="button">↓ <span>Receive Crypto<small>5 networks</small></span></button></div>
               </div>
               <div class="saltProfileBio">
                 <h2 id="saltProfileDisplayName">Salt user</h2>
@@ -1718,6 +1724,8 @@ function setPickerChain(chain){pickerChain=chain;document.querySelectorAll('[dat
 async function chooseToken(t){if(!t?.id)return;t.chain=t.chain||pickerChain;if(pickerSide==='pay'){if(t.chain!==currentChain)throw new Error(`This scan is on ${chainName(currentChain)}. Choose a pay token on the same chain.`);if(t.decimals==null)throw new Error('For safety, arbitrary pay tokens need verified decimals first. Scan that token first or use a pinned popular pay asset.');inputToken=t;walletAddress='';walletProvider=null;walletKind='';setTokenButton('paySymbol',t);$('walletBtn').textContent='Connect Wallet';$('payAmount').value='';$('receiveAmount').value='';lastQuote=null;$('quoteDetails').classList.add('hidden');saveRecent(t);closeTokenPicker();updateSwapButton();return}if(t.chain==='solana'){pendingReceiveToken=normalizeClientToken({...t});saveRecent(t);closeTokenPicker();$('mintInput').value=t.id;$('chainSelect').value='solana';await scan();return}if(t.id===NATIVE_EVM)throw new Error(`Salt's risk scan is contract-based. To receive native ${t.symbol}, use ${t.symbol==='ETH'?'WETH':'WBNB'} for now.`);pendingReceiveToken=normalizeClientToken({...t});saveRecent(t);closeTokenPicker();$('mintInput').value=t.id;$('chainSelect').value=t.chain;await scan()}
 async function searchTokens(q){q=String(q||'').trim();const sec=$('searchSection'),box=$('searchTokens');if(!q){sec.classList.add('hidden');return}sec.classList.remove('hidden');box.innerHTML='<span class="pickerLoading">Searching…</span>';try{let rows;if(pickerChain==='solana'){rows=await tokenApi({q});rows.forEach(x=>x.chain='solana')}else rows=await evmTokenApi(pickerChain,q);box.innerHTML=rows.map(tokenRow).join('')||'<span class="pickerLoading">No matching tokens with indexed liquidity.</span>';bindTokenChoices(box)}catch(e){box.innerHTML=`<span class="pickerLoading">${esc(readableError(e))}</span>`}}
 function socialEsc(v){return esc(String(v??''))}
+let publicSocialProfile=null;
+let viewingPublicSocialProfile=false;
 let saltProfile=null;
 function socialStorageKey(){return walletAddress?`salt:profile:${walletAddress}`:''}
 function getCachedProfileForWallet(address){try{return address?JSON.parse(localStorage.getItem(`salt:profile:${address}`)||'null'):null}catch{return null}}
@@ -1768,8 +1776,34 @@ async function openNftPicker(slot=0){if(!walletAddress)throw new Error('Connect 
 function closeNftPicker(){$('nftPickerModal')?.classList.add('hidden');document.body.classList.remove('modalOpen')}
 function holdingIconMarkup(x){const initial=socialEsc(String(x?.symbol||x?.name||'?').trim().slice(0,1).toUpperCase()||'?'),urls=[x?.image,...(Array.isArray(x?.imageFallbacks)?x.imageFallbacks:[])].filter((v,i,a)=>v&&a.indexOf(v)===i);if(!urls.length)return `<span class="holdingIconFallback">${initial}</span>`;const encoded=socialEsc(JSON.stringify(urls));return `<img src="${socialEsc(urls[0])}" alt="" data-icon-sources='${encoded}' data-icon-index="0" referrerpolicy="no-referrer" onerror="holdingIconError(this)" /><span class="holdingIconFallback hidden">${initial}</span>`}
 function holdingIconError(img){try{const urls=JSON.parse(img.dataset.iconSources||'[]'),next=Number(img.dataset.iconIndex||0)+1;if(next<urls.length){img.dataset.iconIndex=String(next);img.src=urls[next];return}img.style.display='none';img.nextElementSibling?.classList.remove('hidden')}catch{img.style.display='none';img.nextElementSibling?.classList.remove('hidden')}}
-async function loadProfileHoldings(){const el=$('saltWalletHoldings');if(!el||!walletAddress)return;try{const j=await socialApi('/api/social-holdings?wallet='+encodeURIComponent(walletAddress));const rows=j.items||[];el.innerHTML=rows.length?rows.slice(0,12).map(x=>`<div class="holdingRow"><div class="holdingIcon">${holdingIconMarkup(x)}</div><div class="holdingName"><b>${socialEsc(x.symbol||x.name||'Token')}</b><small>${socialEsc(x.name||shortWallet(x.mint||''))}</small></div><strong>${socialEsc(x.displayBalance||'0')}</strong></div>`).join(''):'<div class="saltEmptyMini">No fungible tokens found.</div>'}catch(e){el.innerHTML=`<div class="saltEmptyMini">${socialEsc(readableError(e))}</div>`}}
-async function loadProfileTheses(){const el=$('saltProfileTheses'),profileWallet=(saltProfile||getRememberedSocialProfile())?.wallet||walletAddress;if(!el||!profileWallet)return;try{const j=await socialApi('/api/social-profile-feed?wallet='+encodeURIComponent(profileWallet));const rows=j.reviews||[];el.innerHTML=rows.length?rows.map(r=>feedPostCard(r,'profile')).join(''):'<div class="emptyReviews">Your posted token ratings and theses will appear here.</div>';bindSocialPostCards(el)}catch(e){el.innerHTML=`<div class="emptyReviews">${socialEsc(readableError(e))}</div>`}}
+async function loadProfileHoldingsFor(profileWallet){
+  const el=$('saltWalletHoldings');
+  if(!el||!profileWallet)return;
+  try{
+    const j=await socialApi('/api/social-holdings?wallet='+encodeURIComponent(profileWallet));
+    const rows=j.items||[];
+    el.innerHTML=rows.length?rows.slice(0,12).map(x=>`<div class="holdingRow"><div class="holdingIcon">${holdingIconMarkup(x)}</div><div class="holdingName"><b>${socialEsc(x.symbol||x.name||'Token')}</b><small>${socialEsc(x.name||shortWallet(x.mint||''))}</small></div><strong>${socialEsc(x.displayBalance||'0')}</strong></div>`).join(''):'<div class="saltEmptyMini">No fungible tokens found.</div>'
+  }catch(e){
+    el.innerHTML=`<div class="saltEmptyMini">${socialEsc(readableError(e))}</div>`
+  }
+}
+async function loadProfileHoldings(){return loadProfileHoldingsFor(walletAddress)}
+async function loadProfileThesesFor(profileWallet,emptyText='No posted token ratings or theses yet.'){
+  const el=$('saltProfileTheses');
+  if(!el||!profileWallet)return;
+  try{
+    const j=await socialApi('/api/social-profile-feed?wallet='+encodeURIComponent(profileWallet));
+    const rows=j.reviews||[];
+    el.innerHTML=rows.length?rows.map(r=>feedPostCard(r,'profile')).join(''):`<div class="emptyReviews">${socialEsc(emptyText)}</div>`;
+    bindSocialPostCards(el)
+  }catch(e){
+    el.innerHTML=`<div class="emptyReviews">${socialEsc(readableError(e))}</div>`
+  }
+}
+async function loadProfileTheses(){
+  const profileWallet=(saltProfile||getRememberedSocialProfile())?.wallet||walletAddress;
+  return loadProfileThesesFor(profileWallet,'Your posted token ratings and theses will appear here.')
+}
 function openProfileModal(){const m=$('profileCreateModal');if(!m)return;m.classList.remove('hidden');document.documentElement.classList.add('modalOpen');document.body.classList.add('modalOpen');const input=$('profileUsernameInput');if(input){input.value=saltProfile?.username||'';setTimeout(()=>input.focus(),50)}const bioInput=$('profileBioInput');if(bioInput){bioInput.value=saltProfile?.bio||'';$('profileBioCount')&&($('profileBioCount').textContent=`${bioInput.value.length}/160`)}pendingProfileAvatar=saltProfile?.avatar||'';const prev=$('profilePicturePreview');if(prev){if(pendingProfileAvatar)prev.innerHTML=`<img src="${socialEsc(pendingProfileAvatar)}" alt="" />`;else prev.textContent='🧂'}$('profileCreateStatus').textContent='Update your username, picture, and bio. Your wallet will sign one verification message.';$('profileCreateStatus').className='profileCreateStatus'}
 function closeProfileModal(){const m=$('profileCreateModal');if(!m)return;m.classList.add('hidden');document.documentElement.classList.remove('modalOpen');document.body.classList.remove('modalOpen')}
 
@@ -2276,7 +2310,7 @@ function initSalt(){
   $('shareTokenBtn')?.addEventListener('click',()=>{$('socialSearchInput')?.focus()});$('socialSearchInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const q=e.target.value.trim();if(q){$('mintInput').value=q;showMainPage('swap');scan();}}});
    $('socialOnboardingConnectBtn')?.addEventListener('click',()=>openWalletConnectModal('social'));$('profileContinueBtn')?.addEventListener('click',createSaltProfile);$('closeProfileModal')?.addEventListener('click',closeProfileModal);document.querySelectorAll('[data-close-profile-modal]').forEach(x=>x.addEventListener('click',closeProfileModal));$('profileUsernameInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();createSaltProfile()}});$('reviewForm')?.addEventListener('submit',submitSaltReview);$('refreshReviewsBtn')?.addEventListener('click',loadReviews);$('ratingInput')?.addEventListener('input',e=>$('ratingValue').textContent=`${e.target.value}/10`);$('scanThesisForm')?.addEventListener('submit',submitScanThesis);$('scanThesisRating')?.addEventListener('input',e=>$('scanThesisRatingValue').textContent=`${e.target.value}/10`);
   $('sendSolBtn')?.addEventListener('click',()=>openSolTransfer('send'));$('receiveSolBtn')?.addEventListener('click',()=>openSolTransfer('receive'));$('closeSolModal')?.addEventListener('click',closeSolTransfer);document.querySelectorAll('[data-close-sol-modal]').forEach(x=>x.addEventListener('click',closeSolTransfer));document.querySelectorAll('[data-transfer-mode]').forEach(x=>x.addEventListener('click',()=>{transferMode=x.dataset.transferMode||'receive';renderWalletTransfer()}));document.querySelectorAll('[data-transfer-chain]').forEach(x=>x.addEventListener('click',()=>{transferChain=x.dataset.transferChain||'solana';renderWalletTransfer()}));$('connectTransferWalletBtn')?.addEventListener('click',connectTransferWallet);$('copyReceiveSolBtn')?.addEventListener('click',copyReceiveSol);$('confirmSendSolBtn')?.addEventListener('click',sendProfileSol);
-  $('editSaltProfileBtn')?.addEventListener('click',openProfileModal);
+  $('editSaltProfileBtn')?.addEventListener('click',openProfileModal);$('backToOwnProfileBtn')?.addEventListener('click',restoreOwnFullProfile);
   const bannerBtn=$('editBannerBtn'),bannerInput=$('bannerInput');
   bannerBtn?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();bannerInput?.click()});
   bannerInput?.addEventListener('change',async e=>{
@@ -2380,10 +2414,126 @@ function closePublicSocialProfile(){
   document.body.classList.remove('publicProfileOpen');
 }
 
-document.addEventListener('click',e=>{
-  const close=e.target.closest?.('[data-public-profile-close]');
-  if(close){e.preventDefault();closePublicSocialProfile();return}
 
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&!$('publicProfileModal')?.classList.contains('hidden'))closePublicSocialProfile();
+});
+
+
+
+async function openFullSocialProfile(wallet,username=''){
+  const w=String(wallet||'').trim();
+  if(!w)return;
+
+  try{
+    const p=await socialApi('/api/social-profile?wallet='+encodeURIComponent(w));
+    if(!p)throw new Error('This Trenches profile is unavailable.');
+
+    publicSocialProfile=p;
+    viewingPublicSocialProfile=true;
+
+    $('socialSubNav')?.classList.remove('hidden');
+    showSocialTab('profile');
+    $('socialProfilePage')?.classList.remove('hidden');
+    $('socialFeedView')?.classList.add('hidden');
+    $('socialFollowingView')?.classList.add('hidden');
+
+    const displayName=p.username||String(username||'trader').replace(/^@/,'');
+    const displayNameEl=$('saltProfileDisplayName');
+    if(displayNameEl){
+      displayNameEl.textContent=displayName||'Trenches user';
+      displayNameEl.classList.toggle('hasVerifiedBadge',Boolean(p.verified));
+      displayNameEl.querySelectorAll('.trenchesVerifiedBadge').forEach(x=>x.remove());
+      if(p.verified){
+        const badge=document.createElement('img');
+        badge.src='/verified-badge.png';
+        badge.alt='Verified';
+        badge.className='trenchesVerifiedBadge';
+        badge.title='Verified Trenches account';
+        displayNameEl.appendChild(badge);
+      }
+    }
+
+    $('saltProfileHandle').textContent='@'+(displayName||'trader');
+    const bioEl=$('saltProfileBioText');
+    if(bioEl){
+      bioEl.textContent=p.bio||'Trench trader · Wallet-verified profile';
+      bioEl.classList.toggle('isDefault',!p.bio)
+    }
+    $('saltProfileWallet').textContent=shortWallet(p.wallet||w);
+
+    const joinedEl=$('saltProfileJoined');
+    if(joinedEl){
+      const joinedDate=p.createdAt?new Date(p.createdAt):null;
+      if(joinedDate&&!Number.isNaN(joinedDate.getTime())){
+        joinedEl.textContent=`📅 Joined The Trenches ${joinedDate.toLocaleDateString([], {month:'short',day:'numeric',year:'numeric'})}`;
+        joinedEl.classList.remove('hidden')
+      }else{
+        joinedEl.classList.add('hidden')
+      }
+    }
+
+    setAvatarEl($('saltProfileAvatar'),p);
+    const banner=$('saltProfileBanner');
+    if(banner){
+      const shownBanner=p.banner||'';
+      banner.style.backgroundImage=shownBanner?`url(${shownBanner})`:'';
+      banner.classList.toggle('hasImage',Boolean(shownBanner))
+    }
+
+    renderFavoriteNfts(p.favorites||[]);
+
+    // Public profile is view-only.
+    $('editSaltProfileBtn')?.classList.add('hidden');
+    $('sendSolBtn')?.classList.add('hidden');
+    $('receiveSolBtn')?.classList.add('hidden');
+    $('backToOwnProfileBtn')?.classList.remove('hidden');
+    $('editBannerBtn')?.classList.add('hidden');
+    document.querySelectorAll('.favoriteNftSlot').forEach(el=>{
+      el.disabled=true;
+      el.classList.add('publicProfileNft')
+    });
+
+    // Do not show the viewer's private/local watch list on someone else's profile.
+    const watchCard=$('profileWatchList')?.closest('.watchListCard');
+    if(watchCard)watchCard.classList.add('hidden');
+
+    // Wallet holdings + theses now use the viewed profile wallet.
+    await Promise.all([
+      loadProfileHoldingsFor(p.wallet||w),
+      loadProfileThesesFor(p.wallet||w,'This trader has not posted a thesis yet.')
+    ]);
+
+    // Remove the old pop-up if it happened to be open.
+    closePublicSocialProfile?.();
+  }catch(e){
+    alert(readableError(e))
+  }
+}
+
+function restoreOwnFullProfile(){
+  publicSocialProfile=null;
+  viewingPublicSocialProfile=false;
+
+  $('editSaltProfileBtn')?.classList.remove('hidden');
+  $('sendSolBtn')?.classList.remove('hidden');
+  $('receiveSolBtn')?.classList.remove('hidden');
+  $('backToOwnProfileBtn')?.classList.add('hidden');
+  $('editBannerBtn')?.classList.remove('hidden');
+
+  document.querySelectorAll('.favoriteNftSlot').forEach(el=>{
+    el.disabled=false;
+    el.classList.remove('publicProfileNft')
+  });
+
+  const watchCard=$('profileWatchList')?.closest('.watchListCard');
+  if(watchCard)watchCard.classList.remove('hidden');
+
+  renderProfile();
+}
+
+document.addEventListener('click',e=>{
   const target=e.target.closest?.('[data-profile-wallet]');
   if(!target)return;
   const wallet=target.getAttribute('data-profile-wallet')||'';
@@ -2391,11 +2541,7 @@ document.addEventListener('click',e=>{
   if(!wallet)return;
   e.preventDefault();
   e.stopPropagation();
-  openPublicSocialProfile(wallet,username);
-});
-
-document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'&&!$('publicProfileModal')?.classList.contains('hidden'))closePublicSocialProfile();
+  openFullSocialProfile(wallet,username);
 });
 
 </script>
