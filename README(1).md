@@ -681,3 +681,16 @@ This update rebuilds the Portfolio information architecture around the current C
 - GeckoTerminal remains the fallback, but it now first resolves GeckoTerminal's own top pool for the token before requesting OHLCV.
 - The line graph includes a light history fill, volume bars, live endpoint pulse, and hover price/time tooltip.
 - High / Low / Volume / Liquidity / DEX Pool stats remain below the chart.
+
+## V1.11.00 — Fomo-style Market Cap Chart
+- Changes the post-scan history chart to behave more like the supplied Fomo reference.
+- The main line now plots **estimated historical market cap** when the current market cap and current price are both available.
+- Historical market cap is derived using `current market cap / current price` as the token-supply conversion factor applied to historical closes.
+- Falls back to normal historical price if market cap cannot be verified.
+- Adds a clear **Market Cap** value at the top of the chart.
+- Adds **24H Volume** in the chart header.
+- Keeps the volume histogram under the line, with green/red volume bars.
+- Adds a bright blue right-side current-value tag, similar to Fomo's blue `$7.6K` marker, so users can immediately see exactly where the chart is trading.
+- Adds a dotted current-value guide across the chart.
+- Changes the history line to a purple → blue gradient while keeping the dark Trenches terminal background.
+- Hovering the line shows market cap (or price fallback), chart mode, and exact timestamp.

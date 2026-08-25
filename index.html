@@ -664,6 +664,14 @@
               <strong id="scanChartPrice">—</strong>
               <span id="scanChartChange" class="neutral">—</span>
             </div>
+            <div class="scanChartHeadlineStat">
+              <small>MARKET CAP</small>
+              <strong id="scanChartMarketCapTop">—</strong>
+            </div>
+            <div class="scanChartHeadlineStat">
+              <small>24H VOLUME</small>
+              <strong id="scanChartVolumeTop">—</strong>
+            </div>
             <a id="scanChartDexLink" class="scanChartDexLink hidden" href="#" target="_blank" rel="noopener noreferrer">Open market ↗</a>
           </div>
         </div>
@@ -944,14 +952,22 @@ function renderScanChart(j){
     .map(x=>Array.isArray(x)?x.map(Number):[])
     .filter(x=>x.length>=6&&x.slice(0,6).every(Number.isFinite))
     .sort((a,b)=>a[0]-b[0]);
-  const pair=j?.pair||{},dexLink=$('scanChartDexLink');
+
+  const pair=j?.pair||{},dexLink=$('scanChartDexLink'),
+    currentPrice=Number(pair?.priceUsd),
+    currentMarketCap=Number(pair?.marketCap),
+    currentVolume24h=Number(pair?.volume24h);
 
   $('scanChartName').textContent=scanChartState.name;
   $('scanChartSymbol').textContent='$'+scanChartState.symbol;
+  $('scanChartMarketCapTop').textContent=scanChartMoney(currentMarketCap);
+  $('scanChartVolumeTop').textContent=scanChartMoney(currentVolume24h);
+
   if(dexLink){
     dexLink.classList.toggle('hidden',!j?.dexUrl);
     if(j?.dexUrl)dexLink.href=j.dexUrl
   }
+
   $('scanChartLiquidity').textContent=scanChartMoney(pair?.liquidityUsd);
   $('scanChartPool').textContent=[pair?.dexId,pair?.pairAddress?String(pair.pairAddress).slice(0,6)+'…'+String(pair.pairAddress).slice(-4):''].filter(Boolean).join(' · ')||'—';
 
@@ -962,51 +978,64 @@ function renderScanChart(j){
     $('scanChartHigh').textContent='—';
     $('scanChartLow').textContent='—';
     $('scanChartVolume').textContent=scanChartMoney(pair?.volume24h);
-    $('scanChartCanvas').innerHTML=`<div class="scanChartUnavailable"><b>Historical price feed unavailable.</b><span>${j?.message?socialEsc(j.message):'The market is live, but the history provider did not return enough points for this range.'}</span></div>`;
+    $('scanChartCanvas').innerHTML=`<div class="scanChartUnavailable"><b>Historical market-cap feed unavailable.</b><span>${j?.message?socialEsc(j.message):'The market is live, but the history provider did not return enough points for this range.'}</span></div>`;
     $('scanChartStatus').textContent=j?.source||'Live market data';
     return
   }
 
   const first=candles[0],last=candles[candles.length-1],
     highs=candles.map(x=>x[2]),lows=candles.map(x=>x[3]),closes=candles.map(x=>x[4]),volumes=candles.map(x=>x[5]),
-    high=Math.max(...highs),low=Math.min(...lows),lastPrice=last[4],
+    highPrice=Math.max(...highs),lowPrice=Math.min(...lows),lastPrice=last[4],
     startPrice=first[4]||first[1],change=startPrice?((lastPrice-startPrice)/startPrice)*100:null,
-    volume=volumes.reduce((a,b)=>a+b,0);
+    visibleVolume=volumes.reduce((a,b)=>a+b,0);
+
+  // Use current market cap / current price as a stable conversion factor.
+  // If market cap is unavailable, fall back to price history.
+  const supplyFactor=Number.isFinite(currentMarketCap)&&currentMarketCap>0&&Number.isFinite(currentPrice)&&currentPrice>0
+    ? currentMarketCap/currentPrice
+    : null;
+
+  const historyValues=closes.map(v=>supplyFactor?v*supplyFactor:v);
+  const highValue=supplyFactor?highPrice*supplyFactor:highPrice;
+  const lowValue=supplyFactor?lowPrice*supplyFactor:lowPrice;
+  const lastValue=historyValues[historyValues.length-1];
+  const chartMode=supplyFactor?'Market Cap':'Price';
 
   $('scanChartPrice').textContent=scanChartMoney(lastPrice);
   $('scanChartChange').textContent=scanChartPct(change);
   $('scanChartChange').className=change>0?'up':change<0?'down':'neutral';
-  $('scanChartHigh').textContent=scanChartMoney(high);
-  $('scanChartLow').textContent=scanChartMoney(low);
-  $('scanChartVolume').textContent=scanChartMoney(volume);
-  $('scanChartStatus').textContent=`${candles.length} historical points · ${j?.source||'market history'} · updated ${new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}`;
+  $('scanChartHigh').textContent=scanChartMoney(highValue);
+  $('scanChartLow').textContent=scanChartMoney(lowValue);
+  $('scanChartVolume').textContent=scanChartMoney(visibleVolume);
+  $('scanChartStatus').textContent=`${candles.length} historical points · ${chartMode} · ${j?.source||'market history'} · updated ${new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}`;
 
-  const w=1100,h=360,left=18,right=92,top=22,priceBottom=276,volumeTop=296,volumeBottom=332,
+  const w=1100,h=370,left=20,right=95,top=34,priceBottom=282,volumeTop=304,volumeBottom=342,
     plotW=w-left-right,priceH=priceBottom-top,
-    minClose=Math.min(...closes),maxClose=Math.max(...closes),
-    rawSpan=Math.max(0,maxClose-minClose),floor=Math.max(Math.abs(lastPrice)*.001,.000000000001),
-    span=Math.max(rawSpan,floor),pad=span*.09,minY=minClose-pad,maxY=maxClose+pad,
+    minValue=Math.min(...historyValues),maxValue=Math.max(...historyValues),
+    rawSpan=Math.max(0,maxValue-minValue),floor=Math.max(Math.abs(lastValue)*.001,.000000000001),
+    span=Math.max(rawSpan,floor),pad=span*.09,minY=minValue-pad,maxY=maxValue+pad,
     maxVol=Math.max(...volumes,1);
 
   const xAt=i=>left+plotW*(i/Math.max(1,candles.length-1));
   const yAt=v=>top+(maxY-v)/(maxY-minY)*priceH;
 
-  const points=candles.map((c,i)=>[xAt(i),yAt(c[4])]);
+  const points=historyValues.map((v,i)=>[xAt(i),yAt(v)]);
   const linePath=points.map((p,i)=>(i?'L':'M')+p[0].toFixed(2)+' '+p[1].toFixed(2)).join(' ');
   const areaPath=linePath+` L ${(w-right).toFixed(2)} ${priceBottom} L ${left} ${priceBottom} Z`;
 
   let volumeSvg='';
   const barW=Math.max(1,Math.min(6,plotW/Math.max(1,candles.length)*.72));
   candles.forEach((c,i)=>{
-    const vh=Math.max(1,(c[5]/maxVol)*(volumeBottom-volumeTop)),x=xAt(i);
-    volumeSvg+=`<rect x="${(x-barW/2).toFixed(2)}" y="${(volumeBottom-vh).toFixed(2)}" width="${barW.toFixed(2)}" height="${vh.toFixed(2)}" rx=".8"/>`
+    const vh=Math.max(1,(c[5]/maxVol)*(volumeBottom-volumeTop)),x=xAt(i),
+      up=i===0?true:c[4]>=candles[i-1][4];
+    volumeSvg+=`<rect class="${up?'up':'down'}" x="${(x-barW/2).toFixed(2)}" y="${(volumeBottom-vh).toFixed(2)}" width="${barW.toFixed(2)}" height="${vh.toFixed(2)}" rx=".8"/>`
   });
 
-  let grid='',priceLabels='';
+  let grid='',valueLabels='';
   for(let i=0;i<5;i++){
     const pct=i/4,y=top+priceH*pct,val=maxY-(maxY-minY)*pct;
     grid+=`<line x1="${left}" x2="${w-right}" y1="${y.toFixed(2)}" y2="${y.toFixed(2)}"/>`;
-    priceLabels+=`<text x="${w-8}" y="${(y+4).toFixed(2)}" text-anchor="end">${socialEsc(scanChartMoney(val))}</text>`
+    valueLabels+=`<text x="${w-8}" y="${(y+4).toFixed(2)}" text-anchor="end">${socialEsc(scanChartMoney(val))}</text>`
   }
 
   const timeCount=Math.min(6,candles.length);
@@ -1016,41 +1045,66 @@ function renderScanChart(j){
     return `<text x="${x.toFixed(2)}" y="${h-7}" text-anchor="${anchor}">${socialEsc(scanChartTime(candles[idx][0],scanChartState.range))}</text>`
   }).join('');
 
-  const lastPoint=points[points.length-1],lineColor=change>=0?'#79e49a':'#ff8178';
+  const lastPoint=points[points.length-1],
+    labelText=scanChartMoney(lastValue),
+    labelWidth=Math.max(54,Math.min(90,44+String(labelText).length*4.4));
 
-  $('scanChartCanvas').innerHTML=`<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${socialEsc(scanChartState.name)} historical price chart">
+  $('scanChartCanvas').innerHTML=`<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${socialEsc(scanChartState.name)} historical ${socialEsc(chartMode.toLowerCase())} chart">
     <defs>
+      <linearGradient id="scanLineStroke" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#8b5cf6"/>
+        <stop offset=".48" stop-color="#6366f1"/>
+        <stop offset="1" stop-color="#0ea5e9"/>
+      </linearGradient>
       <linearGradient id="scanLineArea" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="${lineColor}" stop-opacity=".24"/>
-        <stop offset="1" stop-color="${lineColor}" stop-opacity="0"/>
+        <stop offset="0" stop-color="#2563eb" stop-opacity=".19"/>
+        <stop offset="1" stop-color="#2563eb" stop-opacity="0"/>
       </linearGradient>
     </defs>
+
+    <text x="${left}" y="15" class="scanChartMetricLabel">${socialEsc(chartMode.toUpperCase())}</text>
+    <text x="${left+88}" y="15" class="scanChartMetricValue">${socialEsc(scanChartMoney(lastValue))}</text>
+    <text x="${left}" y="${volumeTop-7}" class="scanChartVolumeLabel">VOLUME</text>
+    <text x="${left+53}" y="${volumeTop-7}" class="scanChartVolumeValue">${socialEsc(scanChartMoney(visibleVolume))}</text>
+
     <g class="scanChartGrid">${grid}</g>
     <path class="scanChartArea" d="${areaPath}" fill="url(#scanLineArea)"/>
-    <path class="scanChartHistoryLine" d="${linePath}" style="stroke:${lineColor}"/>
+    <path class="scanChartHistoryLine fomo" d="${linePath}"/>
+
     <g class="scanChartVolumes">${volumeSvg}</g>
+
     <line id="scanChartHoverLine" class="scanChartHoverLine" x1="0" x2="0" y1="${top}" y2="${priceBottom}" visibility="hidden"/>
     <circle id="scanChartHoverDot" class="scanChartHoverDot" cx="0" cy="0" r="5" visibility="hidden"/>
-    <line class="scanChartLastLine" x1="${left}" x2="${w-right}" y1="${lastPoint[1].toFixed(2)}" y2="${lastPoint[1].toFixed(2)}" style="stroke:${lineColor}"/>
-    <circle class="scanChartLastPulse" cx="${lastPoint[0].toFixed(2)}" cy="${lastPoint[1].toFixed(2)}" r="5" style="fill:${lineColor}"/>
-    <g class="scanChartAxis">${priceLabels}${timeLabels}</g>
-    <text x="${left}" y="${volumeTop-6}" class="scanChartVolumeLabel">VOLUME</text>
+
+    <line class="scanChartLastGuide" x1="${left}" x2="${w-right}" y1="${lastPoint[1].toFixed(2)}" y2="${lastPoint[1].toFixed(2)}"/>
+    <circle class="scanChartLastPulse fomo" cx="${lastPoint[0].toFixed(2)}" cy="${lastPoint[1].toFixed(2)}" r="4.5"/>
+
+    <g class="scanChartCurrentTag">
+      <rect x="${w-labelWidth-1}" y="${(lastPoint[1]-12).toFixed(2)}" width="${labelWidth}" height="24" rx="3"/>
+      <text x="${w-7}" y="${(lastPoint[1]+4).toFixed(2)}" text-anchor="end">${socialEsc(labelText)}</text>
+    </g>
+
+    <g class="scanChartAxis">${valueLabels}${timeLabels}</g>
   </svg><div id="scanChartTooltip" class="scanChartTooltip hidden"></div>`;
 
-  const canvas=$('scanChartCanvas'),tip=$('scanChartTooltip'),hoverLine=$('scanChartHoverLine'),hoverDot=$('scanChartHoverDot');
+  const canvas=$('scanChartCanvas'),tip=$('scanChartTooltip'),
+    hoverLine=$('scanChartHoverLine'),hoverDot=$('scanChartHoverDot');
+
   const hide=()=>{tip?.classList.add('hidden');hoverLine?.setAttribute('visibility','hidden');hoverDot?.setAttribute('visibility','hidden')};
   canvas.onpointerleave=hide;
   canvas.onpointermove=e=>{
-    const rect=canvas.getBoundingClientRect(),pct=Math.max(0,Math.min(1,(e.clientX-rect.left)/Math.max(1,rect.width)));
-    const idx=Math.max(0,Math.min(candles.length-1,Math.round(pct*(candles.length-1)))),c=candles[idx],p=points[idx];
+    const rect=canvas.getBoundingClientRect(),
+      pct=Math.max(0,Math.min(1,(e.clientX-rect.left)/Math.max(1,rect.width))),
+      idx=Math.max(0,Math.min(candles.length-1,Math.round(pct*(candles.length-1)))),
+      c=candles[idx],p=points[idx],v=historyValues[idx];
     if(!c||!p)return;
     hoverLine?.setAttribute('x1',p[0]);hoverLine?.setAttribute('x2',p[0]);hoverLine?.setAttribute('visibility','visible');
     hoverDot?.setAttribute('cx',p[0]);hoverDot?.setAttribute('cy',p[1]);hoverDot?.setAttribute('visibility','visible');
     if(tip){
-      tip.innerHTML=`<b>${socialEsc(scanChartMoney(c[4]))}</b><span>${new Date(c[0]*1000).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</span>`;
+      tip.innerHTML=`<b>${socialEsc(scanChartMoney(v))}</b><small>${socialEsc(chartMode)}</small><span>${new Date(c[0]*1000).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</span>`;
       tip.classList.remove('hidden');
-      tip.style.left=`${Math.max(8,Math.min(rect.width-142,(p[0]/w)*rect.width-58))}px`;
-      tip.style.top=`${Math.max(12,(p[1]/h)*rect.height-58)}px`
+      tip.style.left=`${Math.max(8,Math.min(rect.width-150,(p[0]/w)*rect.width-62))}px`;
+      tip.style.top=`${Math.max(12,(p[1]/h)*rect.height-68)}px`
     }
   }
 }

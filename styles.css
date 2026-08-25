@@ -3151,3 +3151,90 @@ body.trending-active::before{opacity:.045!important}
 @media(max-width:760px){
   .scanChartCanvas,.scanChartCanvas svg,.scanChartLoading,.scanChartUnavailable{min-height:295px}
 }
+
+
+/* V1.11.00 — Fomo-style market-cap history chart */
+.scanChartHeadRight{
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+.scanChartHeadlineStat{
+  display:grid;
+  gap:2px;
+  padding-left:12px;
+  border-left:1px solid rgba(116,145,129,.12);
+}
+.scanChartHeadlineStat small{
+  font-size:7px;
+  font-weight:950;
+  letter-spacing:.12em;
+  color:#648071;
+}
+.scanChartHeadlineStat strong{
+  font-size:13px;
+  color:#dce8df;
+  font-variant-numeric:tabular-nums;
+}
+
+.scanChartHistoryLine.fomo{
+  fill:none;
+  stroke:url(#scanLineStroke);
+  stroke-width:3.1;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  filter:drop-shadow(0 0 5px rgba(59,130,246,.22));
+}
+.scanChartVolumes rect.up{
+  fill:#10b981;
+  opacity:.52;
+}
+.scanChartVolumes rect.down{
+  fill:#ef4444;
+  opacity:.48;
+}
+.scanChartLastGuide{
+  stroke:#3b82f6;
+  stroke-width:1;
+  stroke-dasharray:2 3;
+  opacity:.72;
+}
+.scanChartLastPulse.fomo{
+  fill:#38bdf8!important;
+  filter:drop-shadow(0 0 8px rgba(56,189,248,.72));
+}
+.scanChartCurrentTag rect{
+  fill:#0ea5e9;
+  stroke:#38bdf8;
+  stroke-width:.5;
+}
+.scanChartCurrentTag text{
+  fill:white;
+  font-size:10px;
+  font-weight:950;
+  font-variant-numeric:tabular-nums;
+}
+.scanChartMetricLabel,
+.scanChartVolumeLabel{
+  fill:#8fa49a!important;
+  font-size:8px!important;
+  font-weight:950!important;
+  letter-spacing:.08em!important;
+}
+.scanChartMetricValue{
+  fill:#38bdf8;
+  font-size:10px;
+  font-weight:950;
+  font-variant-numeric:tabular-nums;
+}
+.scanChartVolumeValue{
+  fill:#22c55e;
+  font-size:10px;
+  font-weight:950;
+  font-variant-numeric:tabular-nums;
+}
+.scanChartTooltip small{
+  font-size:7px;
+  color:#38bdf8;
+  font-weight:900;
+  letter-spacing:.05em;
+}
