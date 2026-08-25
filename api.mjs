@@ -536,25 +536,130 @@ async function trendingPairBatch(chain,addresses){
   }catch(e){console.warn('Trending DexScreener batch:',chain,errorText(e))}
   return out
 }
+
+const GECKO_TRENDING_NETWORKS={
+  solana:{network:'solana',chain:'solana'},
+  ethereum:{network:'eth',chain:'ethereum'},
+  base:{network:'base',chain:'base'},
+  bnb:{network:'bsc',chain:'bnb'}
+};
+async function geckoTerminalTrendingRows(network,chain){
+  const headers={
+    accept:'application/json;version=20230203',
+    'user-agent':'The-Trenches/1.10.96'
+  };
+  const url=`https://api.geckoterminal.com/api/v2/networks/${encodeURIComponent(network)}/trending_pools?include=base_token&page=1&duration=24h`;
+  try{
+    const j=await fetchJson(url,{headers},10000),included=new Map();
+    for(const item of (Array.isArray(j?.included)?j.included:[])){
+      if(item?.id)included.set(String(item.id),item)
+    }
+    const rows=[];
+    for(const pool of (Array.isArray(j?.data)?j.data:[])){
+      const a=pool?.attributes||{},baseId=pool?.relationships?.base_token?.data?.id,
+        token=included.get(String(baseId||''))?.attributes||{},
+        address=String(token?.address||'').trim();
+      if(!address)continue;
+      const h1=number(a?.price_change_percentage?.h1),
+        h24=number(a?.price_change_percentage?.h24),
+        vol=number(a?.volume_usd?.h24)||0,
+        liq=number(a?.reserve_in_usd)||0,
+        txh=a?.transactions?.h24||{},
+        buys=Number(txh?.buys||0),sells=Number(txh?.sells||0),tx=buys+sells,
+        mcap=number(a?.market_cap_usd),
+        fdv=number(a?.fdv_usd),
+        ageMs=a?.pool_created_at?Date.parse(a.pool_created_at):null;
+      // Organic heat rewards actual activity/momentum. Unlike the old
+      // boost-only discovery, no paid boost is required to enter this set.
+      const positiveMomentum=Math.max(0,Number(h1)||0)*.28+Math.max(0,Number(h24)||0)*.055;
+      const heat=Math.max(0,Math.min(100,Math.round(
+        14 +
+        Math.min(27,Math.log10(Math.max(1,vol))*3.5) +
+        Math.min(21,Math.log10(Math.max(1,liq))*2.4) +
+        Math.min(18,Math.log10(Math.max(1,tx))*5.0) +
+        Math.min(20,positiveMomentum)
+      )));
+      rows.push({
+        chain,address,
+        name:String(token?.name||String(a?.name||'').split('/')[0]||'Unknown token').trim().slice(0,80),
+        symbol:String(token?.symbol||'TOKEN').trim().slice(0,24),
+        image:normalizeTokenIcon(token?.image_url)||'',
+        priceUsd:number(a?.base_token_price_usd),
+        change5m:number(a?.price_change_percentage?.m5),
+        change1h:h1,
+        change6h:number(a?.price_change_percentage?.h6),
+        change24h:h24,
+        volume24h:vol,
+        liquidityUsd:liq,
+        marketCap:mcap??fdv,
+        fdv,
+        buys24h:buys,
+        sells24h:sells,
+        pairCreatedAt:Number.isFinite(ageMs)?ageMs:null,
+        pairAddress:String(a?.address||''),
+        dexId:String(pool?.relationships?.dex?.data?.id||''),
+        boosted:false,
+        boost:0,
+        heat,
+        source:'GeckoTerminal organic trending'
+      })
+    }
+    return rows
+  }catch(e){
+    console.warn('GeckoTerminal trending:',network,errorText(e));
+    return[]
+  }
+}
+async function organicMultiChainTrending(){
+  const entries=await Promise.all(Object.values(GECKO_TRENDING_NETWORKS).map(async x=>[
+    x.chain,
+    await geckoTerminalTrendingRows(x.network,x.chain)
+  ]));
+  return Object.fromEntries(entries)
+}
+
 async function trendingMarketHandler(req,res){
   res.setHeader('Cache-Control','public, max-age=20, s-maxage=45');
   try{
     if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});
     const force=String(req.query.refresh||'')==='1';
-    if(!force&&Date.now()-trendingMarketCache.at<25000&&trendingMarketCache.items.length)return res.status(200).json({items:trendingMarketCache.items,cached:true,updatedAt:new Date(trendingMarketCache.at).toISOString()});
-    const seedMap=new Map(),put=s=>{if(!s?.chain||!s?.address)return;const k=`${s.chain}:${String(s.address).toLowerCase()}`,old=seedMap.get(k)||{};seedMap.set(k,{...old,...s,boost:Math.max(Number(old.boost||0),Number(s.boost||0)),jupiter:Boolean(old.jupiter||s.jupiter)})};
+    if(!force&&Date.now()-trendingMarketCache.at<25000&&trendingMarketCache.items.length){
+      return res.status(200).json({
+        items:trendingMarketCache.items,cached:true,
+        updatedAt:new Date(trendingMarketCache.at).toISOString(),
+        discovery:trendingMarketCache.discovery||{}
+      })
+    }
 
-    // Cross-chain attention/boost signals.
+    // 1) Organic network-wide trending pools. This is the core fix for
+    // Ethereum / Base / BNB runner coverage.
+    const organic=await organicMultiChainTrending();
+
+    // 2) Existing promotional/attention signals from DEX Screener remain
+    // useful as an extra source, but they are no longer the only EVM seed.
+    const seedMap=new Map(),put=s=>{
+      if(!s?.chain||!s?.address)return;
+      const k=`${s.chain}:${String(s.address).toLowerCase()}`,old=seedMap.get(k)||{};
+      seedMap.set(k,{
+        ...old,...s,
+        boost:Math.max(Number(old.boost||0),Number(s.boost||0)),
+        jupiter:Boolean(old.jupiter||s.jupiter)
+      })
+    };
+
     const [boostTop,boostLatest]=await Promise.all([
       fetchJson('https://api.dexscreener.com/token-boosts/top/v1',{headers:{accept:'application/json'}},8000).catch(()=>[]),
       fetchJson('https://api.dexscreener.com/token-boosts/latest/v1',{headers:{accept:'application/json'}},8000).catch(()=>[])
     ]);
     for(const row of [...(Array.isArray(boostTop)?boostTop:[]),...(Array.isArray(boostLatest)?boostLatest:[])]){
       const chain=trendingSupportedChain(row?.chainId);if(!chain)continue;
-      put({chain,address:String(row?.tokenAddress||''),image:row?.icon||'',boost:Number(row?.totalAmount||row?.amount||0),boosted:true})
+      put({
+        chain,address:String(row?.tokenAddress||''),image:row?.icon||'',
+        boost:Number(row?.totalAmount||row?.amount||0),boosted:true
+      })
     }
 
-    // Jupiter adds organic Solana trending signal even when a token is not boosted.
+    // 3) Jupiter remains an additional organic Solana signal.
     try{
       const arr=await jupiterTokens('/toptrending/1h?limit=30');
       for(const t of (Array.isArray(arr)?arr:[])){
@@ -563,26 +668,74 @@ async function trendingMarketHandler(req,res){
       }
     }catch(e){console.warn('Trending Jupiter:',errorText(e))}
 
-    const seeds=[...seedMap.values()].slice(0,100),groups={solana:[],ethereum:[],base:[],bnb:[],robinhood:[]};
+    // Enrich DEX Screener/Jupiter seeds.
+    const seeds=[...seedMap.values()].slice(0,120),
+      groups={solana:[],ethereum:[],base:[],bnb:[],robinhood:[]};
     for(const s of seeds)groups[s.chain]?.push(s.address);
-    const batchEntries=await Promise.all(Object.entries(groups).map(async([chain,addresses])=>[chain,await trendingPairBatch(chain,addresses)]));
-    const pairMaps=Object.fromEntries(batchEntries),items=[];
+    const batchEntries=await Promise.all(
+      Object.entries(groups).map(async([chain,addresses])=>[
+        chain,await trendingPairBatch(chain,addresses)
+      ])
+    );
+    const pairMaps=Object.fromEntries(batchEntries),extra=[];
     for(const seed of seeds){
-      const pair=pairMaps[seed.chain]?.get(String(seed.address).toLowerCase()),row=trendingPairRow(pair,seed);
-      if(row&&row.priceUsd!=null)items.push(row)
+      const pair=pairMaps[seed.chain]?.get(String(seed.address).toLowerCase()),
+        row=trendingPairRow(pair,seed);
+      if(row&&row.priceUsd!=null)extra.push(row)
     }
 
-    // Dedupe and require at least basic tradable liquidity. Robinhood can have sparse DEX data,
-    // so it remains supported but may have no entries until DexScreener lists an active pair.
-    const seen=new Set(),clean=[];
-    for(const row of items.sort((a,b)=>(b.heat||0)-(a.heat||0))){
-      const k=`${row.chain}:${String(row.address).toLowerCase()}`;if(seen.has(k))continue;seen.add(k);
-      if((number(row.liquidityUsd)||0)<500&&row.chain!=='robinhood')continue;
-      clean.push(row)
-    }
-    trendingMarketCache={at:Date.now(),items:clean.slice(0,80)};
-    return res.status(200).json({items:trendingMarketCache.items,cached:false,updatedAt:new Date(trendingMarketCache.at).toISOString()})
-  }catch(e){console.error('Trenches trending market:',e);return res.status(Number(e?.status)||500).json({error:errorText(e)})}
+    // Merge organic network lists with boosted/attention lists. Prefer the
+    // row with better market depth, while preserving boost labels when a
+    // token exists in both feeds.
+    const merged=new Map();
+    const add=row=>{
+      if(!row?.chain||!row?.address||row.priceUsd==null)return;
+      const key=`${row.chain}:${String(row.address).toLowerCase()}`,old=merged.get(key);
+      if(!old){merged.set(key,row);return}
+      const oldDepth=(number(old.volume24h)||0)+(number(old.liquidityUsd)||0),
+        newDepth=(number(row.volume24h)||0)+(number(row.liquidityUsd)||0),
+        preferred=newDepth>oldDepth?row:old,other=preferred===row?old:row;
+      merged.set(key,{
+        ...other,...preferred,
+        boosted:Boolean(old.boosted||row.boosted),
+        boost:Math.max(Number(old.boost||0),Number(row.boost||0)),
+        heat:Math.max(Number(old.heat||0),Number(row.heat||0)),
+        image:preferred.image||other.image||'',
+        source:[old.source,row.source].filter(Boolean).join(' + ')
+      })
+    };
+    for(const chainRows of Object.values(organic))for(const row of chainRows)add(row);
+    for(const row of extra)add(row);
+
+    const clean=[...merged.values()]
+      .filter(row=>{
+        // Keep genuine runners with reasonable tradability. Lower than the
+        // old threshold so newer EVM runners are not silently discarded.
+        const liq=number(row.liquidityUsd)||0,vol=number(row.volume24h)||0;
+        return row.chain==='robinhood'||liq>=250||vol>=2500
+      })
+      .sort((a,b)=>(Number(b.heat)||0)-(Number(a.heat)||0))
+      .slice(0,160);
+
+    const discovery={
+      solana:clean.filter(x=>x.chain==='solana').length,
+      ethereum:clean.filter(x=>x.chain==='ethereum').length,
+      base:clean.filter(x=>x.chain==='base').length,
+      bnb:clean.filter(x=>x.chain==='bnb').length,
+      robinhood:clean.filter(x=>x.chain==='robinhood').length
+    };
+    trendingMarketCache={
+      at:Date.now(),items:clean,discovery
+    };
+    return res.status(200).json({
+      items:clean,cached:false,
+      updatedAt:new Date(trendingMarketCache.at).toISOString(),
+      discovery
+    })
+  }catch(e){
+    console.error('Trenches trending market:',e);
+    return res.status(Number(e?.status)||500).json({error:errorText(e)})
+  }
 }
 
 async function tokensHandler(req,res){

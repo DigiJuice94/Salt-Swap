@@ -639,3 +639,14 @@ This update rebuilds the Portfolio information architecture around the current C
 - Enlarges token artwork and Heat / Watchlist controls.
 - Slightly increases spotlight-card height so the larger type never gets cramped.
 - Keeps the same Trending layout, data, filters and functionality from V1.10.94.
+
+## V1.10.96 — Multi-chain Runner Discovery
+- Fixes sparse Ethereum, Base and BNB Trending results.
+- Root cause: prior versions discovered most non-Solana tokens only from DEX Screener's **boost** feeds. Boosts are paid attention signals, not a complete network-wide runners list.
+- Adds GeckoTerminal's network-specific organic Trending Pools feed for Solana, Ethereum, Base and BNB Chain.
+- Keeps Jupiter as an additional Solana organic signal.
+- Keeps DEX Screener boosts as an extra attention signal instead of using boosts as the entire EVM discovery engine.
+- Merges and deduplicates organic + boosted tokens, preserving live price, 1h / 24h movement, volume, liquidity, market cap / FDV fallback, transaction counts, age and artwork.
+- Raises the backend candidate ceiling from 80 to 160 so each supported chain can carry a meaningful runner set.
+- Lowers the discovery liquidity cutoff for genuinely active newer runners while still requiring either liquidity or meaningful 24h volume.
+- Robinhood Chain remains sourced from available DEX Screener data because GeckoTerminal does not provide a mapped Robinhood network in this integration.
