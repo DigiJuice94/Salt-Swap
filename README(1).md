@@ -727,3 +727,14 @@ This update rebuilds the Portfolio information architecture around the current C
 - The **blue current-value box on the right stays blue**, matching the Fomo reference the user liked.
 - The horizontal dotted current-value guide and endpoint pulse also stay blue so they visually belong to the current-value marker.
 - No purple / blue gradient remains on the actual historical line.
+
+## V1.11.06 — All-Green Swap Chart
+- Removes the remaining blue accents from the Swap-page chart.
+- Main history line: army green.
+- Current-value dotted guide: army green.
+- Current-value box on the right: army green.
+- Endpoint pulse: army green.
+- Hover dot / hover guide: army green.
+- Market-cap accent text: army green.
+- Chart tooltip accent: army green.
+- No blue Fomo-era chart accents remain.
