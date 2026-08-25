@@ -865,3 +865,9 @@ This update rebuilds the Portfolio information architecture around the current C
 - Changes only the Portfolio balance number to light green.
 - Keeps `TOTAL WORTH`, `PORTFOLIO BALANCE`, and supporting text muted.
 - Vercel configuration unchanged.
+
+## V1.11.35 — Actual Green Balance
+- Corrects the selector to the real Portfolio balance element: `#portfolioTotal`.
+- Forces only the `$0.00` balance number to light green.
+- Removes any text-fill, text-stroke, shadow, opacity, or filter that could keep it dark.
+- Vercel configuration unchanged.

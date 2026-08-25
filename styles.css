@@ -3896,3 +3896,20 @@ body:has(.portfolioPage:not(.hidden)){
   color:#8ea494 !important;
   -webkit-text-fill-color:currentColor !important;
 }
+
+/* V1.11.35 — ACTUAL Portfolio balance selector */
+.portfolioPage #portfolioTotal{
+  color:#9ff0b1 !important;
+  -webkit-text-fill-color:#9ff0b1 !important;
+  -webkit-text-stroke:0 transparent !important;
+  text-shadow:none !important;
+  opacity:1 !important;
+  filter:none !important;
+}
+
+/* Keep labels/supporting numbers unchanged */
+.portfolioPage .portfolioValueBlock > small,
+.portfolioPage #portfolioRangeChange,
+.portfolioPage #portfolioCoverage{
+  -webkit-text-fill-color:currentColor !important;
+}
