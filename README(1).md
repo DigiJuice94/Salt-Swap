@@ -909,3 +909,9 @@ This update rebuilds the Portfolio information architecture around the current C
 - Restricts the light-green circular border to the small allocation donut only.
 - Surrounding allocation chart/container has no circular border.
 - Vercel configuration unchanged.
+
+## V1.11.42 — Correct Allocation Ring
+- Fixes the exact cause of the giant oval: `.portfolioAllocationDonutWrap` is no longer styled as a circle.
+- Only `#portfolioAllocationDonut` receives the light-green circular outline.
+- Removes the original cream inner disc from `#portfolioAllocationDonut::after`.
+- Vercel configuration unchanged.
