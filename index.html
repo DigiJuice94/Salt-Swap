@@ -16,7 +16,7 @@
   <link rel="shortcut icon" href="/favicon.ico?v=11090" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=11090" />
   <link rel="manifest" href="/site.webmanifest?v=11090" />
-  <link rel="stylesheet" href="/styles.css?v=11155" />
+  <link rel="stylesheet" href="/styles.css?v=11157" />
   <script defer src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.4/lib/index.iife.min.js"></script>
 
 <style>
@@ -2872,13 +2872,13 @@ async function toggleViewedProfileFollow(){
 <script>
 (function(){
   const flyby=document.getElementById('heroFlyby');
-  const home=document.getElementById('home');
-  if(!flyby||!home)return;
+  if(!flyby)return;
 
-  const INITIAL_DELAY_MS=7000;
-  const FLYBY_INTERVAL_MS=10*60*1000;
-  const FLYBY_DURATION_MS=22000;
-  let flybyTimer=null;
+  const FIRST_PASS_MS=2500;
+  const REPEAT_MS=10*60*1000;
+  const DURATION_MS=18000;
+
+  let repeatTimer=null;
   let cleanupTimer=null;
   let userInteracted=false;
   let audioCtx=null;
@@ -2887,105 +2887,71 @@ async function toggleViewedProfileFollow(){
     userInteracted=true;
     try{
       if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-      if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});
-    }catch(_){ }
+      if(audioCtx?.state==='suspended')audioCtx.resume().catch(()=>{});
+    }catch(_){}
   }
 
   window.addEventListener('pointerdown',noteInteraction,{passive:true});
   window.addEventListener('keydown',noteInteraction);
-
-  function heroIsVisible(){
-    if(!home)return false;
-    if(home.classList.contains('hidden'))return false;
-    const style=window.getComputedStyle(home);
-    return style.display!=='none'&&style.visibility!=='hidden';
-  }
 
   function playFlybySound(){
     if(!userInteracted)return;
     try{
       if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();
       if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});
+
       const now=audioCtx.currentTime+0.02;
       const master=audioCtx.createGain();
       master.gain.setValueAtTime(0.0001,now);
-      master.gain.exponentialRampToValueAtTime(0.02,now+0.22);
-      master.gain.exponentialRampToValueAtTime(0.0001,now+2.9);
+      master.gain.exponentialRampToValueAtTime(0.018,now+0.2);
+      master.gain.exponentialRampToValueAtTime(0.0001,now+3.1);
       master.connect(audioCtx.destination);
 
-      const lowpass=audioCtx.createBiquadFilter();
-      lowpass.type='lowpass';
-      lowpass.frequency.setValueAtTime(540,now);
-      lowpass.frequency.linearRampToValueAtTime(300,now+2.9);
-      lowpass.connect(master);
+      const filter=audioCtx.createBiquadFilter();
+      filter.type='lowpass';
+      filter.frequency.setValueAtTime(520,now);
+      filter.frequency.exponentialRampToValueAtTime(280,now+3.0);
+      filter.connect(master);
 
       const engine=audioCtx.createOscillator();
       engine.type='sawtooth';
-      engine.frequency.setValueAtTime(160,now);
-      engine.frequency.exponentialRampToValueAtTime(108,now+2.9);
+      engine.frequency.setValueAtTime(150,now);
+      engine.frequency.exponentialRampToValueAtTime(105,now+3.0);
 
-      const engineGain=audioCtx.createGain();
-      engineGain.gain.setValueAtTime(0.9,now);
-      engineGain.gain.linearRampToValueAtTime(0.55,now+2.9);
-      engine.connect(engineGain);
-      engineGain.connect(lowpass);
+      const eg=audioCtx.createGain();
+      eg.gain.value=.7;
+      engine.connect(eg);
+      eg.connect(filter);
 
       const wobble=audioCtx.createOscillator();
-      wobble.type='sine';
-      wobble.frequency.setValueAtTime(7.2,now);
-      const wobbleGain=audioCtx.createGain();
-      wobbleGain.gain.setValueAtTime(13,now);
-      wobble.connect(wobbleGain);
-      wobbleGain.connect(engine.frequency);
-
-      const hiss=audioCtx.createBufferSource();
-      const buffer=audioCtx.createBuffer(1,Math.floor(audioCtx.sampleRate*2.8),audioCtx.sampleRate);
-      const channel=buffer.getChannelData(0);
-      for(let i=0;i<channel.length;i++){
-        channel[i]=(Math.random()*2-1)*0.18;
-      }
-      hiss.buffer=buffer;
-      const hissFilter=audioCtx.createBiquadFilter();
-      hissFilter.type='bandpass';
-      hissFilter.frequency.setValueAtTime(420,now);
-      hissFilter.Q.value=0.4;
-      const hissGain=audioCtx.createGain();
-      hissGain.gain.setValueAtTime(0.0001,now);
-      hissGain.gain.exponentialRampToValueAtTime(0.008,now+0.25);
-      hissGain.gain.exponentialRampToValueAtTime(0.0001,now+2.75);
-      hiss.connect(hissFilter);
-      hissFilter.connect(hissGain);
-      hissGain.connect(master);
+      wobble.frequency.value=6.5;
+      const wg=audioCtx.createGain();
+      wg.gain.value=10;
+      wobble.connect(wg);
+      wg.connect(engine.frequency);
 
       engine.start(now);
       wobble.start(now);
-      hiss.start(now);
-      engine.stop(now+3);
-      wobble.stop(now+3);
-      hiss.stop(now+2.85);
-    }catch(_){ }
-  }
-
-  function scheduleNext(delay=FLYBY_INTERVAL_MS){
-    clearTimeout(flybyTimer);
-    flybyTimer=setTimeout(runFlyby,delay);
+      engine.stop(now+3.1);
+      wobble.stop(now+3.1);
+    }catch(_){}
   }
 
   function runFlyby(){
-    if(!heroIsVisible()){
-      scheduleNext(60000);
-      return;
-    }
     clearTimeout(cleanupTimer);
     flyby.classList.remove('is-active');
     void flyby.offsetWidth;
     flyby.classList.add('is-active');
     playFlybySound();
-    cleanupTimer=setTimeout(()=>flyby.classList.remove('is-active'),FLYBY_DURATION_MS);
-    scheduleNext();
+
+    cleanupTimer=setTimeout(()=>flyby.classList.remove('is-active'),DURATION_MS+500);
+
+    clearTimeout(repeatTimer);
+    repeatTimer=setTimeout(runFlyby,REPEAT_MS);
   }
 
-  scheduleNext(INITIAL_DELAY_MS);
+  setTimeout(runFlyby,FIRST_PASS_MS);
+  window.runTrenchesFlyby=runFlyby;
 })();
 </script>
 

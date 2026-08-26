@@ -1023,3 +1023,13 @@ This update rebuilds the Portfolio information architecture around the current C
 - Removes the scattered/floating feel while preserving all scan functionality.
 - Battlefield background remains visible around the grouped summary.
 - Vercel configuration unchanged.
+
+## V1.11.57 — Guaranteed Plane Flyby
+- First flyby starts 2.5 seconds after page load.
+- Uses viewport-fixed positioning so the plane cannot be hidden by the hero layout.
+- Flyby lasts about 18 seconds.
+- Repeats every 10 minutes.
+- Keeps the waving text-only banner.
+- Sound only plays after a browser user interaction.
+- Adds `window.runTrenchesFlyby()` for manual testing.
+- Vercel configuration unchanged.
