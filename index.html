@@ -16,7 +16,7 @@
   <link rel="shortcut icon" href="/favicon.ico?v=11090" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=11090" />
   <link rel="manifest" href="/site.webmanifest?v=11090" />
-  <link rel="stylesheet" href="/styles.css?v=11159" />
+  <link rel="stylesheet" href="/styles.css?v=11160" />
   <script defer src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.4/lib/index.iife.min.js"></script>
 
 <style>
@@ -2872,14 +2872,13 @@ async function toggleViewedProfileFollow(){
 <script>
 (function(){
   const flyby=document.getElementById('heroFlyby');
-  if(!flyby)return;
+  const inner=flyby?.querySelector('.heroFlybyInner');
+  if(!flyby||!inner)return;
 
-  const FIRST_PASS_MS=80;
   const REPEAT_MS=10*60*1000;
   const DURATION_MS=18000;
-
   let repeatTimer=null;
-  let cleanupTimer=null;
+  let currentAnimation=null;
   let userInteracted=false;
   let audioCtx=null;
 
@@ -2888,9 +2887,8 @@ async function toggleViewedProfileFollow(){
     try{
       if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();
       if(audioCtx?.state==='suspended')audioCtx.resume().catch(()=>{});
-    }catch(_){}
+    }catch(_){ }
   }
-
   window.addEventListener('pointerdown',noteInteraction,{passive:true});
   window.addEventListener('keydown',noteInteraction);
 
@@ -2899,58 +2897,59 @@ async function toggleViewedProfileFollow(){
     try{
       if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();
       if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});
-
-      const now=audioCtx.currentTime+0.02;
+      const now=audioCtx.currentTime+.02;
       const master=audioCtx.createGain();
-      master.gain.setValueAtTime(0.0001,now);
-      master.gain.exponentialRampToValueAtTime(0.018,now+0.2);
-      master.gain.exponentialRampToValueAtTime(0.0001,now+3.1);
+      master.gain.setValueAtTime(.0001,now);
+      master.gain.exponentialRampToValueAtTime(.018,now+.18);
+      master.gain.exponentialRampToValueAtTime(.0001,now+3.1);
       master.connect(audioCtx.destination);
-
       const filter=audioCtx.createBiquadFilter();
-      filter.type='lowpass';
-      filter.frequency.setValueAtTime(520,now);
-      filter.frequency.exponentialRampToValueAtTime(280,now+3.0);
-      filter.connect(master);
-
-      const engine=audioCtx.createOscillator();
-      engine.type='sawtooth';
-      engine.frequency.setValueAtTime(150,now);
-      engine.frequency.exponentialRampToValueAtTime(105,now+3.0);
-
-      const eg=audioCtx.createGain();
-      eg.gain.value=.7;
-      engine.connect(eg);
-      eg.connect(filter);
-
-      const wobble=audioCtx.createOscillator();
-      wobble.frequency.value=6.5;
-      const wg=audioCtx.createGain();
-      wg.gain.value=10;
-      wobble.connect(wg);
-      wg.connect(engine.frequency);
-
-      engine.start(now);
-      wobble.start(now);
-      engine.stop(now+3.1);
-      wobble.stop(now+3.1);
-    }catch(_){}
+      filter.type='lowpass'; filter.frequency.value=480; filter.connect(master);
+      const osc=audioCtx.createOscillator();
+      osc.type='sawtooth'; osc.frequency.setValueAtTime(148,now); osc.frequency.exponentialRampToValueAtTime(102,now+3);
+      const gain=audioCtx.createGain(); gain.gain.value=.65; osc.connect(gain); gain.connect(filter);
+      osc.start(now); osc.stop(now+3.1);
+    }catch(_){ }
   }
 
   function runFlyby(){
-    clearTimeout(cleanupTimer);
-    flyby.classList.remove('is-active');
-    void flyby.offsetWidth;
-    flyby.classList.add('is-active');
+    try{ currentAnimation?.cancel(); }catch(_){ }
+    clearTimeout(repeatTimer);
+
+    flyby.style.display='block';
+    flyby.style.visibility='visible';
+    flyby.style.opacity='1';
+
+    const vw=Math.max(document.documentElement.clientWidth||0,window.innerWidth||0,1000);
+    const scale=vw<650?.54:vw<950?.62:.68;
+    const startX=-390;
+    const endX=vw+520;
+
+    inner.style.transform=`translate3d(${startX}px,0,0) scale(${scale})`;
+    inner.style.opacity='1';
+
+    // WAAPI physically moves the element across the screen; no CSS keyframe dependency.
+    currentAnimation=inner.animate([
+      {transform:`translate3d(${startX}px,0px,0) scale(${scale})`,opacity:.98,offset:0},
+      {transform:`translate3d(${-170}px,4px,0) scale(${scale})`,opacity:1,offset:.08},
+      {transform:`translate3d(${Math.round(vw*.18)}px,7px,0) scale(${scale})`,opacity:1,offset:.28},
+      {transform:`translate3d(${Math.round(vw*.52)}px,12px,0) scale(${scale})`,opacity:1,offset:.58},
+      {transform:`translate3d(${Math.round(vw*.82)}px,5px,0) scale(${scale})`,opacity:.98,offset:.84},
+      {transform:`translate3d(${endX}px,10px,0) scale(${scale})`,opacity:0,offset:1}
+    ],{duration:DURATION_MS,easing:'linear',fill:'forwards'});
+
     playFlybySound();
 
-    cleanupTimer=setTimeout(()=>flyby.classList.remove('is-active'),DURATION_MS+500);
-
-    clearTimeout(repeatTimer);
-    repeatTimer=setTimeout(runFlyby,REPEAT_MS);
+    currentAnimation.onfinish=()=>{
+      flyby.style.opacity='0';
+      flyby.style.visibility='hidden';
+      repeatTimer=setTimeout(runFlyby,REPEAT_MS);
+    };
+    currentAnimation.oncancel=()=>{};
   }
 
-  setTimeout(runFlyby,FIRST_PASS_MS);
+  // Run immediately after layout exists.
+  requestAnimationFrame(()=>requestAnimationFrame(runFlyby));
   window.runTrenchesFlyby=runFlyby;
 })();
 </script>

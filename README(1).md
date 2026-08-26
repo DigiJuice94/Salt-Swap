@@ -1049,3 +1049,13 @@ This update rebuilds the Portfolio information architecture around the current C
 - Banner retains a stronger waving-cloth animation.
 - First flyby remains immediate; repeats every 10 minutes.
 - Vercel configuration unchanged.
+
+## V1.11.60 — JavaScript Plane Flyby
+- Replaces the unreliable CSS traverse trigger with Web Animations API movement.
+- First flyby starts immediately after the first two browser layout frames.
+- Plane/banner physically moves from left of viewport to right of viewport for ~18 seconds.
+- Removes the reduced-motion rule that could hide the flyby entirely.
+- Raises flyby layer so it cannot render behind the hero.
+- Plane leads and text-only waving banner trails behind.
+- Repeats every 10 minutes.
+- Vercel configuration unchanged.
