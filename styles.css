@@ -4652,36 +4652,58 @@ body.salt-social-active .saltProfileFeed{
   }
 }
 
-/* V1.11.53 — official token website + social links */
+
+/* V1.11.54 — grouped token website + social links bubble */
 .tokenProjectLinks{
-  display:flex;
+  display:inline-flex;
   flex-wrap:wrap;
   align-items:center;
   gap:7px;
-  margin:7px 0 3px;
+  width:fit-content;
+  max-width:100%;
+  margin:8px 0 5px;
+  padding:8px 10px;
+  border:1px solid rgba(82,93,58,.22);
+  border-radius:18px;
+  background:rgba(255,250,239,.88);
+  box-shadow:0 8px 24px rgba(70,62,37,.05);
 }
 .tokenProjectLinks.hidden{display:none!important}
+.tokenProjectLinksLabel{
+  display:inline-flex;
+  align-items:center;
+  height:26px;
+  padding:0 10px;
+  border-radius:999px;
+  background:rgba(108,122,83,.10);
+  color:#5f6c49;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  white-space:nowrap;
+}
 .tokenProjectLink{
   display:inline-flex;
   align-items:center;
   gap:6px;
   min-height:28px;
   padding:5px 10px;
-  border:1px solid rgba(82,93,58,.22);
+  border:1px solid rgba(82,93,58,.16);
   border-radius:999px;
-  background:rgba(255,250,239,.82);
+  background:#fffdf7;
   color:#3f4933;
   text-decoration:none;
   font-size:11px;
   font-weight:800;
   line-height:1;
-  box-shadow:0 4px 14px rgba(70,62,37,.04);
-  transition:transform .15s ease,border-color .15s ease,background .15s ease;
+  transition:transform .15s ease,border-color .15s ease,background .15s ease,box-shadow .15s ease;
 }
 .tokenProjectLink:hover{
   transform:translateY(-1px);
-  background:#fffaf0;
-  border-color:rgba(82,93,58,.42);
+  background:#ffffff;
+  border-color:rgba(82,93,58,.34);
+  box-shadow:0 6px 18px rgba(70,62,37,.06);
 }
 .tokenProjectLink b{
   display:grid;
@@ -4690,10 +4712,13 @@ body.salt-social-active .saltProfileFeed{
   font-size:12px;
   color:#596447;
 }
+.tokenProjectLink span{
+  white-space:nowrap;
+}
 .tokenProjectLink.x b{font-size:13px}
 .tokenProjectLink.telegram b{font-size:12px}
-.tokenProjectLink.discord b{font-size:11px}
-@media(max-width:720px){
-  .tokenProjectLinks{gap:5px}
+.tokenProjectLink.discord b{font-size:11px}@media(max-width:720px){
+  .tokenProjectLinks{gap:5px;padding:8px;max-width:100%}
+  .tokenProjectLinksLabel{font-size:9px;padding:0 8px;height:24px}
   .tokenProjectLink{padding:5px 8px;font-size:10px}
 }

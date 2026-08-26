@@ -1008,3 +1008,10 @@ This update rebuilds the Portfolio information architecture around the current C
 - Tokens with no discovered links simply hide the row.
 - Works on Solana, Ethereum, Base, BNB Chain, and Robinhood Chain scans.
 - Vercel configuration unchanged.
+
+## V1.11.54 — Grouped Token Links Bubble
+- The token Website / X / Telegram / Discord / other social links now render inside one organized grouped bubble.
+- Added a small "Official links" label to make the section easier to scan.
+- Individual links still remain clickable, but the whole section now feels cleaner and more readable.
+- Mobile spacing for the grouped link bubble is also tightened so it wraps cleanly.
+- Vercel configuration unchanged.
