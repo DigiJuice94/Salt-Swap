@@ -947,3 +947,11 @@ This update rebuilds the Portfolio information architecture around the current C
 - Keeps existing thesis content, token cards, scores, profile clicks, Reply/Like/Quote, and View Token behavior.
 - Preserves the off-white Trenches palette rather than copying X's dark theme.
 - Vercel configuration unchanged.
+
+## V1.11.47 — Real Connected Feed
+- Fixes V1.11.46 not visibly changing the feed.
+- Targets every direct rendered child of the actual social feed list, so post wrappers can no longer keep rounded-card spacing.
+- Removes gaps and outer rounded cards between posts.
+- Keeps token previews rounded inside each post.
+- Applies the same connected timeline language to the profile thesis list.
+- Vercel configuration unchanged.
