@@ -16,7 +16,7 @@
   <link rel="shortcut icon" href="/favicon.ico?v=11090" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=11090" />
   <link rel="manifest" href="/site.webmanifest?v=11090" />
-  <link rel="stylesheet" href="/styles.css?v=11167" />
+  <link rel="stylesheet" href="/styles.css?v=11168" />
   <script defer src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.4/lib/index.iife.min.js"></script>
 
 <style>
@@ -2175,24 +2175,64 @@ function closeCreateCommunityModal(){
   modal.setAttribute('aria-hidden','true');
 }
 async function resolveCommunityToken(ca){
+  // Try the existing scan result first.
   try{
-    const r=await fetch(`/api/scan?address=${encodeURIComponent(ca)}`);
+    const r=await fetch(`/api/scan?address=${encodeURIComponent(ca)}`,{cache:'no-store'});
     if(r.ok){
       const j=await r.json();
-      const t=j?.token||j?.data?.token||j?.result?.token||j;
-      const price=
-        t?.priceUsd??t?.priceUSD??t?.price??
-        j?.priceUsd??j?.priceUSD??j?.price??
-        j?.market?.priceUsd??j?.market?.price??0;
-      return {
-        name:t?.name||j?.name||'Token Community',
-        symbol:t?.symbol||j?.symbol||'TOKEN',
-        image:t?.image||t?.logo||t?.logoURI||j?.image||j?.logo||j?.logoURI||'',
-        chain:t?.chain||j?.chain||communityChainGuess(ca),
-        price:Number(price)||0
+      const candidates=[
+        j?.token,
+        j?.data?.token,
+        j?.result?.token,
+        j?.selectedToken,
+        j?.market,
+        j
+      ].filter(Boolean);
+
+      const pick=(keys)=>{
+        for(const obj of candidates){
+          for(const k of keys){
+            const v=obj?.[k];
+            if(v!==undefined&&v!==null&&v!=='')return v;
+          }
+        }
+        return '';
       };
+
+      const name=pick(['name','tokenName'])||'Token Community';
+      const symbol=pick(['symbol','ticker','tokenSymbol'])||'TOKEN';
+      const image=pick(['image','imageUrl','logo','logoURI','icon','tokenImage'])||'';
+      const chain=pick(['chain','chainId','network'])||communityChainGuess(ca);
+      const price=Number(pick(['priceUsd','priceUSD','price','usdPrice']))||0;
+
+      if(name!=='Token Community'||symbol!=='TOKEN'||image||price){
+        return {name,symbol,image,chain,price};
+      }
     }
   }catch(_){}
+
+  // DEX Screener direct fallback for metadata + current price.
+  try{
+    const r=await fetch(`https://api.dexscreener.com/latest/dex/tokens/${encodeURIComponent(ca)}`,{cache:'no-store'});
+    if(r.ok){
+      const j=await r.json();
+      const pairs=Array.isArray(j?.pairs)?j.pairs:[];
+      if(pairs.length){
+        const best=[...pairs].sort((a,b)=>Number(b?.liquidity?.usd||0)-Number(a?.liquidity?.usd||0))[0];
+        const base=best?.baseToken||{}, quote=best?.quoteToken||{};
+        const isBase=String(base?.address||'').toLowerCase()===String(ca).toLowerCase();
+        const token=isBase?base:quote;
+        return {
+          name:token?.name||'Token Community',
+          symbol:token?.symbol||'TOKEN',
+          image:best?.info?.imageUrl||best?.info?.header||'',
+          chain:best?.chainId||communityChainGuess(ca),
+          price:Number(best?.priceUsd)||0
+        };
+      }
+    }
+  }catch(_){}
+
   return {name:'Token Community',symbol:'TOKEN',image:'',chain:communityChainGuess(ca),price:0};
 }
 async function postPermanentCommunity(row,{silentDuplicate=false}={}){
@@ -2251,7 +2291,7 @@ async function createTokenCommunity(){
 
   try{
     const token=await resolveCommunityToken(ca);
-    await postPermanentCommunity({
+    const created=await postPermanentCommunity({
       ca,
       name:token.name,
       symbol:token.symbol,
@@ -2259,13 +2299,20 @@ async function createTokenCommunity(){
       chain:token.chain,
       price:token.price||0
     });
+
+    // Show the permanent server-returned metadata immediately.
+    if(created){
+      tokenCommunitiesCache=[created,...tokenCommunitiesCache.filter(r=>String(r.ca||'').toLowerCase()!==ca.toLowerCase())];
+      renderTokenCommunityDirectory();
+    }
+
     closeCreateCommunityModal();
     activeCommunityFilter='new';
     document.querySelectorAll('[data-community-filter]').forEach(b=>b.classList.toggle('active',b.dataset.communityFilter==='new'));
     await fetchTokenCommunities();
   }catch(e){
     if(err){
-      err.textContent=String(e?.message||e||'Could not create community.');
+      err.textContent=String(e?.message||e||'Could not create community. Try reconnecting your wallet and retry.');
       err.classList.remove('hidden');
     }
   }finally{

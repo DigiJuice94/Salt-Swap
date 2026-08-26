@@ -1509,6 +1509,60 @@ function cleanCommunityImage(v){
   const s=String(v||'').trim();
   return /^https?:\/\//i.test(s)?s.slice(0,1000):'';
 }
+
+async function resolveCommunityTokenMetadata(ca,body={}){
+  const fallback={
+    name:cleanCommunityText(body.name||'Token Community',100),
+    symbol:cleanCommunityText(body.symbol||'TOKEN',24).replace(/^\$/,'')||'TOKEN',
+    image:cleanCommunityImage(body.image),
+    chain:cleanCommunityText(body.chain||'',24),
+    price:Number(body.price)||0
+  };
+
+  // 1) DEX Screener is the most reliable public source for live price + token image.
+  try{
+    const ds=await fetchJson(`https://api.dexscreener.com/latest/dex/tokens/${encodeURIComponent(ca)}`,{},9000);
+    const pairs=Array.isArray(ds?.pairs)?ds.pairs:[];
+    if(pairs.length){
+      const best=[...pairs].sort((a,b)=>
+        Number(b?.liquidity?.usd||0)-Number(a?.liquidity?.usd||0)
+      )[0];
+      const base=best?.baseToken||{};
+      const quote=best?.quoteToken||{};
+      const isBase=String(base?.address||'').toLowerCase()===String(ca).toLowerCase();
+      const tok=isBase?base:quote;
+      const img=
+        best?.info?.imageUrl||
+        best?.info?.header||
+        fallback.image||
+        '';
+      return {
+        name:cleanCommunityText(tok?.name||fallback.name,100),
+        symbol:cleanCommunityText(tok?.symbol||fallback.symbol,24).replace(/^\$/,'')||'TOKEN',
+        image:cleanCommunityImage(img),
+        chain:cleanCommunityText(best?.chainId||fallback.chain,24),
+        price:Number(best?.priceUsd)||fallback.price||0
+      };
+    }
+  }catch(_){}
+
+  // 2) Pump.fun metadata fallback for Solana launch tokens.
+  try{
+    const pf=await fetchJson(`https://frontend-api-v3.pump.fun/coins/${encodeURIComponent(ca)}`,{},9000);
+    if(pf && (pf.name||pf.symbol)){
+      return {
+        name:cleanCommunityText(pf.name||fallback.name,100),
+        symbol:cleanCommunityText(pf.symbol||fallback.symbol,24).replace(/^\$/,'')||'TOKEN',
+        image:cleanCommunityImage(pf.image_uri||pf.image||fallback.image),
+        chain:fallback.chain||'Solana',
+        price:fallback.price||0
+      };
+    }
+  }catch(_){}
+
+  return fallback;
+}
+
 async function socialTokenCommunitiesHandler(req,res){
   res.setHeader('Cache-Control','no-store');
   try{
@@ -1528,20 +1582,18 @@ async function socialTokenCommunitiesHandler(req,res){
     if(!ca)return res.status(400).json({error:'Paste a valid Solana or EVM contract address.'});
 
     const viewer=await socialSessionWallet(req);
-    if(!viewer)return res.status(401).json({error:'Connect your Trenches Social wallet before creating a community.'});
-
-    const profileRaw=await kv('get',`salt:social:profile:${viewer}`);
-    if(!profileRaw)return res.status(403).json({error:'Create a Trenches profile before creating a community.'});
+    if(!viewer)return res.status(401).json({error:'Connect your wallet before creating a community.'});
 
     const now=Date.now();
+    const meta=await resolveCommunityTokenMetadata(ca,body);
     const record={
       id:`community_${now}`,
       ca,
-      name:cleanCommunityText(body.name||'Token Community',100),
-      symbol:cleanCommunityText(body.symbol||'TOKEN',24).replace(/^\$/,'')||'TOKEN',
-      image:cleanCommunityImage(body.image),
-      chain:cleanCommunityText(body.chain||'',24),
-      price:Number(body.price)||0,
+      name:meta.name,
+      symbol:meta.symbol,
+      image:meta.image,
+      chain:meta.chain,
+      price:meta.price,
       members:1,
       activity:0,
       createdAt:now,
@@ -1585,7 +1637,7 @@ const pr=await kv('get',`salt:social:profile:${wallet}`);if(!pr)return res.statu
 
 async function healthHandler(req,res){
   res.setHeader('Cache-Control','no-store');
-  return res.status(200).json({ok:true,service:'The Trenches scanner',version:'1.11.67',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY),zerox:Boolean(process.env.ZEROX_API_KEY),social:Boolean(process.env.UPSTASH_REDIS_REST_URL&&process.env.UPSTASH_REDIS_REST_TOKEN)}});
+  return res.status(200).json({ok:true,service:'The Trenches scanner',version:'1.11.68',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY),zerox:Boolean(process.env.ZEROX_API_KEY),social:Boolean(process.env.UPSTASH_REDIS_REST_URL&&process.env.UPSTASH_REDIS_REST_TOKEN)}});
 }
 
 export default async function handler(req,res){

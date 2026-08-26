@@ -1121,3 +1121,15 @@ This update rebuilds the Portfolio information architecture around the current C
 - If migration cannot reach the server, old local data is left intact so it can retry later.
 - Image-first community card design remains unchanged.
 - Vercel configuration unchanged; uses the already-configured Social Redis environment variables.
+
+## V1.11.68 — Community Create + Token Metadata Fix
+- Removes the extra Trenches-profile gate that was blocking community creation.
+- Community creation now only requires the existing connected Social wallet session.
+- Backend enriches every new community with real token metadata before saving.
+- Uses DEX Screener first for token name, ticker, image, chain, and current USD price.
+- Uses Pump.fun metadata as an additional Solana fallback.
+- Frontend scanner parsing expanded to recognize more token/image/price field shapes.
+- Frontend also uses DEX Screener directly as a fallback before creation.
+- The UI immediately uses the permanent server-returned metadata after creation.
+- Existing permanent Redis storage and one-community-per-CA enforcement remain intact.
+- Vercel configuration unchanged.
