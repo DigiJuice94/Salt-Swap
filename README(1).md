@@ -970,3 +970,12 @@ This update rebuilds the Portfolio information architecture around the current C
 - Connects Profile tabs directly into the Profile feed timeline.
 - Keeps token snapshots rounded inside each post.
 - Vercel configuration unchanged.
+
+## V1.11.50 — Working Short Scan Charts
+- Fixes the backend `/api/scan-chart` route so `15s`, `1min`, and `15min` are accepted.
+- Uses Birdeye/GeckoTerminal 1-minute candles as the finest indexed historical source.
+- Short ranges keep the nearest available candles instead of failing with `Unsupported chart timeframe`.
+- 15S refreshes every 5 seconds, 1MIN every 10 seconds, and 15MIN every 15 seconds.
+- Short-range X-axis labels include seconds.
+- Existing 1D/1W/1M/3M/1Y behavior remains intact.
+- Vercel configuration unchanged.

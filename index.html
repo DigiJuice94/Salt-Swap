@@ -16,7 +16,7 @@
   <link rel="shortcut icon" href="/favicon.ico?v=11090" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=11090" />
   <link rel="manifest" href="/site.webmanifest?v=11090" />
-  <link rel="stylesheet" href="/styles.css?v=11149" />
+  <link rel="stylesheet" href="/styles.css?v=11150" />
   <script defer src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.4/lib/index.iife.min.js"></script>
 
 <style>
@@ -952,6 +952,19 @@ let scanChartState={
   mint:'',chain:'',name:'',symbol:'TOKEN',range:'1d',
   data:null,loading:false,timer:null,requestSeq:0
 };
+function scanChartRefreshMs(range){
+  if(range==='15s')return 5000;
+  if(range==='1min')return 10000;
+  if(range==='15min')return 15000;
+  return 30000;
+}
+function scheduleScanChartRefresh(){
+  if(scanChartState.timer)clearInterval(scanChartState.timer);
+  scanChartState.timer=setInterval(()=>{
+    if(!document.hidden&&!$('results')?.classList.contains('hidden'))
+      loadScanChart(scanChartState.range,true)
+  },scanChartRefreshMs(scanChartState.range));
+}
 
 function scanChartMoney(v){
   v=Number(v);
@@ -970,6 +983,8 @@ function scanChartPct(v){
 }
 function scanChartTime(ts,range){
   const d=new Date(Number(ts)*1000);
+  if(range==='15s'||range==='1min'||range==='15min')
+    return d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit',second:'2-digit'});
   if(range==='1d')return d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
   if(range==='1w')return d.toLocaleDateString([], {weekday:'short'});
   if(range==='1m'||range==='3m')return d.toLocaleDateString([], {month:'short',day:'numeric'});
@@ -997,14 +1012,14 @@ function startScanChart(data){
   installScanChartGreenObserver();
   document.querySelectorAll('[data-scan-chart-range]').forEach(b=>b.classList.toggle('active',b.dataset.scanChartRange==='1d'));
   loadScanChart('1d');
-  scanChartState.timer=setInterval(()=>{
-    if(!document.hidden&&!$('results')?.classList.contains('hidden'))loadScanChart(scanChartState.range,true)
-  },30000)
+  scheduleScanChartRefresh();
 }
 async function loadScanChart(range=scanChartState.range,silent=false){
   if(!scanChartState.mint||!scanChartState.chain)return;
   const seq=++scanChartState.requestSeq;
+  const rangeChanged=scanChartState.range!==range;
   scanChartState.range=range;
+  if(rangeChanged)scheduleScanChartRefresh();
   document.querySelectorAll('[data-scan-chart-range]').forEach(b=>b.classList.toggle('active',b.dataset.scanChartRange===range));
   if(!silent){
     $('scanChartStatus').textContent='Loading live candles…';
@@ -1018,7 +1033,10 @@ async function loadScanChart(range=scanChartState.range,silent=false){
     if(seq!==scanChartState.requestSeq)return;
     if(!r.ok)throw new Error(readableError(j?.error??j));
     scanChartState.data=j;
-    renderScanChart(j)
+    renderScanChart(j);
+    if(['15s','1min','15min'].includes(range)&&j?.resolution==='1m-provider-candles'){
+      $('scanChartStatus').textContent=`${j.candles?.length||0} recent points · finest indexed candles · updated ${new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}`;
+    }
   }catch(e){
     if(seq!==scanChartState.requestSeq)return;
     const el=$('scanChartCanvas');

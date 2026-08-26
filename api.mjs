@@ -373,6 +373,12 @@ const SCAN_CHART_NETWORKS={
   robinhood:{dex:'robinhood',gecko:null,birdeye:'robinhood'}
 };
 const SCAN_CHART_RANGES={
+  // Short-term ranges use the finest historical candle resolution currently
+  // available from Birdeye / GeckoTerminal. The response keeps enough nearby
+  // candles to render instead of failing when the exact window has <2 points.
+  '15s':{seconds:15,birdeyeType:'1m',geckoTimeframe:'minute',geckoAggregate:1,geckoLimit:3,short:true},
+  '1min':{seconds:60,birdeyeType:'1m',geckoTimeframe:'minute',geckoAggregate:1,geckoLimit:4,short:true},
+  '15min':{seconds:15*60,birdeyeType:'1m',geckoTimeframe:'minute',geckoAggregate:1,geckoLimit:20,short:true},
   '1d':{seconds:24*60*60,birdeyeType:'5m',geckoTimeframe:'minute',geckoAggregate:15,geckoLimit:96},
   '1w':{seconds:7*24*60*60,birdeyeType:'1H',geckoTimeframe:'hour',geckoAggregate:4,geckoLimit:42},
   '1m':{seconds:30*24*60*60,birdeyeType:'1H',geckoTimeframe:'hour',geckoAggregate:12,geckoLimit:60},
@@ -412,7 +418,9 @@ async function resolveScanChartPair(mint,chain){
 async function birdeyeScanChart(mint,chain,rc){
   const key=process.env.BIRDEYE_API_KEY,cfg=SCAN_CHART_NETWORKS[chain];
   if(!key||!cfg?.birdeye)return[];
-  const now=Math.floor(Date.now()/1000),from=now-rc.seconds;
+  const now=Math.floor(Date.now()/1000),
+    providerWindow=rc.short?Math.max(rc.seconds,20*60):rc.seconds,
+    from=now-providerWindow;
   const headers={accept:'application/json','X-API-KEY':key,'x-chain':cfg.birdeye};
   const common=new URLSearchParams({
     address:mint,type:rc.birdeyeType,currency:'usd',
@@ -490,11 +498,21 @@ async function scanChartHandler(req,res){
 
     const cutoff=Math.floor(Date.now()/1000)-rc.seconds;
     const inWindow=candles.filter(x=>x[0]>=cutoff);
-    if(inWindow.length>=2)candles=inWindow;
+    if(inWindow.length>=2){
+      candles=inWindow;
+    }else if(rc.short&&candles.length>=2){
+      // Historical providers generally bottom out at 1-minute OHLCV candles.
+      // Keep only the closest candles so 15S/1MIN/15MIN render instead of
+      // returning an unsupported/empty chart.
+      const keep=range==='15s'?3:range==='1min'?4:20;
+      candles=candles.slice(-keep);
+    }
 
     return res.status(200).json({
       mint,chain,range,candles,pair,
       source:source||(pair?'DEX Screener live market':'No indexed market'),
+      resolution:rc.short?'1m-provider-candles':rc.birdeyeType,
+      requestedWindowSeconds:rc.seconds,
       dexUrl,
       message:candles.length<2
         ?(process.env.BIRDEYE_API_KEY
@@ -1365,7 +1383,7 @@ const pr=await kv('get',`salt:social:profile:${wallet}`);if(!pr)return res.statu
 
 async function healthHandler(req,res){
   res.setHeader('Cache-Control','no-store');
-  return res.status(200).json({ok:true,service:'The Trenches scanner',version:'1.11.49',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY),zerox:Boolean(process.env.ZEROX_API_KEY),social:Boolean(process.env.UPSTASH_REDIS_REST_URL&&process.env.UPSTASH_REDIS_REST_TOKEN)}});
+  return res.status(200).json({ok:true,service:'The Trenches scanner',version:'1.11.50',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY),zerox:Boolean(process.env.ZEROX_API_KEY),social:Boolean(process.env.UPSTASH_REDIS_REST_URL&&process.env.UPSTASH_REDIS_REST_TOKEN)}});
 }
 
 export default async function handler(req,res){
