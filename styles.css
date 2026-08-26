@@ -4857,7 +4857,7 @@ body.salt-social-active .saltProfileFeed{
   align-items:center!important;
   gap:14px!important;
   width:max-content!important;
-  transform:translate3d(-620px,0,0) scale(.74)!important;
+  transform:translate3d(-300px,0,0) scale(.74)!important;
   transform-origin:left center!important;
   will-change:transform,opacity!important;
 }
@@ -4899,9 +4899,9 @@ body.salt-social-active .saltProfileFeed{
 .heroBannerFlag span{position:relative!important;z-index:1!important;white-space:nowrap!important;color:#4c4b35!important;font-size:13px!important;font-weight:900!important;letter-spacing:.16em!important;text-transform:uppercase!important;text-shadow:0 1px 0 rgba(255,252,244,.8)!important}
 
 @keyframes trenchPlaneCross{
-  0%{transform:translate3d(-620px,0,0) scale(.74);opacity:0}
-  5%{opacity:.92}
-  18%{transform:translate3d(8vw,5px,0) scale(.74)}
+  0%{transform:translate3d(-300px,0,0) scale(.74);opacity:.35}
+  2%{opacity:.92}
+  8%{transform:translate3d(2vw,4px,0) scale(.74);opacity:.94}
   50%{transform:translate3d(48vw,12px,0) scale(.74);opacity:.96}
   82%{transform:translate3d(88vw,4px,0) scale(.74)}
   95%{opacity:.9}

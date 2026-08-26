@@ -1033,3 +1033,10 @@ This update rebuilds the Portfolio information architecture around the current C
 - Sound only plays after a browser user interaction.
 - Adds `window.runTrenchesFlyby()` for manual testing.
 - Vercel configuration unchanged.
+
+## V1.11.58 — Immediate First Flyby
+- First plane flyby now starts essentially immediately after page load (~80ms).
+- Initial flyby position moved much closer to the left viewport edge so it enters almost instantly.
+- Keeps the 18-second flyby duration and 10-minute repeat interval.
+- Banner wave animation and sound behavior remain unchanged.
+- Vercel configuration unchanged.
