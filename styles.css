@@ -4828,3 +4828,191 @@ body.salt-social-active .saltProfileFeed{
     border-radius:18px !important;
   }
 }
+
+/* ==========================================================
+   V1.11.63 — Community tab
+   ========================================================== */
+.communityHub{
+  width:min(1180px,100%);
+  margin:0 auto;
+}
+.communityHubHead{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  padding:4px 2px 24px;
+  border-bottom:1px solid rgba(110,94,54,.18);
+}
+.communityHubHead small,
+.communitySectionHead small{
+  color:#777958;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.12em;
+}
+.communityHubHead h2{
+  margin:5px 0 5px;
+  color:#1c3028;
+  font-size:32px;
+}
+.communityHubHead p{
+  margin:0;
+  color:#6f786d;
+  font-size:14px;
+}
+
+.communityPeopleSection,
+.communityCallsSection{
+  padding:25px 0 4px;
+}
+.communityCallsSection{
+  margin-top:10px;
+  border-top:1px solid rgba(110,94,54,.15);
+}
+.communitySectionHead{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:20px;
+  margin-bottom:14px;
+}
+.communitySectionHead h3{
+  margin:3px 0 0;
+  color:#20362c;
+  font-size:21px;
+}
+#communityMemberCount{
+  color:#78806d;
+  font-size:12px;
+  font-weight:800;
+}
+
+.communityPeopleGrid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+}
+.communityProfileCard{
+  appearance:none;
+  width:100%;
+  min-width:0;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:14px;
+  text-align:left;
+  border:1px solid #dccdab;
+  border-radius:15px;
+  background:#fbf7ee;
+  color:#1e342a;
+  cursor:pointer;
+  box-shadow:none;
+  transition:transform .15s ease,border-color .15s ease,background .15s ease;
+}
+.communityProfileCard:hover{
+  transform:translateY(-1px);
+  border-color:#bba97e;
+  background:#fffaf0;
+}
+.communityProfileAvatar{
+  width:48px;
+  height:48px;
+  flex:0 0 48px;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  border-radius:50%;
+  background:#e7dfc8;
+  border:1px solid rgba(85,86,59,.18);
+  color:#55563b;
+  font-size:17px;
+  font-weight:900;
+}
+.communityProfileAvatar img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+.communityProfileInfo{
+  min-width:0;
+  display:flex;
+  flex:1;
+  flex-direction:column;
+  gap:2px;
+}
+.communityProfileInfo b{
+  overflow:hidden;
+  color:#173127;
+  font-size:14px;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.communityProfileInfo small{
+  overflow:hidden;
+  color:#899087;
+  font-size:10px;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.communityProfileInfo em{
+  margin-top:2px;
+  color:#666f62;
+  font-size:10px;
+  font-style:normal;
+  font-weight:700;
+}
+.communityProfileArrow{
+  color:#777958;
+  font-size:18px;
+}
+
+.communityCallsFeed{
+  overflow:hidden;
+  border:1px solid #dccdab;
+  border-radius:16px;
+  background:#fbf7ee;
+}
+.communityCallsFeed > article.saltFeedPost.trenchPostCard{
+  margin:0!important;
+  padding:18px 20px!important;
+  border:0!important;
+  border-bottom:1px solid #e3d7bd!important;
+  border-radius:0!important;
+  background:#fbf7ee!important;
+  box-shadow:none!important;
+}
+.communityCallsFeed > article.saltFeedPost.trenchPostCard:last-child{
+  border-bottom:0!important;
+}
+.communityLoading,
+.communityEmpty{
+  grid-column:1/-1;
+  padding:28px;
+  text-align:center;
+  border:1px dashed #d8c9aa;
+  border-radius:14px;
+  background:#fbf7ee;
+  color:#7c8378;
+}
+.communityEmpty b,
+.communityEmpty span{
+  display:block;
+}
+.communityEmpty b{
+  margin-bottom:5px;
+  color:#33473d;
+}
+
+@media(max-width:900px){
+  .communityPeopleGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:620px){
+  .communityHubHead h2{font-size:27px}
+  .communityPeopleGrid{grid-template-columns:1fr}
+  .communityCallsFeed > article.saltFeedPost.trenchPostCard{padding:15px 14px!important}
+}
+
+/* Four tabs still fit comfortably and stay centered. */
+body.salt-social-active .socialSubNav{
+  flex-wrap:wrap;
+}

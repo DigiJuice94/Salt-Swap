@@ -1076,3 +1076,11 @@ This update rebuilds the Portfolio information architecture around the current C
 - Removes all flyby-specific CSS and JavaScript.
 - Restores the landing hero to the normal Trenches layout with no flyby layer.
 - Vercel configuration unchanged.
+
+## V1.11.63 — Community Tab
+- Adds Community next to Profile / Feed / Following.
+- Community includes an Active Traders discovery grid built from real Trenches community activity.
+- Clicking an active trader opens that trader's existing full profile view.
+- Adds a connected Recent Community Calls feed beneath profile discovery.
+- Reuses current Social feed data and profile routing; no fake placeholder members.
+- Vercel configuration unchanged.
