@@ -998,3 +998,13 @@ This update rebuilds the Portfolio information architecture around the current C
 - Keeps a legacy/Gecko fallback if V3 is unavailable.
 - Adds denser time labels and trading-chart-style vertical scaling.
 - Vercel configuration unchanged.
+
+## V1.11.53 — Token Website & Socials
+- Adds compact official-link pills below the scanned token contract address.
+- Displays Website, X, Telegram, Discord, YouTube, TikTok, Instagram, GitHub, Medium when available.
+- Pulls project links from the highest-liquidity DEX Screener pair with link metadata.
+- Pump.fun website/X/Telegram metadata is also used for Pump.fun Solana tokens.
+- Duplicate URLs are removed and only valid HTTP(S) links are returned/rendered.
+- Tokens with no discovered links simply hide the row.
+- Works on Solana, Ethereum, Base, BNB Chain, and Robinhood Chain scans.
+- Vercel configuration unchanged.

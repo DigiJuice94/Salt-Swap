@@ -4651,3 +4651,49 @@ body.salt-social-active .saltProfileFeed{
     padding:16px 14px !important;
   }
 }
+
+/* V1.11.53 — official token website + social links */
+.tokenProjectLinks{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:7px;
+  margin:7px 0 3px;
+}
+.tokenProjectLinks.hidden{display:none!important}
+.tokenProjectLink{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  min-height:28px;
+  padding:5px 10px;
+  border:1px solid rgba(82,93,58,.22);
+  border-radius:999px;
+  background:rgba(255,250,239,.82);
+  color:#3f4933;
+  text-decoration:none;
+  font-size:11px;
+  font-weight:800;
+  line-height:1;
+  box-shadow:0 4px 14px rgba(70,62,37,.04);
+  transition:transform .15s ease,border-color .15s ease,background .15s ease;
+}
+.tokenProjectLink:hover{
+  transform:translateY(-1px);
+  background:#fffaf0;
+  border-color:rgba(82,93,58,.42);
+}
+.tokenProjectLink b{
+  display:grid;
+  place-items:center;
+  min-width:13px;
+  font-size:12px;
+  color:#596447;
+}
+.tokenProjectLink.x b{font-size:13px}
+.tokenProjectLink.telegram b{font-size:12px}
+.tokenProjectLink.discord b{font-size:11px}
+@media(max-width:720px){
+  .tokenProjectLinks{gap:5px}
+  .tokenProjectLink{padding:5px 8px;font-size:10px}
+}

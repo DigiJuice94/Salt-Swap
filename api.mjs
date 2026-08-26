@@ -113,7 +113,96 @@ async function rpc(url,method,params){const j=await fetchJson(url,{method:'POST'
 
 async function evmRpcTry(chain,method,params){const urls=chain==='bnb'?BNB_RPCS:chain==='base'?BASE_RPCS:chain==='robinhood'?ROBINHOOD_RPCS:ETH_RPCS;let last;for(const url of urls){try{return await rpc(url,method,params)}catch(e){last=e;console.warn(`EVM RPC ${chain} ${url}:`,e.message)}}throw last||new Error(`${chain} RPC unavailable`)}
 async function goPlusTokenSecurity(address,chain){const chainId=chain==='bnb'?'56':chain==='base'?'8453':chain==='robinhood'?'4663':'1';try{const j=await fetchJson(`https://api.gopluslabs.io/api/v1/token_security/${chainId}?contract_addresses=${encodeURIComponent(address)}`,{headers:{accept:'application/json'}},9000);const result=j?.result||{};return result[String(address).toLowerCase()]||result[address]||Object.values(result)[0]||null}catch(e){console.warn('GoPlus EVM:',e.message);return null}}
-async function dexEvmOverview(address,chain){const dsChain=chain==='bnb'?'bsc':chain==='base'?'base':chain==='robinhood'?'robinhood':'ethereum';try{const rows=await fetchJson(`https://api.dexscreener.com/token-pairs/v1/${dsChain}/${encodeURIComponent(address)}`,{headers:{accept:'application/json'}},9000);const pairs=Array.isArray(rows)?rows:[];if(!pairs.length)return null;const match=pairs.filter(x=>String(x?.chainId||'')===dsChain).sort((a,b)=>(Number(b?.liquidity?.usd)||0)-(Number(a?.liquidity?.usd)||0))[0]||pairs[0];const addr=String(address).toLowerCase(),base=match?.baseToken,quote=match?.quoteToken,token=String(base?.address||'').toLowerCase()===addr?base:String(quote?.address||'').toLowerCase()===addr?quote:base;return{name:token?.name||null,symbol:token?.symbol||null,priceUsd:number(match?.priceUsd),marketCapUsd:number(match?.marketCap??match?.fdv),fdv:number(match?.fdv),liquidityUsd:number(match?.liquidity?.usd),pairAddress:match?.pairAddress||null,dexId:match?.dexId||null,imageUrl:match?.info?.imageUrl||null,volume24h:number(match?.volume?.h24)}}catch(e){console.warn('DexScreener EVM overview:',e.message);return null}}
+
+function safeProjectUrl(value){
+  const raw=String(value||'').trim();
+  if(!raw)return '';
+  try{
+    const u=new URL(/^https?:\/\//i.test(raw)?raw:`https://${raw.replace(/^\/+/,'')}`);
+    return ['http:','https:'].includes(u.protocol)?u.href:''
+  }catch{return ''}
+}
+function projectSocialType(value){
+  const t=String(value||'').trim().toLowerCase();
+  if(['twitter','x','x.com'].includes(t))return 'x';
+  if(['telegram','tg'].includes(t))return 'telegram';
+  if(['discord'].includes(t))return 'discord';
+  if(['youtube','youtube.com'].includes(t))return 'youtube';
+  if(['tiktok','tiktok.com'].includes(t))return 'tiktok';
+  if(['instagram','instagram.com'].includes(t))return 'instagram';
+  if(['github','github.com'].includes(t))return 'github';
+  if(['medium','medium.com'].includes(t))return 'medium';
+  return t.replace(/[^a-z0-9_-]/g,'').slice(0,24)||'social'
+}
+function projectSocialLabel(type){
+  return ({x:'X',twitter:'X',telegram:'Telegram',discord:'Discord',youtube:'YouTube',tiktok:'TikTok',instagram:'Instagram',github:'GitHub',medium:'Medium'})[type]||String(type||'Social').replace(/(^|[-_])([a-z])/g,(_,a,b)=>`${a?' ':''}${b.toUpperCase()}`)
+}
+function normalizeProjectLinks({websites=[],socials=[]}={}){
+  const out=[],seen=new Set();
+  const add=(type,label,url,source='')=>{
+    const href=safeProjectUrl(url);
+    if(!href)return;
+    const key=href.replace(/\/$/,'').toLowerCase();
+    if(seen.has(key))return;
+    seen.add(key);
+    out.push({type,label,url:href,source})
+  };
+  for(const row of Array.isArray(websites)?websites:[]){
+    const url=typeof row==='string'?row:(row?.url||row?.href);
+    add('website',String(row?.label||'Website').trim()||'Website',url,row?.source||'')
+  }
+  for(const row of Array.isArray(socials)?socials:[]){
+    const type=projectSocialType(row?.type||row?.platform||row?.label);
+    add(type,projectSocialLabel(type),row?.url||row?.href,row?.source||'')
+  }
+  return out.slice(0,10)
+}
+async function dexProjectLinks(address,chain){
+  const dsChain=chain==='bnb'?'bsc':chain==='base'?'base':chain==='robinhood'?'robinhood':chain;
+  try{
+    const rows=await fetchJson(`https://api.dexscreener.com/token-pairs/v1/${encodeURIComponent(dsChain)}/${encodeURIComponent(address)}`,{headers:{accept:'application/json'}},9000);
+    const pairs=(Array.isArray(rows)?rows:[]).filter(Boolean).sort((a,b)=>(Number(b?.liquidity?.usd)||0)-(Number(a?.liquidity?.usd)||0));
+    const pair=pairs.find(x=>x?.info?.websites?.length||x?.info?.socials?.length)||pairs[0];
+    return normalizeProjectLinks({
+      websites:(pair?.info?.websites||[]).map(x=>({...x,source:'DEX Screener'})),
+      socials:(pair?.info?.socials||[]).map(x=>({...x,source:'DEX Screener'}))
+    })
+  }catch(e){
+    console.warn('DEX Screener project links:',e.message);
+    return []
+  }
+}
+async function pumpProjectLinks(mint){
+  if(!String(mint||'').toLowerCase().endsWith('pump'))return [];
+  try{
+    const j=await fetchJson(`https://frontend-api-v3.pump.fun/coins-v2/${encodeURIComponent(mint)}`,{headers:{accept:'application/json'}},7000),
+      d=j?.data??j,
+      websites=[],
+      socials=[];
+    const website=field(d,'website','website_url','websiteUrl');
+    const twitter=field(d,'twitter','twitter_url','twitterUrl','x','x_url');
+    const telegram=field(d,'telegram','telegram_url','telegramUrl');
+    if(website)websites.push({label:'Website',url:website,source:'Pump.fun'});
+    if(twitter)socials.push({type:'x',url:twitter,source:'Pump.fun'});
+    if(telegram)socials.push({type:'telegram',url:telegram,source:'Pump.fun'});
+    return normalizeProjectLinks({websites,socials})
+  }catch(e){
+    console.warn('Pump project links:',e.message);
+    return []
+  }
+}
+async function tokenProjectLinks(address,chain){
+  const [dex,pump]=await Promise.all([
+    dexProjectLinks(address,chain),
+    chain==='solana'?pumpProjectLinks(address):Promise.resolve([])
+  ]);
+  return normalizeProjectLinks({
+    websites:[...dex,...pump].filter(x=>x.type==='website').map(x=>({label:x.label,url:x.url,source:x.source})),
+    socials:[...dex,...pump].filter(x=>x.type!=='website').map(x=>({type:x.type,url:x.url,source:x.source}))
+  })
+}
+
+async function dexEvmOverview(address,chain){const dsChain=chain==='bnb'?'bsc':chain==='base'?'base':chain==='robinhood'?'robinhood':'ethereum';try{const rows=await fetchJson(`https://api.dexscreener.com/token-pairs/v1/${dsChain}/${encodeURIComponent(address)}`,{headers:{accept:'application/json'}},9000);const pairs=Array.isArray(rows)?rows:[];if(!pairs.length)return null;const match=pairs.filter(x=>String(x?.chainId||'')===dsChain).sort((a,b)=>(Number(b?.liquidity?.usd)||0)-(Number(a?.liquidity?.usd)||0))[0]||pairs[0];const addr=String(address).toLowerCase(),base=match?.baseToken,quote=match?.quoteToken,token=String(base?.address||'').toLowerCase()===addr?base:String(quote?.address||'').toLowerCase()===addr?quote:base;return{name:token?.name||null,symbol:token?.symbol||null,priceUsd:number(match?.priceUsd),marketCapUsd:number(match?.marketCap??match?.fdv),fdv:number(match?.fdv),liquidityUsd:number(match?.liquidity?.usd),pairAddress:match?.pairAddress||null,dexId:match?.dexId||null,imageUrl:match?.info?.imageUrl||null,volume24h:number(match?.volume?.h24),websites:match?.info?.websites||[],socials:match?.info?.socials||[]}}catch(e){console.warn('DexScreener EVM overview:',e.message);return null}}
 function gpBool(o,...keys){return bool(field(o,...keys))}
 function gpPct(v){const n=number(v);if(n==null)return null;return n>0&&n<=1?n*100:n}
 function gpTop10(sec){const holders=Array.isArray(sec?.holders)?sec.holders:[];if(!holders.length)return null;const vals=holders.map(x=>gpPct(field(x,'percent','percentage','rate'))).filter(x=>x!=null);return vals.slice(0,10).reduce((a,b)=>a+b,0)}
@@ -242,7 +331,10 @@ async function scanSolana(mint){
   const priceUsd=number(field(overview,'price','priceUsd','price_usd','value'));
   const indexedMarketCap=number(field(overview,'mc','marketCap','market_cap','marketcap','marketCapUsd','market_cap_usd'));
   const marketCapUsd=indexedMarketCap??(priceUsd!=null&&supplyUi!=null?priceUsd*supplyUi:null);
-  const dexPaid=await dexPaidIntel('solana',mint);
+  const [dexPaid,projectLinks]=await Promise.all([
+    dexPaidIntel('solana',mint),
+    tokenProjectLinks(mint,'solana')
+  ]);
   const identity=await resolveSolanaIdentity(asset,overview,security,mint);
   const {name,symbol,logoUri,logoUris,identitySource}=identity;
   const verified=Boolean(field(overview,'logoURI','logo_uri'));
@@ -270,7 +362,7 @@ async function scanSolana(mint){
   const baseScore=finalize(checks);
   const s=applyHardRiskOverrides(baseScore,{mintable,freezable,top10,bundlePct,devPct});
   const creatorHistory=creator?metric(creator.mintLike?`${creator.mintLike} recent mint/create event${creator.mintLike===1?'':'s'}`:'Creator identified',creator.mintLike>=3?'warn':'good',`The Trenches traced a likely launch signer ${creator.address.slice(0,6)}…${creator.address.slice(-4)}. Helius returned ${creator.recentCount} recent parsed transactions${creator.createdAt?` and the earliest sampled mint activity was ${new Date(creator.createdAt*1000).toLocaleDateString('en-US')}`:''}. This is creator-wallet context, not proof of every prior deployment.`,'Helius launch history'):metric('Could not verify','unknown','The Trenches could not reliably trace a creator wallet from the mint history for this scan.','Trenches Engine');
-  return {mint,chain:'solana',name,symbol,decimals,logoUri,logoUris,identitySource,verified,priceUsd,marketCapUsd,...s,
+  return {mint,chain:'solana',name,symbol,decimals,logoUri,logoUris,identitySource,verified,priceUsd,marketCapUsd,projectLinks,...s,
     summary:s.hardRiskOverride?`HIGH RISK override triggered: ${s.hardRiskReasons.join('; ')}. The Trenches completed ${s.checksCompleted}/${s.checksTotal} core checks. The numerical Trenches Risk Score is still shown, but positive checks cannot cancel these severe structural risks.`:risks.length?`The Trenches completed ${s.checksCompleted}/${s.checksTotal} core checks and found ${risks.join(', ')}.`:`The Trenches completed ${s.checksCompleted}/${s.checksTotal} core checks. No major warning was found in the data currently available.`,
     authenticity:metric('Mint confirmed','good','Helius confirmed a valid Solana token mint on-chain.','Helius'),
     sellable:metric(liq!=null?'Market found':'Not simulated',liq!=null?'good':'unknown',liq!=null?'Birdeye returned live market/liquidity data.':'A real swap-route simulation is a later Trenches intelligence layer.',liq!=null?'Birdeye':'Salt'),
@@ -343,12 +435,15 @@ async function scanEvm(address,pref){
   const checks=[{known:true,weight:15,risk:0},{known:honeypot!=null||cannotSell,weight:20,risk:sellabilityBad?100:0},{known:buyTax!=null||sellTax!=null,weight:15,risk:maxTax>=20?80:maxTax>=10?50:maxTax>=5?20:0},{known:mintable!=null,weight:10,risk:mintable?55:0},{known:proxy!=null,weight:10,risk:proxy?35:0},{known:blacklist!=null,weight:10,risk:blacklist?70:0},{known:liq!=null,weight:10,risk:liq<5000?100:liq<20000?75:liq<50000?45:10},{known:holders!=null,weight:10,risk:0}];
   const baseScore=finalize(checks);const sc=applyHardRiskOverrides(baseScore,{sellabilityBad,mintable,top10,devPct:ownerPct});
   const name=(rhAsset?.tokenName?String(rhAsset.tokenName).replace(/\s*[•·]\s*Robinhood Token\s*$/i,'').trim():null)||field(overview,'name')||field(gp,'token_name','tokenName')||dex?.name||`${chainLabel} token`,symbol=rhAsset?.tokenSymbol||field(overview,'symbol')||field(gp,'token_symbol','tokenSymbol')||dex?.symbol||'TOKEN',decimals=isRobinhoodStockToken?18:(number(field(overview,'decimals','decimal'))??number(field(gp,'decimals'))??18);
-  const dexPaid=await dexPaidIntel(chain==='bnb'?'bsc':chain==='base'?'base':chain==='robinhood'?'robinhood':'ethereum',address);
+  const [dexPaid,projectLinks]=await Promise.all([
+    dexPaidIntel(chain==='bnb'?'bsc':chain==='base'?'base':chain==='robinhood'?'robinhood':'ethereum',address),
+    tokenProjectLinks(address,chain)
+  ]);
   const marketSource=overview?'Birdeye':dex?'DEX Screener':'Trenches Engine';
   const securitySource=security?'Birdeye':gp?'GoPlus':'Trenches Engine';
   const logoUri=rhAsset?.logoUrl||dex?.imageUrl||field(overview,'logoURI','logo_uri','logo');
   const marketCapLabel=isRobinhoodStockToken?(companyMarketCapUsd!=null?'Company Market Cap':underlyingAumUsd!=null?'Underlying AUM':'Company Market Cap'):'Market Cap';
-  return {mint:address,chain,name,symbol,decimals,logoUri,logoUris:[logoUri].filter(Boolean),verified:isRobinhoodStockToken,priceUsd,marketCapUsd,marketCapLabel,assetType:isRobinhoodStockToken?'robinhood_stock_token':'crypto_token',tokenizedMarketValueUsd,underlyingPriceUsd:number(rhPrice?.rawUnderlyingPriceUsd),stockTokenMultiplier:number(rhPrice?.multiplier),robinhoodAssetStatus:rhAsset?.status||null,...sc,summary:sc.hardRiskOverride?`HIGH RISK override triggered: ${sc.hardRiskReasons.join('; ')}. The Trenches confirmed the contract on ${chainLabel}. The numerical Trenches Risk Score is still shown, but positive checks cannot cancel these severe safety risks.`:`The Trenches confirmed the contract on ${chainLabel} and completed ${sc.checksCompleted}/${sc.checksTotal} core checks. Market data can fall back to DEX Screener and contract security can fall back to GoPlus when Birdeye is unavailable.`,
+  return {mint:address,chain,name,symbol,decimals,logoUri,logoUris:[logoUri].filter(Boolean),verified:isRobinhoodStockToken,priceUsd,marketCapUsd,marketCapLabel,assetType:isRobinhoodStockToken?'robinhood_stock_token':'crypto_token',tokenizedMarketValueUsd,underlyingPriceUsd:number(rhPrice?.rawUnderlyingPriceUsd),stockTokenMultiplier:number(rhPrice?.multiplier),robinhoodAssetStatus:rhAsset?.status||null,projectLinks,...sc,summary:sc.hardRiskOverride?`HIGH RISK override triggered: ${sc.hardRiskReasons.join('; ')}. The Trenches confirmed the contract on ${chainLabel}. The numerical Trenches Risk Score is still shown, but positive checks cannot cancel these severe safety risks.`:`The Trenches confirmed the contract on ${chainLabel} and completed ${sc.checksCompleted}/${sc.checksTotal} core checks. Market data can fall back to DEX Screener and contract security can fall back to GoPlus when Birdeye is unavailable.`,
     authenticity:metric('Contract confirmed','good',`Deployed bytecode exists on ${chainLabel}.`,'EVM RPC'),
     sellable:metric(honeypot==null&&!cannotSell?'Could not verify':sellabilityBad?'Possible sell restriction':'No sell block detected',honeypot==null&&!cannotSell?'unknown':sellabilityBad?'bad':'good',cannotSell?'GoPlus reports a sell restriction.':honeypot===true?'A honeypot flag was returned.':'No current sell-block/honeypot signal was returned by the available security providers.',securitySource),
     honeypot:metric(honeypot==null?'Could not verify':honeypot?'Detected':'Not detected',honeypot==null?'unknown':honeypot?'bad':'good','Current token-security honeypot signal.',securitySource),
@@ -1417,7 +1512,7 @@ const pr=await kv('get',`salt:social:profile:${wallet}`);if(!pr)return res.statu
 
 async function healthHandler(req,res){
   res.setHeader('Cache-Control','no-store');
-  return res.status(200).json({ok:true,service:'The Trenches scanner',version:'1.11.52',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY),zerox:Boolean(process.env.ZEROX_API_KEY),social:Boolean(process.env.UPSTASH_REDIS_REST_URL&&process.env.UPSTASH_REDIS_REST_TOKEN)}});
+  return res.status(200).json({ok:true,service:'The Trenches scanner',version:'1.11.53',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY),zerox:Boolean(process.env.ZEROX_API_KEY),social:Boolean(process.env.UPSTASH_REDIS_REST_URL&&process.env.UPSTASH_REDIS_REST_TOKEN)}});
 }
 
 export default async function handler(req,res){
