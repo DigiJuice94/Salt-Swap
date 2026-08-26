@@ -1070,3 +1070,9 @@ This update rebuilds the Portfolio information architecture around the current C
 - Banner trails behind and continues its cloth-wave animation.
 - Repeats every 10 minutes.
 - Vercel configuration unchanged.
+
+## V1.11.62 — Remove Plane Flyby
+- Completely removes the airplane, tow lines, banner, flyby animation, timers, and sound effects.
+- Removes all flyby-specific CSS and JavaScript.
+- Restores the landing hero to the normal Trenches layout with no flyby layer.
+- Vercel configuration unchanged.
