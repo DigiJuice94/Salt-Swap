@@ -16,7 +16,7 @@
   <link rel="shortcut icon" href="/favicon.ico?v=11090" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=11090" />
   <link rel="manifest" href="/site.webmanifest?v=11090" />
-  <link rel="stylesheet" href="/styles.css?v=11151" />
+  <link rel="stylesheet" href="/styles.css?v=11152" />
   <script defer src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.4/lib/index.iife.min.js"></script>
 
 <style>
@@ -983,8 +983,9 @@ function scanChartPct(v){
 }
 function scanChartTime(ts,range){
   const d=new Date(Number(ts)*1000);
-  if(range==='15s'||range==='1min'||range==='15min')
-    return d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit',second:'2-digit'});
+  if(range==='15s')return d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
+  if(range==='1min')return d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
+  if(range==='15min')return d.toLocaleDateString([], {weekday:'short',hour:'numeric'});
   if(range==='1d')return d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
   if(range==='1w')return d.toLocaleDateString([], {weekday:'short'});
   if(range==='1m'||range==='3m')return d.toLocaleDateString([], {month:'short',day:'numeric'});
@@ -1034,8 +1035,8 @@ async function loadScanChart(range=scanChartState.range,silent=false){
     if(!r.ok)throw new Error(readableError(j?.error??j));
     scanChartState.data=j;
     renderScanChart(j);
-    if(['15s','1min','15min'].includes(range)&&j?.resolution==='1m-provider-candles'){
-      $('scanChartStatus').textContent=`${j.candles?.length||0} recent points · finest indexed candles · updated ${new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}`;
+    if(['15s','1min','15min'].includes(range)&&j?.candles?.length){
+      $('scanChartStatus').textContent=`${j.candles.length} ${j.candleLabel||j.resolution||'market'} candles · updated ${new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}`;
     }
   }catch(e){
     if(seq!==scanChartState.requestSeq)return;
@@ -1169,7 +1170,7 @@ function renderScanChart(j){
     rawSpan=Math.max(0,maxValue-minValue),floor=Math.max(Math.abs(lastValue)*.001,.000000000001),
     span=Math.max(rawSpan,floor),
     isShortRange=['15s','1min','15min'].includes(scanChartState.range),
-    padMultiplier=isShortRange?0.42:0.09,
+    padMultiplier=isShortRange?0.16:0.09,
     pad=span*padMultiplier,
     minY=Math.max(0,minValue-pad),
     maxY=maxValue+pad,
@@ -1177,7 +1178,7 @@ function renderScanChart(j){
 
   if(isShortRange){
     const center=(minY+maxY)/2;
-    const minVisualSpan=Math.max(Math.abs(center)*.012,span*1.8,.000000000001);
+    const minVisualSpan=Math.max(Math.abs(center)*.004,span*1.25,.000000000001);
     if((maxY-minY)<minVisualSpan){
       minY=Math.max(0,center-minVisualSpan/2);
       maxY=center+minVisualSpan/2;
@@ -1207,7 +1208,7 @@ function renderScanChart(j){
     valueLabels+=`<text x="${w-8}" y="${(y+4).toFixed(2)}" text-anchor="end">${socialEsc(scanChartMoney(val))}</text>`
   }
 
-  const timeCount=Math.min(6,candles.length);
+  const timeCount=Math.min(isShortRange?9:6,candles.length);
   const timeLabels=Array.from({length:timeCount},(_,i)=>{
     const idx=Math.round((candles.length-1)*(i/Math.max(1,timeCount-1))),x=xAt(idx),
       anchor=i===0?'start':i===timeCount-1?'end':'middle';

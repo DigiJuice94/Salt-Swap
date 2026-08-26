@@ -987,3 +987,14 @@ This update rebuilds the Portfolio information architecture around the current C
 - Uses 7 horizontal price lines on short ranges for better context.
 - Longer chart ranges keep their existing tighter scale.
 - Vercel configuration unchanged.
+
+## V1.11.52 — Real Short Timeframes
+- Rebuilds short chart buttons as candle timeframes instead of tiny history windows.
+- 15S: Birdeye V3 15-second candles over approximately 6 hours.
+- 1MIN: 1-minute candles over approximately 24 hours.
+- 15MIN: 15-minute candles over approximately 7 days.
+- Removes the old 3-point/4-point short-range fallback responsible for giant straight lines.
+- Uses Birdeye V3 raw fine-granularity candles (`outlier=false`, `padding=false`).
+- Keeps a legacy/Gecko fallback if V3 is unavailable.
+- Adds denser time labels and trading-chart-style vertical scaling.
+- Vercel configuration unchanged.
