@@ -4722,3 +4722,109 @@ body.salt-social-active .saltProfileFeed{
   .tokenProjectLinksLabel{font-size:9px;padding:0 8px;height:24px}
   .tokenProjectLink{padding:5px 8px;font-size:10px}
 }
+
+/* ==========================================================
+   V1.11.55 — Entire token header grouped into one bubble
+   ========================================================== */
+
+.groupedTokenSummary{
+  width:min(760px,calc(100% - 32px));
+  margin:18px auto 20px;
+  padding:20px 22px;
+  background:rgba(255,250,239,.92);
+  border:1px solid rgba(100,88,57,.18);
+  border-radius:22px;
+  box-shadow:0 14px 34px rgba(74,60,28,.10);
+  backdrop-filter:blur(7px);
+  -webkit-backdrop-filter:blur(7px);
+}
+
+/* Remove the "floating pieces" feeling inside the shared bubble. */
+.groupedTokenSummary .tokenProjectLinks{
+  margin:10px 0 12px !important;
+  background:rgba(244,237,220,.72) !important;
+  border-color:rgba(82,93,58,.14) !important;
+  box-shadow:none !important;
+}
+
+.groupedTokenSummary .marketIdentity{
+  margin-top:12px !important;
+}
+
+/* Price + market cap stay as inner information cells, not separate floating cards. */
+.groupedTokenSummary .priceCard,
+.groupedTokenSummary .marketCapCard,
+.groupedTokenSummary [class*="priceMetric"],
+.groupedTokenSummary [class*="marketCapMetric"]{
+  box-shadow:none !important;
+}
+
+/* Token identity layout */
+.groupedTokenSummary #tokenName{
+  color:#17251e !important;
+}
+
+.groupedTokenSummary .caButton{
+  margin-top:4px !important;
+}
+
+/* Keep pills compact and visually part of the same module */
+.groupedTokenSummary .chainBadge,
+.groupedTokenSummary .verifiedBadge,
+.groupedTokenSummary [class*="chainPill"],
+.groupedTokenSummary [class*="verifiedPill"]{
+  box-shadow:none !important;
+}
+
+/* The main wrapper owns the rounded shape now. */
+.groupedTokenSummary > .tokenHero,
+.groupedTokenSummary > .resultHero,
+.groupedTokenSummary > .tokenHeader{
+  margin:0 !important;
+  padding:0 !important;
+  background:transparent !important;
+  border:0 !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+}
+
+/* When groupedTokenSummary was added directly to the existing header wrapper. */
+.tokenHero.groupedTokenSummary,
+.resultHero.groupedTokenSummary,
+.tokenHeader.groupedTokenSummary,
+.resultHeader.groupedTokenSummary,
+.tokenIdentity.groupedTokenSummary{
+  width:min(760px,calc(100% - 32px)) !important;
+  margin:18px auto 20px !important;
+  padding:20px 22px !important;
+  background:rgba(255,250,239,.92) !important;
+  border:1px solid rgba(100,88,57,.18) !important;
+  border-radius:22px !important;
+  box-shadow:0 14px 34px rgba(74,60,28,.10) !important;
+  backdrop-filter:blur(7px) !important;
+  -webkit-backdrop-filter:blur(7px) !important;
+}
+
+/* Keep avatar overlapping the grouped card slightly, but no longer floating far away. */
+.groupedTokenSummary .tokenLogo,
+.groupedTokenSummary .tokenAvatar,
+.groupedTokenSummary [class*="tokenLogo"],
+.groupedTokenSummary [class*="tokenAvatar"]{
+  position:relative !important;
+  z-index:2 !important;
+}
+
+/* Mobile */
+@media(max-width:720px){
+  .groupedTokenSummary,
+  .tokenHero.groupedTokenSummary,
+  .resultHero.groupedTokenSummary,
+  .tokenHeader.groupedTokenSummary,
+  .resultHeader.groupedTokenSummary,
+  .tokenIdentity.groupedTokenSummary{
+    width:calc(100% - 20px) !important;
+    margin:12px auto 16px !important;
+    padding:16px !important;
+    border-radius:18px !important;
+  }
+}

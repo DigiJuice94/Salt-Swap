@@ -1015,3 +1015,11 @@ This update rebuilds the Portfolio information architecture around the current C
 - Individual links still remain clickable, but the whole section now feels cleaner and more readable.
 - Mobile spacing for the grouped link bubble is also tightened so it wraps cleanly.
 - Vercel configuration unchanged.
+
+## V1.11.55 — Grouped Token Header
+- Groups the entire scanned-token summary into one organized off-white bubble.
+- The shared bubble contains token name/ticker, chain, Trenches Verified, contract/copy, official links, price, and market cap.
+- Keeps individual social links clickable inside the same overall card.
+- Removes the scattered/floating feel while preserving all scan functionality.
+- Battlefield background remains visible around the grouped summary.
+- Vercel configuration unchanged.
