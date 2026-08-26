@@ -979,3 +979,11 @@ This update rebuilds the Portfolio information architecture around the current C
 - Short-range X-axis labels include seconds.
 - Existing 1D/1W/1M/3M/1Y behavior remains intact.
 - Vercel configuration unchanged.
+
+## V1.11.51 — Zoomed-Out Short Charts
+- Zooms out 15S, 1MIN, and 15MIN chart Y-axis scaling.
+- Short ranges now use 42% vertical padding instead of the normal 9%.
+- Adds a minimum visual price span so tiny moves are not exaggerated across the full chart height.
+- Uses 7 horizontal price lines on short ranges for better context.
+- Longer chart ranges keep their existing tighter scale.
+- Vercel configuration unchanged.

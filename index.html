@@ -16,7 +16,7 @@
   <link rel="shortcut icon" href="/favicon.ico?v=11090" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=11090" />
   <link rel="manifest" href="/site.webmanifest?v=11090" />
-  <link rel="stylesheet" href="/styles.css?v=11150" />
+  <link rel="stylesheet" href="/styles.css?v=11151" />
   <script defer src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.4/lib/index.iife.min.js"></script>
 
 <style>
@@ -1167,8 +1167,22 @@ function renderScanChart(j){
     plotW=w-left-right,priceH=priceBottom-top,
     minValue=Math.min(...historyValues),maxValue=Math.max(...historyValues),
     rawSpan=Math.max(0,maxValue-minValue),floor=Math.max(Math.abs(lastValue)*.001,.000000000001),
-    span=Math.max(rawSpan,floor),pad=span*.09,minY=minValue-pad,maxY=maxValue+pad,
+    span=Math.max(rawSpan,floor),
+    isShortRange=['15s','1min','15min'].includes(scanChartState.range),
+    padMultiplier=isShortRange?0.42:0.09,
+    pad=span*padMultiplier,
+    minY=Math.max(0,minValue-pad),
+    maxY=maxValue+pad,
     maxVol=Math.max(...volumes,1);
+
+  if(isShortRange){
+    const center=(minY+maxY)/2;
+    const minVisualSpan=Math.max(Math.abs(center)*.012,span*1.8,.000000000001);
+    if((maxY-minY)<minVisualSpan){
+      minY=Math.max(0,center-minVisualSpan/2);
+      maxY=center+minVisualSpan/2;
+    }
+  }
 
   const xAt=i=>left+plotW*(i/Math.max(1,candles.length-1));
   const yAt=v=>top+(maxY-v)/(maxY-minY)*priceH;
@@ -1186,8 +1200,9 @@ function renderScanChart(j){
   });
 
   let grid='',valueLabels='';
-  for(let i=0;i<5;i++){
-    const pct=i/4,y=top+priceH*pct,val=maxY-(maxY-minY)*pct;
+  const yGridCount=isShortRange?7:5;
+  for(let i=0;i<yGridCount;i++){
+    const pct=i/Math.max(1,yGridCount-1),y=top+priceH*pct,val=maxY-(maxY-minY)*pct;
     grid+=`<line x1="${left}" x2="${w-right}" y1="${y.toFixed(2)}" y2="${y.toFixed(2)}"/>`;
     valueLabels+=`<text x="${w-8}" y="${(y+4).toFixed(2)}" text-anchor="end">${socialEsc(scanChartMoney(val))}</text>`
   }
