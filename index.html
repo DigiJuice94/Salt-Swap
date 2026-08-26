@@ -16,7 +16,7 @@
   <link rel="shortcut icon" href="/favicon.ico?v=11090" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=11090" />
   <link rel="manifest" href="/site.webmanifest?v=11090" />
-  <link rel="stylesheet" href="/styles.css?v=11160" />
+  <link rel="stylesheet" href="/styles.css?v=11161" />
   <script defer src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.4/lib/index.iife.min.js"></script>
 
 <style>
@@ -2912,44 +2912,64 @@ async function toggleViewedProfileFollow(){
     }catch(_){ }
   }
 
+  let rafId=0;
+
   function runFlyby(){
-    try{ currentAnimation?.cancel(); }catch(_){ }
+    cancelAnimationFrame(rafId);
     clearTimeout(repeatTimer);
 
-    flyby.style.display='block';
-    flyby.style.visibility='visible';
-    flyby.style.opacity='1';
+    flyby.style.setProperty('display','block','important');
+    flyby.style.setProperty('visibility','visible','important');
+    flyby.style.setProperty('opacity','1','important');
 
     const vw=Math.max(document.documentElement.clientWidth||0,window.innerWidth||0,1000);
     const scale=vw<650?.54:vw<950?.62:.68;
-    const startX=-390;
-    const endX=vw+520;
 
-    inner.style.transform=`translate3d(${startX}px,0,0) scale(${scale})`;
-    inner.style.opacity='1';
+    // Because the plane is the right-most item in the reversed flex row,
+    // this position starts the airplane itself just inside the left edge
+    // while the banner is still trailing off-screen.
+    const startX=-250;
+    const endX=vw+540;
+    const duration=DURATION_MS;
+    const started=performance.now();
 
-    // WAAPI physically moves the element across the screen; no CSS keyframe dependency.
-    currentAnimation=inner.animate([
-      {transform:`translate3d(${startX}px,0px,0) scale(${scale})`,opacity:.98,offset:0},
-      {transform:`translate3d(${-170}px,4px,0) scale(${scale})`,opacity:1,offset:.08},
-      {transform:`translate3d(${Math.round(vw*.18)}px,7px,0) scale(${scale})`,opacity:1,offset:.28},
-      {transform:`translate3d(${Math.round(vw*.52)}px,12px,0) scale(${scale})`,opacity:1,offset:.58},
-      {transform:`translate3d(${Math.round(vw*.82)}px,5px,0) scale(${scale})`,opacity:.98,offset:.84},
-      {transform:`translate3d(${endX}px,10px,0) scale(${scale})`,opacity:0,offset:1}
-    ],{duration:DURATION_MS,easing:'linear',fill:'forwards'});
+    function frame(now){
+      const t=Math.min(1,(now-started)/duration);
+      const eased=t; // constant-speed flyby
+      const x=startX+(endX-startX)*eased;
+      const y=Math.sin(t*Math.PI*2)*5 + 5;
+
+      // Inline !important deliberately beats every stylesheet transform.
+      inner.style.setProperty(
+        'transform',
+        `translate3d(${Math.round(x)}px,${y.toFixed(1)}px,0) scale(${scale})`,
+        'important'
+      );
+      inner.style.setProperty('opacity',t<.97?'1':String(Math.max(0,(1-t)/.03)),'important');
+
+      if(t<1){
+        rafId=requestAnimationFrame(frame);
+      }else{
+        flyby.style.setProperty('opacity','0','important');
+        flyby.style.setProperty('visibility','hidden','important');
+        repeatTimer=setTimeout(runFlyby,REPEAT_MS);
+      }
+    }
+
+    // Force a visible starting frame before movement begins.
+    inner.style.setProperty(
+      'transform',
+      `translate3d(${startX}px,5px,0) scale(${scale})`,
+      'important'
+    );
+    inner.style.setProperty('opacity','1','important');
 
     playFlybySound();
-
-    currentAnimation.onfinish=()=>{
-      flyby.style.opacity='0';
-      flyby.style.visibility='hidden';
-      repeatTimer=setTimeout(runFlyby,REPEAT_MS);
-    };
-    currentAnimation.oncancel=()=>{};
+    rafId=requestAnimationFrame(frame);
   }
 
-  // Run immediately after layout exists.
-  requestAnimationFrame(()=>requestAnimationFrame(runFlyby));
+  // Start on the first painted frame.
+  requestAnimationFrame(runFlyby);
   window.runTrenchesFlyby=runFlyby;
 })();
 </script>

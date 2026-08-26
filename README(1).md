@@ -1059,3 +1059,14 @@ This update rebuilds the Portfolio information architecture around the current C
 - Plane leads and text-only waving banner trails behind.
 - Repeats every 10 minutes.
 - Vercel configuration unchanged.
+
+## V1.11.61 — Forced Visible Plane
+- Fixes the real cause of the missing flyby: stylesheet `transform: ... !important` was overriding the JS animation.
+- Replaces Web Animations API movement with requestAnimationFrame.
+- Every animation frame writes an inline `transform` with `!important`, so stylesheet rules cannot freeze the plane off-screen.
+- Plane layer raised to z-index 9999 during the decorative flyby.
+- First pass starts on the first painted frame.
+- Plane starts with its nose/leading body already entering the left edge.
+- Banner trails behind and continues its cloth-wave animation.
+- Repeats every 10 minutes.
+- Vercel configuration unchanged.
