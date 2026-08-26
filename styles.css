@@ -4426,3 +4426,290 @@ body:has(.portfolioPage:not(.hidden)){
   pointer-events:none !important;
   cursor:wait !important;
 }
+
+/* ==========================================================
+   V1.11.46 — Connected X/Twitter-style Trenches Feed
+   Same Trenches palette, connected timeline structure.
+   ========================================================== */
+
+/* Main feed column becomes one continuous surface */
+.socialFeedView,
+#socialFeedView{
+  max-width:100% !important;
+}
+
+.connectedFeedComposer,
+.socialFeedComposer{
+  margin:0 !important;
+  border:1px solid #dfcfab !important;
+  border-bottom:0 !important;
+  border-radius:18px 18px 0 0 !important;
+  background:#fbf7ed !important;
+  box-shadow:none !important;
+}
+
+.connectedFeedTabs,
+.socialFeedTabs{
+  margin:0 !important;
+  padding:0 18px !important;
+  min-height:58px !important;
+  display:flex !important;
+  align-items:end !important;
+  gap:26px !important;
+  background:#fbf7ed !important;
+  border-left:1px solid #dfcfab !important;
+  border-right:1px solid #dfcfab !important;
+  border-bottom:1px solid #dfcfab !important;
+  box-shadow:none !important;
+}
+
+.connectedFeedTabs button,
+.socialFeedTabs button{
+  position:relative !important;
+  min-height:52px !important;
+  padding:0 2px !important;
+  background:transparent !important;
+  border:0 !important;
+  border-radius:0 !important;
+  color:#665f4d !important;
+  font-size:16px !important;
+  font-weight:750 !important;
+}
+
+.connectedFeedTabs button.active,
+.socialFeedTabs button.active{
+  color:#1c2d26 !important;
+  background:transparent !important;
+}
+
+.connectedFeedTabs button.active::after,
+.socialFeedTabs button.active::after{
+  content:"" !important;
+  position:absolute !important;
+  left:0 !important;
+  right:0 !important;
+  bottom:-1px !important;
+  height:3px !important;
+  border-radius:999px !important;
+  background:#5d6542 !important;
+}
+
+/* The feed list is one connected stack */
+.connectedFeedList,
+.socialFeedList,
+#socialFeedList{
+  display:block !important;
+  margin:0 !important;
+  padding:0 !important;
+  background:#fbf7ed !important;
+  border-left:1px solid #dfcfab !important;
+  border-right:1px solid #dfcfab !important;
+  border-bottom:1px solid #dfcfab !important;
+  border-radius:0 0 18px 18px !important;
+  overflow:hidden !important;
+  box-shadow:none !important;
+}
+
+/* Every post becomes a row in the timeline, not a floating card */
+.connectedFeedList .feedPost,
+.connectedFeedList .socialFeedPost,
+.connectedFeedList .socialPostCard,
+.connectedFeedList .thesisPost,
+.socialFeedList .feedPost,
+.socialFeedList .socialFeedPost,
+.socialFeedList .socialPostCard,
+.socialFeedList .thesisPost,
+#socialFeedList > article,
+#socialFeedList > .feedCard{
+  margin:0 !important;
+  padding:18px 20px !important;
+  background:#fbf7ed !important;
+  border:0 !important;
+  border-bottom:1px solid #e4d8ba !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+}
+
+.connectedFeedList .feedPost:last-child,
+.connectedFeedList .socialFeedPost:last-child,
+.connectedFeedList .socialPostCard:last-child,
+.connectedFeedList .thesisPost:last-child,
+.socialFeedList .feedPost:last-child,
+.socialFeedList .socialFeedPost:last-child,
+.socialFeedList .socialPostCard:last-child,
+.socialFeedList .thesisPost:last-child,
+#socialFeedList > article:last-child,
+#socialFeedList > .feedCard:last-child{
+  border-bottom:0 !important;
+}
+
+/* Remove card-inside-card look from token thesis preview */
+.connectedFeedList .thesisTokenCard,
+.connectedFeedList .feedTokenCard,
+.connectedFeedList .socialTokenCard,
+.socialFeedList .thesisTokenCard,
+.socialFeedList .feedTokenCard,
+.socialFeedList .socialTokenCard{
+  margin-top:8px !important;
+  background:#f6efdf !important;
+  border:1px solid #e1d4b6 !important;
+  border-radius:12px !important;
+  box-shadow:none !important;
+}
+
+/* Profile line more like a social timeline */
+.connectedFeedList .feedAuthorRow,
+.connectedFeedList .socialPostHeader,
+.connectedFeedList .thesisPostHeader,
+.socialFeedList .feedAuthorRow,
+.socialFeedList .socialPostHeader,
+.socialFeedList .thesisPostHeader{
+  align-items:flex-start !important;
+  gap:11px !important;
+}
+
+.connectedFeedList .feedAvatar,
+.connectedFeedList .socialAvatar,
+.connectedFeedList .thesisAvatar,
+.socialFeedList .feedAvatar,
+.socialFeedList .socialAvatar,
+.socialFeedList .thesisAvatar{
+  width:44px !important;
+  height:44px !important;
+  flex:0 0 44px !important;
+}
+
+.connectedFeedList .feedUsername,
+.connectedFeedList .socialUsername,
+.connectedFeedList .thesisUsername,
+.socialFeedList .feedUsername,
+.socialFeedList .socialUsername,
+.socialFeedList .thesisUsername{
+  font-size:16px !important;
+  font-weight:850 !important;
+  color:#172820 !important;
+}
+
+.connectedFeedList .feedTime,
+.connectedFeedList .socialPostTime,
+.connectedFeedList .thesisTime,
+.socialFeedList .feedTime,
+.socialFeedList .socialPostTime,
+.socialFeedList .thesisTime{
+  font-size:12px !important;
+  color:#8a806d !important;
+}
+
+/* Post copy */
+.connectedFeedList .feedPostText,
+.connectedFeedList .socialPostText,
+.connectedFeedList .thesisText,
+.socialFeedList .feedPostText,
+.socialFeedList .socialPostText,
+.socialFeedList .thesisText{
+  margin-top:9px !important;
+  font-size:16px !important;
+  line-height:1.45 !important;
+  color:#19342a !important;
+}
+
+/* Action bar should feel like Twitter's connected row */
+.connectedFeedList .feedActions,
+.connectedFeedList .socialPostActions,
+.connectedFeedList .thesisActions,
+.socialFeedList .feedActions,
+.socialFeedList .socialPostActions,
+.socialFeedList .thesisActions{
+  margin-top:13px !important;
+  padding-top:10px !important;
+  border-top:0 !important;
+  display:flex !important;
+  align-items:center !important;
+  gap:28px !important;
+}
+
+.connectedFeedList .feedActions button,
+.connectedFeedList .socialPostActions button,
+.connectedFeedList .thesisActions button,
+.socialFeedList .feedActions button,
+.socialFeedList .socialPostActions button,
+.socialFeedList .thesisActions button{
+  background:transparent !important;
+  border:0 !important;
+  padding:4px 0 !important;
+  color:#526c61 !important;
+  font-size:13px !important;
+  box-shadow:none !important;
+}
+
+.connectedFeedList .feedActions button:hover,
+.connectedFeedList .socialPostActions button:hover,
+.connectedFeedList .thesisActions button:hover,
+.socialFeedList .feedActions button:hover,
+.socialFeedList .socialPostActions button:hover,
+.socialFeedList .thesisActions button:hover{
+  color:#263f33 !important;
+}
+
+/* Keep score/view-token elements aligned but less card-like */
+.connectedFeedList .feedScore,
+.connectedFeedList .thesisScore,
+.socialFeedList .feedScore,
+.socialFeedList .thesisScore{
+  font-size:18px !important;
+  font-weight:850 !important;
+}
+
+.connectedFeedList .viewTokenBtn,
+.connectedFeedList [data-view-token],
+.socialFeedList .viewTokenBtn,
+.socialFeedList [data-view-token]{
+  background:transparent !important;
+  border:0 !important;
+  color:#4c5b35 !important;
+  font-weight:750 !important;
+  padding:4px 0 !important;
+}
+
+/* Composer tighter and more integrated with the feed */
+.connectedFeedComposer{
+  padding:18px !important;
+}
+
+.connectedFeedComposer textarea{
+  min-height:84px !important;
+}
+
+.connectedFeedComposer input,
+.connectedFeedComposer textarea,
+.connectedFeedComposer select{
+  background:#fffaf0 !important;
+  border-color:#dccaa4 !important;
+  box-shadow:none !important;
+}
+
+/* No gaps between cards created by generic feed rules */
+.connectedFeedList > *{
+  margin-top:0 !important;
+  margin-bottom:0 !important;
+}
+
+@media(max-width:760px){
+  .connectedFeedComposer,
+  .socialFeedComposer{
+    border-radius:14px 14px 0 0 !important;
+  }
+  .connectedFeedList,
+  .socialFeedList,
+  #socialFeedList{
+    border-radius:0 0 14px 14px !important;
+  }
+  .connectedFeedList .feedPost,
+  .connectedFeedList .socialFeedPost,
+  .connectedFeedList .socialPostCard,
+  .connectedFeedList .thesisPost,
+  #socialFeedList > article,
+  #socialFeedList > .feedCard{
+    padding:15px 14px !important;
+  }
+}

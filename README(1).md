@@ -938,3 +938,12 @@ This update rebuilds the Portfolio information architecture around the current C
 - Converts Trust Wallet's raw `already pending` provider error into a clear instruction.
 - Preserves viewed-profile targeting and stay-on-profile behavior.
 - Vercel configuration unchanged.
+
+## V1.11.46 — Connected Social Feed
+- Reworks the Trenches feed into a connected X/Twitter-style timeline.
+- Composer, feed tabs, and post stack now read as one continuous surface.
+- Removes floating rounded-card spacing between posts.
+- Adds thin dividers between posts and tighter social-feed spacing.
+- Keeps existing thesis content, token cards, scores, profile clicks, Reply/Like/Quote, and View Token behavior.
+- Preserves the off-white Trenches palette rather than copying X's dark theme.
+- Vercel configuration unchanged.
