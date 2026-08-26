@@ -1493,6 +1493,79 @@ async function socialPostActionsHandler(req,res){res.setHeader('Cache-Control','
 
 async function socialProfileFeedHandler(req,res){res.setHeader('Cache-Control','no-store');try{if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});const wallet=safeSocialWallet(req.query.wallet);if(!wallet)return res.status(400).json({error:'Valid Solana wallet required.'});const raw=await kv('get',`salt:social:feed:${wallet}`),reviews=raw?JSON.parse(raw):[],viewer=await socialSessionWallet(req),sorted=reviews.sort((a,b)=>String(b.updatedAt).localeCompare(String(a.updatedAt))).slice(0,100),enriched=await Promise.all(sorted.map(r=>enrichSocialReview(r,viewer)));return res.status(200).json({reviews:enriched})}catch(e){return res.status(Number(e?.status)||500).json({error:errorText(e)})}}
 
+
+const TOKEN_COMMUNITIES_HASH='trenches:social:token-communities';
+
+function cleanCommunityCa(v){
+  const ca=String(v||'').trim();
+  if(/^0x[a-fA-F0-9]{40}$/.test(ca))return ca.toLowerCase();
+  if(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(ca))return ca;
+  return '';
+}
+function cleanCommunityText(v,max=120){
+  return String(v||'').trim().slice(0,max);
+}
+function cleanCommunityImage(v){
+  const s=String(v||'').trim();
+  return /^https?:\/\//i.test(s)?s.slice(0,1000):'';
+}
+async function socialTokenCommunitiesHandler(req,res){
+  res.setHeader('Cache-Control','no-store');
+  try{
+    if(req.method==='GET'){
+      const raw=await kv('hvals',TOKEN_COMMUNITIES_HASH);
+      const communities=(Array.isArray(raw)?raw:[])
+        .map(x=>{try{return typeof x==='string'?JSON.parse(x):x}catch{return null}})
+        .filter(Boolean)
+        .sort((a,b)=>Number(b.createdAt||0)-Number(a.createdAt||0));
+      return res.status(200).json({communities});
+    }
+
+    if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});
+
+    const body=typeof req.body==='string'?JSON.parse(req.body||'{}'):req.body||{};
+    const ca=cleanCommunityCa(body.ca);
+    if(!ca)return res.status(400).json({error:'Paste a valid Solana or EVM contract address.'});
+
+    const viewer=await socialSessionWallet(req);
+    if(!viewer)return res.status(401).json({error:'Connect your Trenches Social wallet before creating a community.'});
+
+    const profileRaw=await kv('get',`salt:social:profile:${viewer}`);
+    if(!profileRaw)return res.status(403).json({error:'Create a Trenches profile before creating a community.'});
+
+    const now=Date.now();
+    const record={
+      id:`community_${now}`,
+      ca,
+      name:cleanCommunityText(body.name||'Token Community',100),
+      symbol:cleanCommunityText(body.symbol||'TOKEN',24).replace(/^\$/,'')||'TOKEN',
+      image:cleanCommunityImage(body.image),
+      chain:cleanCommunityText(body.chain||'',24),
+      price:Number(body.price)||0,
+      members:1,
+      activity:0,
+      createdAt:now,
+      creatorWallet:viewer
+    };
+
+    // Atomic uniqueness: only the first creator for a CA can create the hash field.
+    const created=await kv('hsetnx',TOKEN_COMMUNITIES_HASH,ca,JSON.stringify(record));
+    if(Number(created)!==1){
+      const existingRaw=await kv('hget',TOKEN_COMMUNITIES_HASH,ca);
+      let existing=null;
+      try{existing=typeof existingRaw==='string'?JSON.parse(existingRaw):existingRaw}catch{}
+      return res.status(409).json({
+        error:'A community already exists for this contract address.',
+        community:existing
+      });
+    }
+
+    return res.status(201).json({community:record});
+  }catch(e){
+    return res.status(Number(e?.status)||500).json({error:errorText(e)});
+  }
+}
+
 async function socialCommunityFeedHandler(req,res){res.setHeader('Cache-Control','no-store');try{if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});const raw=await kv('get','salt:social:community-feed'),reviews=raw?JSON.parse(raw):[],viewer=await socialSessionWallet(req),sorted=reviews.sort((a,b)=>String(b.updatedAt).localeCompare(String(a.updatedAt))).slice(0,150),enriched=await Promise.all(sorted.map(r=>enrichSocialReview(r,viewer)));return res.status(200).json({reviews:enriched})}catch(e){return res.status(Number(e?.status)||500).json({error:errorText(e)})}}
 async function socialMarketHandler(req,res){res.setHeader('Cache-Control','public, max-age=30, s-maxage=60');try{if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});const resolve=String(req.query.resolve||'').trim();if(resolve){if(resolve.startsWith('ca:')){const parts=resolve.split(':'),chain=parts[1],mint=parts.slice(2).join(':');if(mint)return res.status(200).json({mint,chain:chain==='bsc'?'bnb':chain})}const native={bitcoin:{mint:'0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599',chain:'ethereum'},ethereum:{mint:'0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',chain:'ethereum'},solana:{mint:SOL_MINT,chain:'solana'},binancecoin:{mint:'0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',chain:'bnb'},dogecoin:{mint:'0xbA2aE424d960c26247Dd6c32edC70B295c744C43',chain:'bnb'}};if(native[resolve])return res.status(200).json(native[resolve]);const coin=await fetchJson(`https://api.coingecko.com/api/v3/coins/${encodeURIComponent(resolve)}?localization=false&tickers=false&market_data=false&community_data=false&developer_data=false&sparkline=false`,{headers:{accept:'application/json'}},8000),platforms=coin?.platforms||{};const choices=[['solana','solana'],['ethereum','ethereum'],['binance-smart-chain','bnb'],['base','base']];for(const [platform,chain] of choices){const mint=String(platforms?.[platform]||'').trim();if(mint)return res.status(200).json({mint,chain,name:coin?.name||resolve,symbol:coin?.symbol||''})}return res.status(404).json({error:'This coin does not have a supported Solana/EVM contract in Salt Checker yet.'})}const q=String(req.query.q||'').trim();if(q){const looksSol=/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(q),looksEvm=/^0x[a-fA-F0-9]{40}$/.test(q);if(!looksSol&&!looksEvm)return res.status(400).json({error:'Paste a valid contract address (CA). Name/ticker search is disabled for Add Ticker.'});if(looksSol||looksEvm){try{const chains=looksSol?['solana']:['ethereum','bsc','base','robinhood'];for(const chain of chains){try{const pairs=await fetchJson(`https://api.dexscreener.com/token-pairs/v1/${chain}/${encodeURIComponent(q)}`,{headers:{accept:'application/json'}},8000),pair=(Array.isArray(pairs)?pairs:[]).sort((a,b)=>number(b?.liquidity?.usd)-number(a?.liquidity?.usd))[0];if(pair){const base=String(pair?.baseToken?.address||'').toLowerCase()===q.toLowerCase()?pair.baseToken:pair.quoteToken;const tok=base||pair.baseToken;return res.status(200).json({results:[{id:`ca:${chain}:${q}`,symbol:tok?.symbol||'TOKEN',name:tok?.name||'Contract token',image:normalizeTokenIcon(pair?.info?.imageUrl)||'',price:number(pair?.priceUsd),change24h:number(pair?.priceChange?.h24),contract:q,chain:chain==='bsc'?'bnb':chain}]})}}catch{}}}catch{}return res.status(200).json({results:[]})}return res.status(200).json({results:[]})}const pinned=['bitcoin','ethereum','solana','binancecoin','dogecoin'];const trending=await fetchJson('https://api.coingecko.com/api/v3/search/trending',{headers:{accept:'application/json'}},8000),trendIds=(trending?.coins||[]).map(x=>x?.item?.id).filter(Boolean).filter(x=>!pinned.includes(x)).slice(0,15),ids=[...pinned,...trendIds],markets=await fetchJson(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${encodeURIComponent(ids.join(','))}&price_change_percentage=24h`,{headers:{accept:'application/json'}},8000),byId=Object.fromEntries((markets||[]).map(x=>[x.id,x])),ordered=ids.map(id=>byId[id]).filter(Boolean).map(x=>({id:x.id,symbol:x.symbol,name:x.name,image:x.image||'',price:number(x.current_price),change24h:number(x.price_change_percentage_24h)}));return res.status(200).json({coins:ordered})}catch(e){return res.status(500).json({error:errorText(e)})}}
 let socialNewsCache={at:0,articles:[]};
@@ -1512,7 +1585,7 @@ const pr=await kv('get',`salt:social:profile:${wallet}`);if(!pr)return res.statu
 
 async function healthHandler(req,res){
   res.setHeader('Cache-Control','no-store');
-  return res.status(200).json({ok:true,service:'The Trenches scanner',version:'1.11.66',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY),zerox:Boolean(process.env.ZEROX_API_KEY),social:Boolean(process.env.UPSTASH_REDIS_REST_URL&&process.env.UPSTASH_REDIS_REST_TOKEN)}});
+  return res.status(200).json({ok:true,service:'The Trenches scanner',version:'1.11.67',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY),zerox:Boolean(process.env.ZEROX_API_KEY),social:Boolean(process.env.UPSTASH_REDIS_REST_URL&&process.env.UPSTASH_REDIS_REST_TOKEN)}});
 }
 
 export default async function handler(req,res){
@@ -1541,6 +1614,7 @@ export default async function handler(req,res){
     if(route==='portfolio-time-machine')return portfolioTimeMachineHandler(req,res);     if(route==='social-holdings')return socialHoldingsHandler(req,res);
     if(route==='social-profile-feed')return socialProfileFeedHandler(req,res);
     if(route==='social-community-feed')return socialCommunityFeedHandler(req,res);
+    if(route==='social-token-communities')return socialTokenCommunitiesHandler(req,res);
     if(route==='social-market')return socialMarketHandler(req,res);
     if(route==='social-news')return socialNewsHandler(req,res);
     if(route==='social-reviews')return socialReviewsHandler(req,res);

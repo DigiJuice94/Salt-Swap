@@ -1110,3 +1110,14 @@ This update rebuilds the Portfolio information architecture around the current C
 - Missing coin images fall back to a clean token-initial visual.
 - Desktop remains three cards per row.
 - Vercel configuration unchanged.
+
+## V1.11.67 — Permanent Server-Saved Communities
+- Communities are no longer stored only in browser localStorage.
+- Uses the app's existing Upstash Redis Social storage for permanent persistence.
+- Communities survive refreshes, app updates, new deployments, and different devices.
+- Backend atomically enforces one community per CA with Redis HSETNX.
+- Creating a community requires the existing Trenches Social wallet session/profile.
+- Automatically migrates any old V1.11.65/V1.11.66 localStorage communities into Redis when Community opens.
+- If migration cannot reach the server, old local data is left intact so it can retry later.
+- Image-first community card design remains unchanged.
+- Vercel configuration unchanged; uses the already-configured Social Redis environment variables.

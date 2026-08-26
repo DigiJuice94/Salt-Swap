@@ -16,7 +16,7 @@
   <link rel="shortcut icon" href="/favicon.ico?v=11090" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=11090" />
   <link rel="manifest" href="/site.webmanifest?v=11090" />
-  <link rel="stylesheet" href="/styles.css?v=11166" />
+  <link rel="stylesheet" href="/styles.css?v=11167" />
   <script defer src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.4/lib/index.iife.min.js"></script>
 
 <style>
@@ -2047,17 +2047,19 @@ function newsCard(a,feature=false){const img=a.image?`<img src="${socialEsc(a.im
 let cryptoNewsArticles=[],cryptoNewsPage=0;function renderCryptoNewsPage(){const el=$('saltCryptoNews'),pager=$('cryptoNewsPager');if(!el)return;const pageCount=Math.min(4,Math.ceil(cryptoNewsArticles.length/5));if(!pageCount){el.innerHTML='<div class="saltNewsLoading">Latest crypto news is temporarily unavailable. Your Salt feed still works normally.</div>';if(pager)pager.innerHTML='';return}cryptoNewsPage=Math.max(0,Math.min(cryptoNewsPage,pageCount-1));const rows=cryptoNewsArticles.slice(cryptoNewsPage*5,cryptoNewsPage*5+5),feature=rows[0],sides=rows.slice(1);el.innerHTML=`<div class="saltNewsSide saltNewsLeft">${sides.slice(0,2).map(x=>newsCard(x)).join('')}</div>${newsCard(feature,true)}<div class="saltNewsSide saltNewsRight">${sides.slice(2,4).map(x=>newsCard(x)).join('')}</div>`;if(pager)pager.innerHTML=`<div class="saltNewsDots">${Array.from({length:pageCount},(_,i)=>`<button type="button" class="${i===cryptoNewsPage?'active':''}" data-news-page="${i}" aria-label="News page ${i+1}"></button>`).join('')}</div><b>${cryptoNewsPage+1} / ${pageCount}</b>`;pager?.querySelectorAll('[data-news-page]').forEach(b=>b.addEventListener('click',()=>{cryptoNewsPage=Number(b.dataset.newsPage);renderCryptoNewsPage()}));$('cryptoNewsPrev')?.toggleAttribute('disabled',pageCount<2);$('cryptoNewsNext')?.toggleAttribute('disabled',pageCount<2)}async function loadCryptoNews(force=false){const el=$('saltCryptoNews');if(!el)return;try{if(force&&!cryptoNewsArticles.length)el.innerHTML='<div class="saltNewsLoading">Refreshing crypto news…</div>';const j=await socialApi('/api/social-news'+(force?'?refresh=1':''));cryptoNewsArticles=(j.articles||[]).slice(0,20);if(!cryptoNewsArticles.length)throw new Error('No crypto stories available right now.');cryptoNewsPage=0;renderCryptoNewsPage()}catch(e){if(!cryptoNewsArticles.length)renderCryptoNewsPage()}}
 
 
+
 const TRENCHES_COMMUNITIES_KEY='trenches_token_communities_v1';
 let activeCommunityFilter='new';
+let tokenCommunitiesCache=[];
 
-function readTokenCommunities(){
+function readLegacyTokenCommunities(){
   try{
     const rows=JSON.parse(localStorage.getItem(TRENCHES_COMMUNITIES_KEY)||'[]');
     return Array.isArray(rows)?rows:[];
   }catch(_){return []}
 }
-function writeTokenCommunities(rows){
-  localStorage.setItem(TRENCHES_COMMUNITIES_KEY,JSON.stringify(rows));
+function clearLegacyTokenCommunities(){
+  try{localStorage.removeItem(TRENCHES_COMMUNITIES_KEY)}catch(_){}
 }
 function normalizeCommunityCa(v){
   return String(v||'').trim();
@@ -2104,9 +2106,7 @@ function communityCard(row){
         <span>${escapeCommunity(symbol.slice(0,1).toUpperCase())}</span>
         <small>$${symbol}</small>
       </div>
-
       <div class="tokenCommunityMediaShade"></div>
-
       <div class="tokenCommunityOverlay">
         <div class="tokenCommunityOverlayIdentity">
           <h3>${title}</h3>
@@ -2115,22 +2115,16 @@ function communityCard(row){
         <div class="tokenCommunityPrice">${escapeCommunity(price)}</div>
       </div>
     </div>
-
     <div class="tokenCommunityCardInfo">
       <div class="tokenCommunityMetaLine">
         <span>${chain}</span>
         <span>${escapeCommunity(communityShortCa(row.ca))}</span>
       </div>
-
       <div class="tokenCommunityMiniStats">
         <span><b>${members.toLocaleString()}</b> members</span>
         <span><b>${activity.toLocaleString()}</b> posts</span>
       </div>
-
-      <div class="tokenCommunityFooter">
-        <span>Enter community</span>
-        <span>→</span>
-      </div>
+      <div class="tokenCommunityFooter"><span>Enter community</span><span>→</span></div>
     </div>
   </button>`;
 }
@@ -2143,10 +2137,28 @@ function sortTokenCommunities(rows,filter){
 function renderTokenCommunityDirectory(){
   const grid=$('tokenCommunityGrid');
   if(!grid)return;
-  const rows=sortTokenCommunities(readTokenCommunities(),activeCommunityFilter);
+  const rows=sortTokenCommunities(tokenCommunitiesCache,activeCommunityFilter);
   grid.innerHTML=rows.length
     ?rows.map(communityCard).join('')
     :`<div class="communityDirectoryEmpty"><b>No communities yet.</b><span>Create the first token community in The Trenches.</span></div>`;
+}
+async function fetchTokenCommunities(){
+  try{
+    const r=await fetch('/api/social-token-communities',{credentials:'include',cache:'no-store'});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(j?.error||`HTTP ${r.status}`);
+    tokenCommunitiesCache=Array.isArray(j?.communities)?j.communities:[];
+    renderTokenCommunityDirectory();
+    return tokenCommunitiesCache;
+  }catch(e){
+    console.warn('Community directory load:',e);
+    const legacy=readLegacyTokenCommunities();
+    if(legacy.length){
+      tokenCommunitiesCache=legacy;
+      renderTokenCommunityDirectory();
+    }
+    return tokenCommunitiesCache;
+  }
 }
 function openCreateCommunityModal(){
   const modal=$('createCommunityModal'),input=$('communityCaInput'),err=$('communityCreateError');
@@ -2172,7 +2184,6 @@ async function resolveCommunityToken(ca){
         t?.priceUsd??t?.priceUSD??t?.price??
         j?.priceUsd??j?.priceUSD??j?.price??
         j?.market?.priceUsd??j?.market?.price??0;
-
       return {
         name:t?.name||j?.name||'Token Community',
         symbol:t?.symbol||j?.symbol||'TOKEN',
@@ -2184,6 +2195,44 @@ async function resolveCommunityToken(ca){
   }catch(_){}
   return {name:'Token Community',symbol:'TOKEN',image:'',chain:communityChainGuess(ca),price:0};
 }
+async function postPermanentCommunity(row,{silentDuplicate=false}={}){
+  const r=await fetch('/api/social-token-communities',{
+    method:'POST',
+    headers:{'content-type':'application/json'},
+    credentials:'include',
+    body:JSON.stringify(row)
+  });
+  const j=await r.json().catch(()=>({}));
+  if(r.status===409&&silentDuplicate)return j?.community||null;
+  if(!r.ok)throw new Error(j?.error||`HTTP ${r.status}`);
+  return j?.community||null;
+}
+async function migrateLegacyCommunities(){
+  const legacy=readLegacyTokenCommunities();
+  if(!legacy.length)return;
+  let migratedAny=false;
+
+  for(const row of legacy){
+    const ca=normalizeCommunityCa(row?.ca);
+    if(!ca)continue;
+    try{
+      await postPermanentCommunity({
+        ca,
+        name:row.name||'Token Community',
+        symbol:row.symbol||'TOKEN',
+        image:row.image||'',
+        chain:row.chain||communityChainGuess(ca),
+        price:Number(row.price)||0
+      },{silentDuplicate:true});
+      migratedAny=true;
+    }catch(e){
+      // Leave local data untouched if auth/server is unavailable so it can retry later.
+      console.warn('Community migration:',e);
+      return;
+    }
+  }
+  if(migratedAny)clearLegacyTokenCommunities();
+}
 async function createTokenCommunity(){
   const input=$('communityCaInput'),submit=$('communityCreateSubmit'),err=$('communityCreateError');
   const ca=normalizeCommunityCa(input?.value);
@@ -2191,39 +2240,41 @@ async function createTokenCommunity(){
     if(err){err.textContent='Paste a contract address first.';err.classList.remove('hidden')}
     return;
   }
-  const rows=readTokenCommunities();
-  if(rows.some(r=>String(r.ca||'').toLowerCase()===ca.toLowerCase())){
+
+  if(tokenCommunitiesCache.some(r=>String(r.ca||'').toLowerCase()===ca.toLowerCase())){
     if(err){err.textContent='A community already exists for this contract address.';err.classList.remove('hidden')}
     return;
   }
+
   if(submit){submit.disabled=true;submit.textContent='Creating…'}
   if(err){err.classList.add('hidden');err.textContent=''}
-  const token=await resolveCommunityToken(ca);
-  rows.push({
-    id:`community_${Date.now()}`,
-    ca,
-    name:token.name,
-    symbol:token.symbol,
-    image:token.image,
-    chain:token.chain,
-    price:token.price||0,
-    members:1,
-    activity:0,
-    createdAt:Date.now(),
-    creatorWallet:saltProfile?.wallet||''
-  });
-  writeTokenCommunities(rows);
-  if(submit){submit.disabled=false;submit.textContent='Create Community'}
-  closeCreateCommunityModal();
-  activeCommunityFilter='new';
-  document.querySelectorAll('[data-community-filter]').forEach(b=>b.classList.toggle('active',b.dataset.communityFilter==='new'));
-  renderTokenCommunityDirectory();
+
+  try{
+    const token=await resolveCommunityToken(ca);
+    await postPermanentCommunity({
+      ca,
+      name:token.name,
+      symbol:token.symbol,
+      image:token.image,
+      chain:token.chain,
+      price:token.price||0
+    });
+    closeCreateCommunityModal();
+    activeCommunityFilter='new';
+    document.querySelectorAll('[data-community-filter]').forEach(b=>b.classList.toggle('active',b.dataset.communityFilter==='new'));
+    await fetchTokenCommunities();
+  }catch(e){
+    if(err){
+      err.textContent=String(e?.message||e||'Could not create community.');
+      err.classList.remove('hidden');
+    }
+  }finally{
+    if(submit){submit.disabled=false;submit.textContent='Create Community'}
+  }
 }
 async function refreshCommunityMarketData(){
-  const rows=readTokenCommunities();
-  if(!rows.length)return;
-
-  const refreshed=await Promise.all(rows.map(async row=>{
+  if(!tokenCommunitiesCache.length)return;
+  const refreshed=await Promise.all(tokenCommunitiesCache.map(async row=>{
     try{
       const token=await resolveCommunityToken(row.ca);
       return {
@@ -2234,16 +2285,15 @@ async function refreshCommunityMarketData(){
         chain:token.chain&&token.chain!=='Unknown'?token.chain:row.chain,
         price:token.price||row.price||0
       };
-    }catch(_){
-      return row;
-    }
+    }catch(_){return row}
   }));
-
-  writeTokenCommunities(refreshed);
+  tokenCommunitiesCache=refreshed;
   renderTokenCommunityDirectory();
 }
-function loadCommunityHub(){
+async function loadCommunityHub(){
   renderTokenCommunityDirectory();
+  await migrateLegacyCommunities();
+  await fetchTokenCommunities();
   refreshCommunityMarketData();
 }
 
