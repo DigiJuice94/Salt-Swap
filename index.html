@@ -16,7 +16,7 @@
   <link rel="shortcut icon" href="/favicon.ico?v=11090" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=11090" />
   <link rel="manifest" href="/site.webmanifest?v=11090" />
-  <link rel="stylesheet" href="/styles.css?v=11164" />
+  <link rel="stylesheet" href="/styles.css?v=11165" />
   <script defer src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.4/lib/index.iife.min.js"></script>
 
 <style>
@@ -350,40 +350,47 @@ body.publicProfileOpen{overflow:hidden}
       <section id="socialFollowingView" class="socialTabView hidden" aria-label="Following feed">
         <div class="socialTimelineShell"><div class="socialTimelineHead"><small>TRENCHES SOCIAL</small><h2>Following</h2><p>Ratings and theses only from Salt profiles you follow.</p></div><div id="saltFollowingFeed" class="socialTimelineList"><div class="socialTimelineEmpty"><b>Nothing here yet.</b><span>Follow Salt profiles and their newest calls will show up here.</span></div></div></div>
       </section>
-      <section id="socialCommunityView" class="socialTabView hidden" aria-label="Trenches community">
-        <div class="communityHub">
-          <header class="communityHubHead">
-            <div>
+      <section id="socialCommunityView" class="socialTabView hidden" aria-label="Token communities">
+        <div class="tokenCommunityPage">
+          <div class="tokenCommunityTop">
+            <div class="tokenCommunityIntro">
               <small>TRENCHES SOCIAL</small>
-              <h2>Community</h2>
-              <p>Discover traders in the trenches and see what the community is calling.</p>
+              <h2>Communities</h2>
+              <p>Find communities built around the tokens you care about.</p>
             </div>
-          </header>
+            <button id="createCommunityBtn" class="createCommunityBtn" type="button">
+              <span>＋</span> Create Community
+            </button>
+          </div>
 
-          <section class="communityPeopleSection">
-            <div class="communitySectionHead">
-              <div>
-                <small>DISCOVER</small>
-                <h3>Active traders</h3>
-              </div>
-              <span id="communityMemberCount"></span>
+          <div class="communityDirectoryToolbar">
+            <div class="communityFilters" role="tablist" aria-label="Community filters">
+              <button class="active" type="button" data-community-filter="new">New</button>
+              <button type="button" data-community-filter="trending">Trending</button>
+              <button type="button" data-community-filter="members">Most Members</button>
             </div>
-            <div id="communityPeopleGrid" class="communityPeopleGrid">
-              <div class="communityLoading">Loading the community…</div>
-            </div>
-          </section>
+          </div>
 
-          <section class="communityCallsSection">
-            <div class="communitySectionHead">
-              <div>
-                <small>RECENT</small>
-                <h3>Community calls</h3>
-              </div>
+          <div id="tokenCommunityGrid" class="tokenCommunityGrid">
+            <div class="communityDirectoryEmpty">
+              <b>No communities yet.</b>
+              <span>Create the first token community in The Trenches.</span>
             </div>
-            <div id="communityCallsFeed" class="communityCallsFeed">
-              <div class="communityLoading">Loading recent calls…</div>
-            </div>
-          </section>
+          </div>
+        </div>
+
+        <div id="createCommunityModal" class="communityModal hidden" aria-hidden="true">
+          <div class="communityModalBackdrop" data-close-community-modal="1"></div>
+          <div class="communityModalCard" role="dialog" aria-modal="true" aria-labelledby="createCommunityTitle">
+            <button class="communityModalClose" type="button" data-close-community-modal="1" aria-label="Close">×</button>
+            <small>CREATE A COMMUNITY</small>
+            <h3 id="createCommunityTitle">Paste a contract address</h3>
+            <p>Each token can only have one community. We’ll use the contract address to identify it.</p>
+            <label for="communityCaInput">Contract address</label>
+            <input id="communityCaInput" type="text" autocomplete="off" spellcheck="false" placeholder="Paste CA">
+            <div id="communityCreateError" class="communityCreateError hidden"></div>
+            <button id="communityCreateSubmit" class="communityCreateSubmit" type="button">Create Community</button>
+          </div>
         </div>
       </section>
 
@@ -2039,91 +2046,166 @@ function newsAge(iso){const t=new Date(iso).getTime();if(!Number.isFinite(t))ret
 function newsCard(a,feature=false){const img=a.image?`<img src="${socialEsc(a.image)}" alt="" loading="lazy" onerror="this.style.display='none'">`:'';return `<a class="saltNewsStory ${feature?'saltNewsFeature':''}" href="${socialEsc(a.url||'#')}" target="_blank" rel="noopener noreferrer">${img}<div class="saltNewsCopy">${feature?'<small class="topStoryLabel">TOP STORY</small>':''}<h3>${socialEsc(a.title||'Crypto news')}</h3><div class="saltNewsMeta"><b>${socialEsc(a.source||'Crypto News')}</b><span>${socialEsc(newsAge(a.publishedAt))}</span></div></div></a>`}
 let cryptoNewsArticles=[],cryptoNewsPage=0;function renderCryptoNewsPage(){const el=$('saltCryptoNews'),pager=$('cryptoNewsPager');if(!el)return;const pageCount=Math.min(4,Math.ceil(cryptoNewsArticles.length/5));if(!pageCount){el.innerHTML='<div class="saltNewsLoading">Latest crypto news is temporarily unavailable. Your Salt feed still works normally.</div>';if(pager)pager.innerHTML='';return}cryptoNewsPage=Math.max(0,Math.min(cryptoNewsPage,pageCount-1));const rows=cryptoNewsArticles.slice(cryptoNewsPage*5,cryptoNewsPage*5+5),feature=rows[0],sides=rows.slice(1);el.innerHTML=`<div class="saltNewsSide saltNewsLeft">${sides.slice(0,2).map(x=>newsCard(x)).join('')}</div>${newsCard(feature,true)}<div class="saltNewsSide saltNewsRight">${sides.slice(2,4).map(x=>newsCard(x)).join('')}</div>`;if(pager)pager.innerHTML=`<div class="saltNewsDots">${Array.from({length:pageCount},(_,i)=>`<button type="button" class="${i===cryptoNewsPage?'active':''}" data-news-page="${i}" aria-label="News page ${i+1}"></button>`).join('')}</div><b>${cryptoNewsPage+1} / ${pageCount}</b>`;pager?.querySelectorAll('[data-news-page]').forEach(b=>b.addEventListener('click',()=>{cryptoNewsPage=Number(b.dataset.newsPage);renderCryptoNewsPage()}));$('cryptoNewsPrev')?.toggleAttribute('disabled',pageCount<2);$('cryptoNewsNext')?.toggleAttribute('disabled',pageCount<2)}async function loadCryptoNews(force=false){const el=$('saltCryptoNews');if(!el)return;try{if(force&&!cryptoNewsArticles.length)el.innerHTML='<div class="saltNewsLoading">Refreshing crypto news…</div>';const j=await socialApi('/api/social-news'+(force?'?refresh=1':''));cryptoNewsArticles=(j.articles||[]).slice(0,20);if(!cryptoNewsArticles.length)throw new Error('No crypto stories available right now.');cryptoNewsPage=0;renderCryptoNewsPage()}catch(e){if(!cryptoNewsArticles.length)renderCryptoNewsPage()}}
 
-function communityProfileCard(p){
-  const username=String(p?.username||'trader'),
-    wallet=String(p?.wallet||''),
-    avatar=String(p?.avatar||''),
-    posts=Number(p?.posts||0),
-    scoreCount=Number(p?.scoreCount||0),
-    avg=scoreCount?Number(p?.ratingTotal||0)/scoreCount:0,
-    short=wallet?shortWallet(wallet):'Trenches member';
 
-  return `<button type="button" class="communityProfileCard profileDiscoveryTarget"
-    data-profile-wallet="${socialEsc(wallet)}"
-    data-profile-username="${socialEsc(username)}">
-      <span class="communityProfileAvatar">${avatar?`<img src="${socialEsc(avatar)}" alt="">`:socialEsc(username.slice(0,1).toUpperCase())}</span>
-      <span class="communityProfileInfo">
-        <b>@${socialEsc(username)}</b>
-        <small>${socialEsc(short)}</small>
-        <em>${posts} ${posts===1?'call':'calls'}${scoreCount?` · ${avg.toFixed(1)}/10 avg`:''}</em>
-      </span>
-      <span class="communityProfileArrow">→</span>
-    </button>`
-}
+const TRENCHES_COMMUNITIES_KEY='trenches_token_communities_v1';
+let activeCommunityFilter='new';
 
-function communityMembersFromPosts(rows){
-  const map=new Map();
-  for(const r of Array.isArray(rows)?rows:[]){
-    const wallet=String(r?.wallet||'').trim();
-    if(!wallet)continue;
-    const current=map.get(wallet)||{
-      wallet,
-      username:r?.username||'trader',
-      avatar:r?.avatar||'',
-      posts:0,
-      scoreCount:0,
-      ratingTotal:0,
-      lastAt:0
-    };
-    current.username=r?.username||current.username;
-    current.avatar=r?.avatar||current.avatar;
-    current.posts+=1;
-    const rating=Number(r?.rating);
-    if(Number.isFinite(rating)){
-      current.scoreCount+=1;
-      current.ratingTotal+=rating;
-    }
-    const ts=new Date(r?.updatedAt||r?.createdAt||0).getTime();
-    if(Number.isFinite(ts))current.lastAt=Math.max(current.lastAt,ts);
-    map.set(wallet,current)
-  }
-  return [...map.values()]
-    .sort((a,b)=>(b.lastAt-a.lastAt)||(b.posts-a.posts))
-    .slice(0,12)
-}
-
-async function loadCommunityHub(){
-  const people=$('communityPeopleGrid'),
-    calls=$('communityCallsFeed'),
-    count=$('communityMemberCount');
-  if(!people||!calls)return;
-
-  people.innerHTML='<div class="communityLoading">Loading the community…</div>';
-  calls.innerHTML='<div class="communityLoading">Loading recent calls…</div>';
-
+function readTokenCommunities(){
   try{
-    const j=await socialApi('/api/social-community-feed'),
-      rows=Array.isArray(j?.reviews)?j.reviews:[],
-      members=communityMembersFromPosts(rows);
-
-    if(count)count.textContent=members.length?`${members.length} active`:'';    
-    people.innerHTML=members.length
-      ?members.map(communityProfileCard).join('')
-      :'<div class="communityEmpty"><b>No active traders yet.</b><span>Profiles will appear here as the community posts theses.</span></div>';
-
-    const latest=rows.slice(0,8);
-    calls.innerHTML=latest.length
-      ?latest.map(r=>feedPostCard(r,'community')).join('')
-      :'<div class="communityEmpty"><b>No community calls yet.</b><span>Be the first trader to post a thesis.</span></div>';
-
-    bindSocialPostCards(calls);
-  }catch(e){
-    const msg=socialEsc(readableError(e));
-    people.innerHTML=`<div class="communityEmpty"><b>Community unavailable.</b><span>${msg}</span></div>`;
-    calls.innerHTML='';
-    if(count)count.textContent='';
-  }
+    const rows=JSON.parse(localStorage.getItem(TRENCHES_COMMUNITIES_KEY)||'[]');
+    return Array.isArray(rows)?rows:[];
+  }catch(_){return []}
 }
+function writeTokenCommunities(rows){
+  localStorage.setItem(TRENCHES_COMMUNITIES_KEY,JSON.stringify(rows));
+}
+function normalizeCommunityCa(v){
+  return String(v||'').trim();
+}
+function communityChainGuess(ca){
+  if(/^0x[a-fA-F0-9]{40}$/.test(ca))return'EVM';
+  if(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(ca))return'Solana';
+  return'Unknown';
+}
+function communityShortCa(ca){
+  ca=String(ca||'');
+  return ca.length>16?`${ca.slice(0,7)}…${ca.slice(-6)}`:ca;
+}
+function escapeCommunity(v){
+  return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function communityCard(row){
+  const title=escapeCommunity(row.name||row.symbol||'Token Community');
+  const symbol=escapeCommunity(row.symbol||'TOKEN');
+  const ca=escapeCommunity(row.ca||'');
+  const chain=escapeCommunity(row.chain||communityChainGuess(row.ca));
+  const members=Number(row.members||1);
+  const activity=Number(row.activity||0);
+  const created=Number(row.createdAt||Date.now());
+  const age=Math.max(0,Date.now()-created);
+  const mins=Math.floor(age/60000);
+  const createdLabel=mins<1?'Just now':mins<60?`${mins}m ago`:mins<1440?`${Math.floor(mins/60)}h ago`:`${Math.floor(mins/1440)}d ago`;
+  const avatar=row.image
+    ?`<img src="${escapeCommunity(row.image)}" alt="">`
+    :`<span>${escapeCommunity(symbol.slice(0,1).toUpperCase())}</span>`;
+
+  return `<button class="tokenCommunityCard" type="button" data-community-ca="${ca}">
+    <div class="tokenCommunityCardTop">
+      <div class="tokenCommunityLogo">${avatar}</div>
+      <div class="tokenCommunityIdentity">
+        <div class="tokenCommunityNameRow">
+          <h3>${title}</h3>
+          <span class="tokenCommunityTicker">$${symbol}</span>
+        </div>
+        <span class="tokenCommunityChain">${chain}</span>
+      </div>
+      <span class="tokenCommunityOpen">↗</span>
+    </div>
+    <div class="tokenCommunityCa">${escapeCommunity(communityShortCa(row.ca))}</div>
+    <div class="tokenCommunityStats">
+      <div><b>${members.toLocaleString()}</b><span>Members</span></div>
+      <div><b>${activity.toLocaleString()}</b><span>Posts</span></div>
+      <div><b>${createdLabel}</b><span>Created</span></div>
+    </div>
+    <div class="tokenCommunityFooter"><span>Enter community</span><span>→</span></div>
+  </button>`;
+}
+function sortTokenCommunities(rows,filter){
+  const copy=[...rows];
+  if(filter==='members')return copy.sort((a,b)=>Number(b.members||0)-Number(a.members||0));
+  if(filter==='trending')return copy.sort((a,b)=>(Number(b.activity||0)*4+Number(b.members||0))-(Number(a.activity||0)*4+Number(a.members||0)));
+  return copy.sort((a,b)=>Number(b.createdAt||0)-Number(a.createdAt||0));
+}
+function renderTokenCommunityDirectory(){
+  const grid=$('tokenCommunityGrid');
+  if(!grid)return;
+  const rows=sortTokenCommunities(readTokenCommunities(),activeCommunityFilter);
+  grid.innerHTML=rows.length
+    ?rows.map(communityCard).join('')
+    :`<div class="communityDirectoryEmpty"><b>No communities yet.</b><span>Create the first token community in The Trenches.</span></div>`;
+}
+function openCreateCommunityModal(){
+  const modal=$('createCommunityModal'),input=$('communityCaInput'),err=$('communityCreateError');
+  if(!modal)return;
+  modal.classList.remove('hidden');
+  modal.setAttribute('aria-hidden','false');
+  if(err){err.classList.add('hidden');err.textContent=''}
+  if(input){input.value='';setTimeout(()=>input.focus(),50)}
+}
+function closeCreateCommunityModal(){
+  const modal=$('createCommunityModal');
+  if(!modal)return;
+  modal.classList.add('hidden');
+  modal.setAttribute('aria-hidden','true');
+}
+async function resolveCommunityToken(ca){
+  try{
+    const r=await fetch(`/api/scan?address=${encodeURIComponent(ca)}`);
+    if(r.ok){
+      const j=await r.json();
+      const t=j?.token||j?.data?.token||j?.result?.token||j;
+      return {
+        name:t?.name||j?.name||'Token Community',
+        symbol:t?.symbol||j?.symbol||'TOKEN',
+        image:t?.image||t?.logo||j?.image||j?.logo||'',
+        chain:t?.chain||j?.chain||communityChainGuess(ca)
+      };
+    }
+  }catch(_){}
+  return {name:'Token Community',symbol:'TOKEN',image:'',chain:communityChainGuess(ca)};
+}
+async function createTokenCommunity(){
+  const input=$('communityCaInput'),submit=$('communityCreateSubmit'),err=$('communityCreateError');
+  const ca=normalizeCommunityCa(input?.value);
+  if(!ca){
+    if(err){err.textContent='Paste a contract address first.';err.classList.remove('hidden')}
+    return;
+  }
+  const rows=readTokenCommunities();
+  if(rows.some(r=>String(r.ca||'').toLowerCase()===ca.toLowerCase())){
+    if(err){err.textContent='A community already exists for this contract address.';err.classList.remove('hidden')}
+    return;
+  }
+  if(submit){submit.disabled=true;submit.textContent='Creating…'}
+  if(err){err.classList.add('hidden');err.textContent=''}
+  const token=await resolveCommunityToken(ca);
+  rows.push({
+    id:`community_${Date.now()}`,
+    ca,
+    name:token.name,
+    symbol:token.symbol,
+    image:token.image,
+    chain:token.chain,
+    members:1,
+    activity:0,
+    createdAt:Date.now(),
+    creatorWallet:saltProfile?.wallet||''
+  });
+  writeTokenCommunities(rows);
+  if(submit){submit.disabled=false;submit.textContent='Create Community'}
+  closeCreateCommunityModal();
+  activeCommunityFilter='new';
+  document.querySelectorAll('[data-community-filter]').forEach(b=>b.classList.toggle('active',b.dataset.communityFilter==='new'));
+  renderTokenCommunityDirectory();
+}
+function loadCommunityHub(){renderTokenCommunityDirectory()}
+
+document.addEventListener('click',e=>{
+  const filter=e.target.closest('[data-community-filter]');
+  if(filter){
+    activeCommunityFilter=filter.dataset.communityFilter||'new';
+    document.querySelectorAll('[data-community-filter]').forEach(b=>b.classList.toggle('active',b===filter));
+    renderTokenCommunityDirectory();
+    return;
+  }
+  if(e.target.closest('#createCommunityBtn')){openCreateCommunityModal();return}
+  if(e.target.closest('[data-close-community-modal]')){closeCreateCommunityModal();return}
+  if(e.target.closest('#communityCreateSubmit')){createTokenCommunity();return}
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')closeCreateCommunityModal();
+  if(e.key==='Enter'&&document.activeElement===$('communityCaInput'))createTokenCommunity();
+});
 
 async function loadCommunityFeed(){const el=$('saltCommunityFeed');if(!el)return;try{const j=await socialApi('/api/social-community-feed');const rows=j.reviews||[];el.innerHTML=rows.length?rows.map(r=>feedPostCard(r,'feed')).join(''):'<div class="socialTimelineEmpty"><b>Your Trenches feed is ready.</b><span>Community ratings and theses will appear here as Trenches profiles post them.</span></div>';bindSocialPostCards(el)}catch(e){el.innerHTML=`<div class="socialTimelineEmpty"><b>Feed unavailable.</b><span>${socialEsc(readableError(e))}</span></div>`}}
 async function submitFeedThesis(e){e.preventDefault();try{if(!saltProfile)throw new Error('Connect your Trenches profile first.');const token=$('feedTokenInput').value.trim(),rating=Number($('feedRating').value),text=$('feedThesisText').value.trim(),link=$('feedThesisLink').value.trim();if(!token)throw new Error('Paste a Solana token contract address first.');if(text.length<5)throw new Error('Write at least a few words for your thesis.');const chain='solana',signer=await ensureSocialAuthSession(),btn=e.target.querySelector('button[type=submit]');btn.disabled=true;btn.textContent='Posting…';await socialApi('/api/social-reviews',{method:'POST',body:JSON.stringify({wallet:signer.wallet,chain,token,rating,text,link})});$('feedThesisText').value='';$('feedThesisLink').value='';btn.disabled=false;btn.textContent='Post Thesis';await loadCommunityFeed();await loadProfileTheses()}catch(err){const btn=e.target.querySelector('button[type=submit]');if(btn){btn.disabled=false;btn.textContent='Post Thesis'}alert(readableError(err))}}

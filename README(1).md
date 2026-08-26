@@ -1091,3 +1091,12 @@ This update rebuilds the Portfolio information architecture around the current C
 - Logo and Connect Wallet widths no longer shift the nav horizontally.
 - Existing responsive/mobile header behavior is preserved below 861px.
 - Vercel configuration unchanged.
+
+## V1.11.65 — Token Communities Directory
+- Community now uses a clean 3-card-per-row token directory.
+- Top-right Create Community button opens a Paste CA modal.
+- Blocks duplicate communities for the same CA.
+- Filters: New, Trending, Most Members.
+- Cards continue downward in rows of three on desktop.
+- Attempts to pull token name, ticker, logo, and chain from the existing scanner.
+- Vercel unchanged.
