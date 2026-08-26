@@ -962,3 +962,11 @@ This update rebuilds the Portfolio information architecture around the current C
 - Removes `saltFeedPost` card gap, rounded corners, outer card border, and shadow.
 - Composer, filters, and posts now form one continuous timeline.
 - Vercel configuration unchanged.
+
+## V1.11.49 — Profile Connected Feed
+- Fixes the Profile feed using its exact real hierarchy: `#saltProfileTheses > article.saltFeedPost.trenchPostCard`.
+- Removes the floating rounded-card treatment from Profile posts.
+- Removes the large blank outer feed-card spacing.
+- Connects Profile tabs directly into the Profile feed timeline.
+- Keeps token snapshots rounded inside each post.
+- Vercel configuration unchanged.

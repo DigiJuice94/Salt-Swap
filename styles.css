@@ -4551,3 +4551,103 @@ body.salt-social-active .saltProfileFeed > article.saltFeedPost.trenchPostCard:l
     padding:16px 14px !important;
   }
 }
+
+/* ==========================================================
+   V1.11.49 — PROFILE FEED MATCHES MAIN CONNECTED FEED
+   Exact structure:
+   .saltThesisColumn.saltProfileFeed
+     > #saltProfileTheses.saltProfileTheses
+       > article.saltFeedPost.trenchPostCard
+   ========================================================== */
+
+/* Outer profile feed should be the shared timeline shell, not a giant card. */
+body.salt-social-active #saltSocial .saltThesisColumn.saltProfileFeed{
+  min-height:0 !important;
+  padding:0 !important;
+  margin:0 !important;
+  background:#fbf7ee !important;
+  border:1px solid #d8c8a8 !important;
+  border-radius:0 0 18px 18px !important;
+  overflow:hidden !important;
+  box-shadow:none !important;
+}
+
+/* Inner thesis list owns no extra card spacing. */
+body.salt-social-active #saltSocial #saltProfileTheses.saltProfileTheses{
+  display:block !important;
+  margin:0 !important;
+  padding:0 !important;
+  gap:0 !important;
+  background:#fbf7ee !important;
+  border:0 !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+}
+
+/* Exact rendered profile post — same row treatment as main Feed. */
+body.salt-social-active #saltSocial #saltProfileTheses > article.saltFeedPost.trenchPostCard{
+  display:flex !important;
+  gap:14px !important;
+  margin:0 !important;
+  padding:18px 20px !important;
+  background:#fbf7ee !important;
+  border:0 !important;
+  border-bottom:1px solid #e1d4b8 !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+}
+
+/* Last post closes cleanly inside the shared shell. */
+body.salt-social-active #saltSocial #saltProfileTheses > article.saltFeedPost.trenchPostCard:last-child{
+  border-bottom:0 !important;
+}
+
+/* Keep the token preview rounded inside each post. */
+body.salt-social-active #saltSocial #saltProfileTheses .trenchTokenSnapshot{
+  border-radius:12px !important;
+}
+
+/* Same post action divider/spacing as the main feed. */
+body.salt-social-active #saltSocial #saltProfileTheses .feedPostActions{
+  margin-top:12px !important;
+  padding-top:10px !important;
+  border-top:1px solid #e5dbc5 !important;
+}
+
+/* Empty state should not create a tall blank card. */
+body.salt-social-active #saltSocial #saltProfileTheses .emptyReviews{
+  min-height:140px !important;
+  margin:0 !important;
+  padding:24px !important;
+  background:#fbf7ee !important;
+  border:0 !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+}
+
+/* Make profile tabs flow directly into the feed shell like a timeline. */
+body.salt-social-active #saltSocial .saltProfileHero{
+  border-radius:20px 20px 0 0 !important;
+  margin-bottom:0 !important;
+  box-shadow:none !important;
+}
+
+body.salt-social-active #saltSocial .saltProfileCenter{
+  gap:0 !important;
+}
+
+body.salt-social-active #saltSocial .saltProfileTabs{
+  background:#fbf7ee !important;
+  border-bottom:1px solid #d8c8a8 !important;
+}
+
+/* Remove any old profile-feed shadow override later in the cascade. */
+body.salt-social-active .saltProfileFeed{
+  box-shadow:none !important;
+}
+
+@media(max-width:800px){
+  body.salt-social-active #saltSocial #saltProfileTheses > article.saltFeedPost.trenchPostCard{
+    padding:16px 14px !important;
+  }
+}
