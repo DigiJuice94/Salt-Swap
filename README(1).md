@@ -955,3 +955,10 @@ This update rebuilds the Portfolio information architecture around the current C
 - Keeps token previews rounded inside each post.
 - Applies the same connected timeline language to the profile thesis list.
 - Vercel configuration unchanged.
+
+## V1.11.48 — Actual Connected Feed
+- Targets the exact current feed container and rendered post class.
+- Removes the `socialTimelineList` top gap.
+- Removes `saltFeedPost` card gap, rounded corners, outer card border, and shadow.
+- Composer, filters, and posts now form one continuous timeline.
+- Vercel configuration unchanged.

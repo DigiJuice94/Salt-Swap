@@ -4428,188 +4428,126 @@ body:has(.portfolioPage:not(.hidden)){
 }
 
 /* ==========================================================
-   V1.11.47 — REAL connected social feed
-   Exact feed-container reset: one continuous timeline.
+   V1.11.48 — ACTUAL CONNECTED FEED
+   Renderer: #saltCommunityFeed > article.saltFeedPost.trenchPostCard
    ========================================================== */
 
-/* Composer + tabs + list become one continuous column */
-#socialFeedComposer,
-.socialFeedComposer{
+body.salt-social-active #socialFeedView .feedWide{
+  width:min(1380px,calc(100% - 48px)) !important;
+  padding-top:26px !important;
+}
+
+body.salt-social-active #socialFeedView #feedComposer.feedComposer{
   margin:0 !important;
-  border:1px solid #dfcfab !important;
+  padding:18px !important;
+  background:#fbf7ee !important;
+  border:1px solid #d8c8a8 !important;
   border-bottom:0 !important;
   border-radius:18px 18px 0 0 !important;
-  background:#fbf7ed !important;
   box-shadow:none !important;
 }
 
-#socialFeedTabs,
-.socialFeedTabs{
+body.salt-social-active #socialFeedView .feedFilters{
+  display:flex !important;
+  align-items:flex-end !important;
+  gap:28px !important;
+  min-height:58px !important;
   margin:0 !important;
-  padding:0 18px !important;
-  background:#fbf7ed !important;
-  border-left:1px solid #dfcfab !important;
-  border-right:1px solid #dfcfab !important;
-  border-bottom:1px solid #dfcfab !important;
+  padding:0 20px !important;
+  background:#fbf7ee !important;
+  border-left:1px solid #d8c8a8 !important;
+  border-right:1px solid #d8c8a8 !important;
+  border-bottom:1px solid #d8c8a8 !important;
+}
+
+body.salt-social-active #socialFeedView .feedFilters button{
+  position:relative !important;
+  min-height:56px !important;
+  padding:0 2px !important;
+  background:transparent !important;
+  border:0 !important;
   border-radius:0 !important;
+  color:#5d5b4d !important;
   box-shadow:none !important;
 }
 
-#socialFeedList,
-.socialFeedList{
+body.salt-social-active #socialFeedView .feedFilters button.active{
+  background:transparent !important;
+  color:#242920 !important;
+  box-shadow:none !important;
+}
+
+body.salt-social-active #socialFeedView .feedFilters button.active::after{
+  content:"" !important;
+  position:absolute !important;
+  left:0 !important;
+  right:0 !important;
+  bottom:-1px !important;
+  height:3px !important;
+  border-radius:999px !important;
+  background:#5d6542 !important;
+}
+
+/* Exact live feed container */
+body.salt-social-active #socialFeedView #saltCommunityFeed.socialTimelineList{
   display:block !important;
+  padding-top:0 !important;
   margin:0 !important;
-  padding:0 !important;
-  background:#fbf7ed !important;
-  border-left:1px solid #dfcfab !important;
-  border-right:1px solid #dfcfab !important;
-  border-bottom:1px solid #dfcfab !important;
+  background:#fbf7ee !important;
+  border-left:1px solid #d8c8a8 !important;
+  border-right:1px solid #d8c8a8 !important;
+  border-bottom:1px solid #d8c8a8 !important;
   border-radius:0 0 18px 18px !important;
   overflow:hidden !important;
-  box-shadow:none !important;
 }
 
-/* Critical fix: EVERY DIRECT POST CHILD loses floating-card styling */
-#socialFeedList > *,
-.socialFeedList > *{
+/* Exact rendered post */
+body.salt-social-active #socialFeedView #saltCommunityFeed > article.saltFeedPost.trenchPostCard{
+  display:flex !important;
+  gap:14px !important;
   margin:0 !important;
-  border-left:0 !important;
-  border-right:0 !important;
-  border-top:0 !important;
-  border-bottom:1px solid #e4d8ba !important;
+  padding:18px 20px !important;
+  background:#fbf7ee !important;
+  border:0 !important;
+  border-bottom:1px solid #e1d4b8 !important;
   border-radius:0 !important;
-  background:#fbf7ed !important;
   box-shadow:none !important;
 }
 
-/* Remove spacing wrappers around each rendered post */
-#socialFeedList > * + *,
-.socialFeedList > * + *{
-  margin-top:0 !important;
-}
-
-#socialFeedList > *:last-child,
-.socialFeedList > *:last-child{
+body.salt-social-active #socialFeedView #saltCommunityFeed > article.saltFeedPost.trenchPostCard:last-child{
   border-bottom:0 !important;
 }
 
-/* Any post/card class inside the feed must also flatten */
-#socialFeedList .socialPost,
-#socialFeedList .socialPostCard,
-#socialFeedList .feedPost,
-#socialFeedList .feedCard,
-#socialFeedList .thesisPost,
-#socialFeedList .thesisCard,
-#socialFeedList .communityPost,
-.socialFeedList .socialPost,
-.socialFeedList .socialPostCard,
-.socialFeedList .feedPost,
-.socialFeedList .feedCard,
-.socialFeedList .thesisPost,
-.socialFeedList .thesisCard,
-.socialFeedList .communityPost{
-  margin:0 !important;
-  padding:18px 20px !important;
-  border:0 !important;
-  border-radius:0 !important;
-  background:#fbf7ed !important;
-  box-shadow:none !important;
-}
-
-/* If post content has its own outer rounded shell, flatten only the outer shell */
-#socialFeedList [class*="PostCard"],
-#socialFeedList [class*="postCard"],
-#socialFeedList [class*="FeedCard"],
-#socialFeedList [class*="feedCard"],
-.socialFeedList [class*="PostCard"],
-.socialFeedList [class*="postCard"],
-.socialFeedList [class*="FeedCard"],
-.socialFeedList [class*="feedCard"]{
-  border-radius:0 !important;
-  box-shadow:none !important;
-}
-
-/* Preserve token preview as an inner card */
-#socialFeedList [class*="Token"],
-.socialFeedList [class*="Token"]{
+body.salt-social-active #socialFeedView #saltCommunityFeed .trenchTokenSnapshot{
   border-radius:12px !important;
 }
 
-/* Tighter social spacing */
-#socialFeedList .socialPostHeader,
-#socialFeedList .thesisPostHeader,
-#socialFeedList .feedAuthorRow,
-.socialFeedList .socialPostHeader,
-.socialFeedList .thesisPostHeader,
-.socialFeedList .feedAuthorRow{
-  gap:10px !important;
-}
-
-#socialFeedList .socialPostText,
-#socialFeedList .thesisText,
-#socialFeedList .feedPostText,
-.socialFeedList .socialPostText,
-.socialFeedList .thesisText,
-.socialFeedList .feedPostText{
-  margin-top:8px !important;
-  font-size:16px !important;
-  line-height:1.45 !important;
-}
-
-#socialFeedList .socialPostActions,
-#socialFeedList .thesisActions,
-#socialFeedList .feedActions,
-.socialFeedList .socialPostActions,
-.socialFeedList .thesisActions,
-.socialFeedList .feedActions{
+body.salt-social-active #socialFeedView #saltCommunityFeed .feedPostActions{
   margin-top:12px !important;
   padding-top:10px !important;
-  border-top:1px solid #e7dcc2 !important;
+  border-top:1px solid #e5dbc5 !important;
 }
 
-/* Tabs should feel like X/Twitter navigation */
-#socialFeedTabs button,
-.socialFeedTabs button{
-  border-radius:0 !important;
-  background:transparent !important;
-  box-shadow:none !important;
-  min-height:50px !important;
-  padding:0 3px !important;
-}
-
-#socialFeedTabs button.active,
-.socialFeedTabs button.active{
-  color:#1e3328 !important;
-  border-bottom:3px solid #5d6542 !important;
-}
-
-/* Remove the large outer gap currently visible between posts */
-.socialFeedView .socialFeedList,
-#socialFeedView .socialFeedList{
-  gap:0 !important;
-}
-
-/* Also flatten profile-page thesis list so it matches the connected feed language */
-#profileThesisList,
-.profileThesisList{
-  gap:0 !important;
-  background:#fbf7ed !important;
-  border:1px solid #dfcfab !important;
-  border-radius:16px !important;
-  overflow:hidden !important;
-}
-
-#profileThesisList > *,
-.profileThesisList > *{
+/* Profile thesis timeline */
+body.salt-social-active .saltProfileFeed > article.saltFeedPost.trenchPostCard{
   margin:0 !important;
   border-radius:0 !important;
-  border:0 !important;
-  border-bottom:1px solid #e4d8ba !important;
+  border-left:0 !important;
+  border-right:0 !important;
+  border-top:0 !important;
+  border-bottom:1px solid #e1d4b8 !important;
   box-shadow:none !important;
-  background:#fbf7ed !important;
 }
 
-#profileThesisList > *:last-child,
-.profileThesisList > *:last-child{
+body.salt-social-active .saltProfileFeed > article.saltFeedPost.trenchPostCard:last-child{
   border-bottom:0 !important;
+}
+
+@media(max-width:800px){
+  body.salt-social-active #socialFeedView .feedWide{
+    width:calc(100% - 24px) !important;
+  }
+  body.salt-social-active #socialFeedView #saltCommunityFeed > article.saltFeedPost.trenchPostCard{
+    padding:16px 14px !important;
+  }
 }
