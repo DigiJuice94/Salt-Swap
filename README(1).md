@@ -1100,3 +1100,13 @@ This update rebuilds the Portfolio information architecture around the current C
 - Cards continue downward in rows of three on desktop.
 - Attempts to pull token name, ticker, logo, and chain from the existing scanner.
 - Vercel unchanged.
+
+## V1.11.66 — Image-First Community Cards
+- Community cards are now dominated by the token/coin image.
+- Large square-style visual fills most of every card.
+- Coin name, ticker, and current/last-resolved price are overlaid on the image.
+- Chain, CA, members, posts, and Enter Community remain in a compact lower info strip.
+- Community market data refreshes when the Community tab opens using the existing scan endpoint.
+- Missing coin images fall back to a clean token-initial visual.
+- Desktop remains three cards per row.
+- Vercel configuration unchanged.

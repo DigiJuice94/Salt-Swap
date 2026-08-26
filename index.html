@@ -16,7 +16,7 @@
   <link rel="shortcut icon" href="/favicon.ico?v=11090" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=11090" />
   <link rel="manifest" href="/site.webmanifest?v=11090" />
-  <link rel="stylesheet" href="/styles.css?v=11165" />
+  <link rel="stylesheet" href="/styles.css?v=11166" />
   <script defer src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.4/lib/index.iife.min.js"></script>
 
 <style>
@@ -2074,6 +2074,15 @@ function communityShortCa(ca){
 function escapeCommunity(v){
   return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
+function formatCommunityPrice(v){
+  const n=Number(v);
+  if(!Number.isFinite(n)||n<=0)return'Price unavailable';
+  if(n>=1000)return`$${n.toLocaleString(undefined,{maximumFractionDigits:2})}`;
+  if(n>=1)return`$${n.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:4})}`;
+  if(n>=.01)return`$${n.toFixed(4)}`;
+  if(n>=.0001)return`$${n.toFixed(6)}`;
+  return`$${n.toPrecision(4)}`;
+}
 function communityCard(row){
   const title=escapeCommunity(row.name||row.symbol||'Token Community');
   const symbol=escapeCommunity(row.symbol||'TOKEN');
@@ -2081,33 +2090,48 @@ function communityCard(row){
   const chain=escapeCommunity(row.chain||communityChainGuess(row.ca));
   const members=Number(row.members||1);
   const activity=Number(row.activity||0);
-  const created=Number(row.createdAt||Date.now());
-  const age=Math.max(0,Date.now()-created);
-  const mins=Math.floor(age/60000);
-  const createdLabel=mins<1?'Just now':mins<60?`${mins}m ago`:mins<1440?`${Math.floor(mins/60)}h ago`:`${Math.floor(mins/1440)}d ago`;
-  const avatar=row.image
-    ?`<img src="${escapeCommunity(row.image)}" alt="">`
-    :`<span>${escapeCommunity(symbol.slice(0,1).toUpperCase())}</span>`;
+  const price=formatCommunityPrice(row.price);
+  const image=String(row.image||'').trim();
+
+  const media=image
+    ?`<img src="${escapeCommunity(image)}" alt="${title}" loading="lazy" onerror="this.closest('.tokenCommunityMedia').classList.add('imageFailed');this.remove()">`
+    :'';
 
   return `<button class="tokenCommunityCard" type="button" data-community-ca="${ca}">
-    <div class="tokenCommunityCardTop">
-      <div class="tokenCommunityLogo">${avatar}</div>
-      <div class="tokenCommunityIdentity">
-        <div class="tokenCommunityNameRow">
-          <h3>${title}</h3>
-          <span class="tokenCommunityTicker">$${symbol}</span>
-        </div>
-        <span class="tokenCommunityChain">${chain}</span>
+    <div class="tokenCommunityMedia">
+      ${media}
+      <div class="tokenCommunityMediaFallback">
+        <span>${escapeCommunity(symbol.slice(0,1).toUpperCase())}</span>
+        <small>$${symbol}</small>
       </div>
-      <span class="tokenCommunityOpen">↗</span>
+
+      <div class="tokenCommunityMediaShade"></div>
+
+      <div class="tokenCommunityOverlay">
+        <div class="tokenCommunityOverlayIdentity">
+          <h3>${title}</h3>
+          <span>$${symbol}</span>
+        </div>
+        <div class="tokenCommunityPrice">${escapeCommunity(price)}</div>
+      </div>
     </div>
-    <div class="tokenCommunityCa">${escapeCommunity(communityShortCa(row.ca))}</div>
-    <div class="tokenCommunityStats">
-      <div><b>${members.toLocaleString()}</b><span>Members</span></div>
-      <div><b>${activity.toLocaleString()}</b><span>Posts</span></div>
-      <div><b>${createdLabel}</b><span>Created</span></div>
+
+    <div class="tokenCommunityCardInfo">
+      <div class="tokenCommunityMetaLine">
+        <span>${chain}</span>
+        <span>${escapeCommunity(communityShortCa(row.ca))}</span>
+      </div>
+
+      <div class="tokenCommunityMiniStats">
+        <span><b>${members.toLocaleString()}</b> members</span>
+        <span><b>${activity.toLocaleString()}</b> posts</span>
+      </div>
+
+      <div class="tokenCommunityFooter">
+        <span>Enter community</span>
+        <span>→</span>
+      </div>
     </div>
-    <div class="tokenCommunityFooter"><span>Enter community</span><span>→</span></div>
   </button>`;
 }
 function sortTokenCommunities(rows,filter){
@@ -2144,15 +2168,21 @@ async function resolveCommunityToken(ca){
     if(r.ok){
       const j=await r.json();
       const t=j?.token||j?.data?.token||j?.result?.token||j;
+      const price=
+        t?.priceUsd??t?.priceUSD??t?.price??
+        j?.priceUsd??j?.priceUSD??j?.price??
+        j?.market?.priceUsd??j?.market?.price??0;
+
       return {
         name:t?.name||j?.name||'Token Community',
         symbol:t?.symbol||j?.symbol||'TOKEN',
-        image:t?.image||t?.logo||j?.image||j?.logo||'',
-        chain:t?.chain||j?.chain||communityChainGuess(ca)
+        image:t?.image||t?.logo||t?.logoURI||j?.image||j?.logo||j?.logoURI||'',
+        chain:t?.chain||j?.chain||communityChainGuess(ca),
+        price:Number(price)||0
       };
     }
   }catch(_){}
-  return {name:'Token Community',symbol:'TOKEN',image:'',chain:communityChainGuess(ca)};
+  return {name:'Token Community',symbol:'TOKEN',image:'',chain:communityChainGuess(ca),price:0};
 }
 async function createTokenCommunity(){
   const input=$('communityCaInput'),submit=$('communityCreateSubmit'),err=$('communityCreateError');
@@ -2176,6 +2206,7 @@ async function createTokenCommunity(){
     symbol:token.symbol,
     image:token.image,
     chain:token.chain,
+    price:token.price||0,
     members:1,
     activity:0,
     createdAt:Date.now(),
@@ -2188,7 +2219,33 @@ async function createTokenCommunity(){
   document.querySelectorAll('[data-community-filter]').forEach(b=>b.classList.toggle('active',b.dataset.communityFilter==='new'));
   renderTokenCommunityDirectory();
 }
-function loadCommunityHub(){renderTokenCommunityDirectory()}
+async function refreshCommunityMarketData(){
+  const rows=readTokenCommunities();
+  if(!rows.length)return;
+
+  const refreshed=await Promise.all(rows.map(async row=>{
+    try{
+      const token=await resolveCommunityToken(row.ca);
+      return {
+        ...row,
+        name:token.name&&token.name!=='Token Community'?token.name:row.name,
+        symbol:token.symbol&&token.symbol!=='TOKEN'?token.symbol:row.symbol,
+        image:token.image||row.image,
+        chain:token.chain&&token.chain!=='Unknown'?token.chain:row.chain,
+        price:token.price||row.price||0
+      };
+    }catch(_){
+      return row;
+    }
+  }));
+
+  writeTokenCommunities(refreshed);
+  renderTokenCommunityDirectory();
+}
+function loadCommunityHub(){
+  renderTokenCommunityDirectory();
+  refreshCommunityMarketData();
+}
 
 document.addEventListener('click',e=>{
   const filter=e.target.closest('[data-community-filter]');
