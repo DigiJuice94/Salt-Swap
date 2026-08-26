@@ -1133,3 +1133,10 @@ This update rebuilds the Portfolio information architecture around the current C
 - The UI immediately uses the permanent server-returned metadata after creation.
 - Existing permanent Redis storage and one-community-per-CA enforcement remain intact.
 - Vercel configuration unchanged.
+
+## V1.11.69 — Community API Route Fix
+- Fixes HTTP 404 when creating or loading Communities.
+- Adds the missing Vercel route:
+  `/api/social-token-communities` -> `/api.mjs?route=social-token-communities`
+- Existing Redis persistence, one-community-per-CA enforcement, and token metadata enrichment now become reachable in production.
+- Image/name/ticker/price enrichment from V1.11.68 remains intact.

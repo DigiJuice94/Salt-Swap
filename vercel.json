@@ -101,6 +101,10 @@
       "dest": "/api.mjs?route=social-community-feed"
     },
     {
+      "src": "/api/social-token-communities",
+      "dest": "/api.mjs?route=social-token-communities"
+    },
+    {
       "src": "/api/social-market",
       "dest": "/api.mjs?route=social-market"
     },
