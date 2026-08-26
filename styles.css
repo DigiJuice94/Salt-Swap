@@ -4838,7 +4838,7 @@ body.salt-social-active .saltProfileFeed{
 .heroFlyby{
   position:fixed!important;
   left:0!important;
-  top:118px!important;
+  top:96px!important;
   width:100vw!important;
   height:112px!important;
   pointer-events:none!important;
@@ -4854,10 +4854,11 @@ body.salt-social-active .saltProfileFeed{
   left:0!important;
   top:0!important;
   display:flex!important;
+  flex-direction:row-reverse!important;
   align-items:center!important;
   gap:14px!important;
   width:max-content!important;
-  transform:translate3d(-300px,0,0) scale(.74)!important;
+  transform:translate3d(-410px,0,0) scale(.68)!important;
   transform-origin:left center!important;
   will-change:transform,opacity!important;
 }
@@ -4874,8 +4875,8 @@ body.salt-social-active .saltProfileFeed{
 
 .heroTowLines{position:relative!important;width:42px!important;height:24px!important;flex:0 0 42px!important}
 .heroTowLines::before,.heroTowLines::after{content:""!important;position:absolute!important;left:0!important;right:0!important;height:1px!important;background:rgba(111,96,66,.78)!important;transform-origin:left center!important}
-.heroTowLines::before{top:7px!important;transform:skewY(-9deg)!important}
-.heroTowLines::after{bottom:7px!important;transform:skewY(9deg)!important}
+.heroTowLines::before{top:7px!important;transform:skewY(9deg)!important}
+.heroTowLines::after{bottom:7px!important;transform:skewY(-9deg)!important}
 
 .heroBannerFlag{
   position:relative!important;
@@ -4888,6 +4889,7 @@ body.salt-social-active .saltProfileFeed{
   background:linear-gradient(180deg,rgba(250,244,228,.94),rgba(237,226,196,.98))!important;
   border:1px solid rgba(113,99,67,.28)!important;
   border-radius:5px!important;
+  clip-path:polygon(0 4%,96% 0,100% 10%,97% 24%,100% 40%,97% 56%,100% 72%,96% 100%,0 96%)!important;
   box-shadow:0 9px 22px rgba(69,55,30,.12)!important;
   overflow:hidden!important;
   transform-origin:left center!important;
@@ -4899,13 +4901,13 @@ body.salt-social-active .saltProfileFeed{
 .heroBannerFlag span{position:relative!important;z-index:1!important;white-space:nowrap!important;color:#4c4b35!important;font-size:13px!important;font-weight:900!important;letter-spacing:.16em!important;text-transform:uppercase!important;text-shadow:0 1px 0 rgba(255,252,244,.8)!important}
 
 @keyframes trenchPlaneCross{
-  0%{transform:translate3d(-300px,0,0) scale(.74);opacity:.35}
-  2%{opacity:.92}
-  8%{transform:translate3d(2vw,4px,0) scale(.74);opacity:.94}
-  50%{transform:translate3d(48vw,12px,0) scale(.74);opacity:.96}
-  82%{transform:translate3d(88vw,4px,0) scale(.74)}
-  95%{opacity:.9}
-  100%{transform:translate3d(calc(100vw + 520px),10px,0) scale(.74);opacity:0}
+  0%{transform:translate3d(-410px,0,0) scale(.68);opacity:.78}
+  1%{opacity:.96}
+  10%{transform:translate3d(-245px,4px,0) scale(.68);opacity:.96}
+  25%{transform:translate3d(8vw,7px,0) scale(.68);opacity:.97}
+  50%{transform:translate3d(48vw,12px,0) scale(.68);opacity:.97}
+  82%{transform:translate3d(88vw,4px,0) scale(.68);opacity:.94}
+  100%{transform:translate3d(calc(100vw + 560px),10px,0) scale(.68);opacity:0}
 }
 @keyframes trenchBannerWave{
   0%,100%{transform:perspective(760px) rotateY(0deg) skewY(0deg) translateY(0)}

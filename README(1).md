@@ -1040,3 +1040,12 @@ This update rebuilds the Portfolio information architecture around the current C
 - Keeps the 18-second flyby duration and 10-minute repeat interval.
 - Banner wave animation and sound behavior remain unchanged.
 - Vercel configuration unchanged.
+
+## V1.11.59 — Correct Plane Tow Order
+- Fixes the chopped-off banner appearing before the airplane.
+- Plane is now the leading object and the "Welcome to the Trenches" banner trails behind it.
+- First frame positions the plane at the left viewport edge while most of the banner remains off-screen.
+- Flyby moved slightly higher and farther back for a cleaner background effect.
+- Banner retains a stronger waving-cloth animation.
+- First flyby remains immediate; repeats every 10 minutes.
+- Vercel configuration unchanged.
