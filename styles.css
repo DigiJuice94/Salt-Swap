@@ -4418,3 +4418,11 @@ body:has(.portfolioPage:not(.hidden)){
   flex-wrap:wrap !important;
   gap:7px !important;
 }
+
+
+/* V1.11.45 — Trust Wallet Follow signing state */
+.followProfileBtn[data-busy="1"]{
+  opacity:.72 !important;
+  pointer-events:none !important;
+  cursor:wait !important;
+}

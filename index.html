@@ -16,7 +16,7 @@
   <link rel="shortcut icon" href="/favicon.ico?v=11090" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=11090" />
   <link rel="manifest" href="/site.webmanifest?v=11090" />
-  <link rel="stylesheet" href="/styles.css?v=11144" />
+  <link rel="stylesheet" href="/styles.css?v=11145" />
   <script defer src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.4/lib/index.iife.min.js"></script>
 
 <style>
@@ -1745,6 +1745,10 @@ function setPickerChain(chain){pickerChain=chain;document.querySelectorAll('[dat
 async function chooseToken(t){if(!t?.id)return;t.chain=t.chain||pickerChain;if(pickerSide==='pay'){if(t.chain!==currentChain)throw new Error(`This scan is on ${chainName(currentChain)}. Choose a pay token on the same chain.`);if(t.decimals==null)throw new Error('For safety, arbitrary pay tokens need verified decimals first. Scan that token first or use a pinned popular pay asset.');inputToken=t;walletAddress='';walletProvider=null;walletKind='';setTokenButton('paySymbol',t);$('walletBtn').textContent='Connect Wallet';$('payAmount').value='';$('receiveAmount').value='';lastQuote=null;$('quoteDetails').classList.add('hidden');saveRecent(t);closeTokenPicker();updateSwapButton();return}if(t.chain==='solana'){pendingReceiveToken=normalizeClientToken({...t});saveRecent(t);closeTokenPicker();$('mintInput').value=t.id;$('chainSelect').value='solana';await scan();return}if(t.id===NATIVE_EVM)throw new Error(`Salt's risk scan is contract-based. To receive native ${t.symbol}, use ${t.symbol==='ETH'?'WETH':'WBNB'} for now.`);pendingReceiveToken=normalizeClientToken({...t});saveRecent(t);closeTokenPicker();$('mintInput').value=t.id;$('chainSelect').value=t.chain;await scan()}
 async function searchTokens(q){q=String(q||'').trim();const sec=$('searchSection'),box=$('searchTokens');if(!q){sec.classList.add('hidden');return}sec.classList.remove('hidden');box.innerHTML='<span class="pickerLoading">Searching…</span>';try{let rows;if(pickerChain==='solana'){rows=await tokenApi({q});rows.forEach(x=>x.chain='solana')}else rows=await evmTokenApi(pickerChain,q);box.innerHTML=rows.map(tokenRow).join('')||'<span class="pickerLoading">No matching tokens with indexed liquidity.</span>';bindTokenChoices(box)}catch(e){box.innerHTML=`<span class="pickerLoading">${esc(readableError(e))}</span>`}}
 function socialEsc(v){return esc(String(v??''))}
+
+let socialSignPromise=null;
+let socialSignWallet='';
+
 let publicSocialProfile=null;
 let viewingPublicSocialProfile=false;
 let saltProfile=null;
@@ -2661,17 +2665,64 @@ document.addEventListener('click',e=>{
 
 
 
+
+async function ensureSocialAuthSessionSafe(opts={}){
+  const wallet=String(opts.wallet||walletAddress||saltProfile?.wallet||'').trim();
+  const provider=opts.provider||walletProvider||findSolWallet();
+  if(!wallet||!provider)throw new Error('Connect your Solana wallet to continue.');
+
+  // Trust Wallet rejects a second PUBLIC_signMessage while one is already open.
+  // Reuse the same in-flight request instead of opening another prompt.
+  if(socialSignPromise && socialSignWallet===wallet){
+    return socialSignPromise;
+  }
+
+  const run=(async()=>{
+    try{
+      return await ensureSocialAuthSession({
+        wallet,
+        provider,
+        profile:opts.profile||saltProfile
+      });
+    }catch(err){
+      const msg=String(err?.message||err||'');
+      if(/PUBLIC_signMessage.*already pending|already pending.*PUBLIC_signMessage|request.*already pending/i.test(msg)){
+        await new Promise(r=>setTimeout(r,750));
+        try{
+          const status=await socialApi('/api/social-session');
+          if(status?.ok||status?.wallet===wallet)return status;
+        }catch{}
+        throw new Error('Trust Wallet already has a signature open. Approve or close it, then tap Follow once.');
+      }
+      throw err;
+    }
+  })();
+
+  socialSignPromise=run;
+  socialSignWallet=wallet;
+  try{
+    return await run;
+  }finally{
+    if(socialSignPromise===run){
+      socialSignPromise=null;
+      socialSignWallet='';
+    }
+  }
+}
+
 async function toggleViewedProfileFollow(){
   const btn=$('followProfileBtn');
   const target=String(btn?.dataset?.wallet||publicSocialProfile?.wallet||'').trim();
   if(!btn||!target)return;
   try{
+    if(btn.dataset.busy==='1')return;
+    btn.dataset.busy='1';
     btn.disabled=true;
-    btn.textContent='Saving…';
+    btn.textContent=btn.classList.contains('isFollowing')?'Unfollowing…':'Follow in wallet…';
     const viewerWallet=String(walletAddress||saltProfile?.wallet||'').trim();
     const viewerProvider=walletProvider||findSolWallet();
     if(!viewerWallet||!viewerProvider)throw new Error('Connect your Solana wallet to follow profiles.');
-    await ensureSocialAuthSession({
+    await ensureSocialAuthSessionSafe({
       wallet:viewerWallet,
       provider:viewerProvider,
       profile:saltProfile
@@ -2697,9 +2748,15 @@ async function toggleViewedProfileFollow(){
     // the user returns to their profile instead of re-rendering during Follow.
   }catch(e){
     btn.textContent=btn.classList.contains('isFollowing')?'Following':'Follow';
-    alert(readableError(e));
+    const msg=String(readableError(e)||'');
+    if(/PUBLIC_signMessage.*already pending|already pending.*PUBLIC_signMessage|request.*already pending/i.test(msg)){
+      alert('Trust Wallet already has a signature open. Approve or close it, then tap Follow once.');
+    }else{
+      alert(msg);
+    }
   }finally{
     btn.disabled=false;
+    btn.dataset.busy='0';
   }
 }
 

@@ -930,3 +930,11 @@ This update rebuilds the Portfolio information architecture around the current C
 - Adds short-range duration/filter helpers so the new controls can display the corresponding history window.
 - Uses `1MIN` / `15MIN` labels to avoid confusion with the existing monthly `1M` button.
 - Vercel configuration unchanged.
+
+## V1.11.45 — Trust Wallet Follow Fix
+- Prevents duplicate `PUBLIC_signMessage` requests when following with Trust Wallet.
+- Reuses one in-flight social signature request per wallet.
+- Disables Follow while the wallet signature prompt is open, preventing double taps.
+- Converts Trust Wallet's raw `already pending` provider error into a clear instruction.
+- Preserves viewed-profile targeting and stay-on-profile behavior.
+- Vercel configuration unchanged.
