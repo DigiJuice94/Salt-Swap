@@ -1084,3 +1084,10 @@ This update rebuilds the Portfolio information architecture around the current C
 - Adds a connected Recent Community Calls feed beneath profile discovery.
 - Reuses current Social feed data and profile routing; no fake placeholder members.
 - Vercel configuration unchanged.
+
+## V1.11.64 — Centered Top Navigation
+- Correctly targets the real `.nav` primary-navigation element.
+- Swap / Social / Portfolio / Trending are now centered to the true viewport midpoint on desktop.
+- Logo and Connect Wallet widths no longer shift the nav horizontally.
+- Existing responsive/mobile header behavior is preserved below 861px.
+- Vercel configuration unchanged.

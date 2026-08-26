@@ -5016,3 +5016,47 @@ body.salt-social-active .saltProfileFeed{
 body.salt-social-active .socialSubNav{
   flex-wrap:wrap;
 }
+
+/* ==========================================================
+   V1.11.64 — TRUE VIEWPORT-CENTERED PRIMARY NAV
+   ========================================================== */
+
+/* The header itself remains the positioning context. */
+.topbar{
+  position:sticky!important;
+}
+
+/* Desktop: center the nav to the actual viewport/header midpoint.
+   Logo and Connect Wallet widths cannot push it left or right. */
+@media(min-width:861px){
+  .topbar .viewportCenteredNav{
+    position:absolute!important;
+    left:50%!important;
+    top:50%!important;
+    transform:translate(-50%,-50%)!important;
+    margin:0!important;
+    z-index:20!important;
+  }
+
+  .topbar .brand{
+    margin-right:auto!important;
+    position:relative!important;
+    z-index:21!important;
+  }
+
+  .topbar .headerWalletShell{
+    margin-left:auto!important;
+    position:relative!important;
+    z-index:21!important;
+  }
+}
+
+/* Smaller screens keep the existing responsive flow so nothing overlaps. */
+@media(max-width:860px){
+  .topbar .viewportCenteredNav{
+    position:static!important;
+    left:auto!important;
+    top:auto!important;
+    transform:none!important;
+  }
+}
