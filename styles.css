@@ -4406,3 +4406,15 @@ body:has(.portfolioPage:not(.hidden)){
     font-size:10px !important;
   }
 }
+
+/* V1.11.44 — Short-term live chart ranges */
+[data-scan-chart-range] {
+  white-space:nowrap;
+}
+.marketChartRanges,
+.liveMarketRanges,
+.tokenChartRanges,
+.chartRangeTabs {
+  flex-wrap:wrap !important;
+  gap:7px !important;
+}

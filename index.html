@@ -16,7 +16,7 @@
   <link rel="shortcut icon" href="/favicon.ico?v=11090" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=11090" />
   <link rel="manifest" href="/site.webmanifest?v=11090" />
-  <link rel="stylesheet" href="/styles.css?v=11143" />
+  <link rel="stylesheet" href="/styles.css?v=11144" />
   <script defer src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.4/lib/index.iife.min.js"></script>
 
 <style>
@@ -758,7 +758,7 @@ body.publicProfileOpen{overflow:hidden}
 
         <div class="scanChartToolbar">
           <div class="scanChartRanges" aria-label="Chart timeframe">
-            <button type="button" data-scan-chart-range="1d" class="active">1D</button>
+            <button type="button" data-scan-chart-range="15s">15S</button><button type="button" data-scan-chart-range="1min">1MIN</button><button type="button" data-scan-chart-range="15min">15MIN</button><button type="button" data-scan-chart-range="1d" class="active">1D</button>
             <button type="button" data-scan-chart-range="1w">1W</button>
             <button type="button" data-scan-chart-range="1m">1M</button>
             <button type="button" data-scan-chart-range="3m">3M</button>
@@ -1875,6 +1875,32 @@ async function openTickerInSalt(id,symbol){if(!id)return;try{const custom=curren
 function currentCustomTickers(){const profileRows=Array.isArray(saltProfile?.tickers)?saltProfile.tickers:[];return profileRows.length?profileRows:getCustomTickers()}
 function renderProfileWatchList(){const el=$('profileWatchList');if(!el)return;const rows=currentCustomTickers().slice(0,8);if(!rows.length){el.innerHTML='<div class="watchListEmpty">No tickers added yet.</div>';return}el.innerHTML=rows.map(r=>{const ch=Number(r.change24h),up=Number.isFinite(ch)&&ch>=0;return `<button class="watchListRow" type="button" data-watch-id="${socialEsc(r.id)}" data-watch-symbol="${socialEsc(r.symbol||'TOKEN')}">${r.image?`<img src="${socialEsc(r.image)}" alt="">`:'<span class="watchListCoin">$</span>'}<span class="watchListToken"><b>$${socialEsc(String(r.symbol||'TOKEN').toUpperCase())}</b><small>${marketPrice(r.price)}</small></span><em class="${up?'up':'down'}">${Number.isFinite(ch)?`${up?'+':''}${ch.toFixed(2)}%`:'—'}</em><i class="watchListRemove" data-watch-remove="${socialEsc(r.id)}" title="Remove">×</i></button>`}).join('');el.querySelectorAll('[data-watch-remove]').forEach(x=>x.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();const id=x.dataset.watchRemove;const next=currentCustomTickers().filter(t=>t.id!==id);saveCustomTickers(next);renderProfileWatchList();renderMarketTicker()}));el.querySelectorAll('.watchListRow').forEach(b=>b.addEventListener('click',()=>openTickerInSalt(b.dataset.watchId,b.dataset.watchSymbol)))}
 async function addProfileWatchTicker(){const input=$('profileWatchInput'),out=$('profileWatchResults');if(!input||!out)return;const q=input.value.trim();if(!q){out.textContent='Paste a token contract address first.';return}const looksSol=/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(q),looksEvm=/^0x[a-fA-F0-9]{40}$/.test(q);if(!looksSol&&!looksEvm){out.textContent='Use the token contract address (CA) so the right coin is added.';return}out.textContent='Checking token…';try{const j=await socialApi('/api/social-market?q='+encodeURIComponent(q));const r=(j.results||[]).find(x=>x.contract&&Number(x.price)>0);if(!r){out.textContent='Could not verify live market data for that CA.';return}const cur=currentCustomTickers().filter(x=>x.id!==r.id);cur.unshift(r);saveCustomTickers(cur.slice(0,8));input.value='';out.textContent=`$${String(r.symbol||'TOKEN').toUpperCase()} added to your watch list.`;renderProfileWatchList();renderMarketTicker()}catch(e){out.textContent=readableError(e)||'Could not add that token.'}}
+
+
+function marketChartRangeMs(range){
+  const key=String(range||'').toLowerCase();
+  if(key==='15s')return 15*1000;
+  if(key==='1min')return 60*1000;
+  if(key==='15min')return 15*60*1000;
+  if(key==='1d')return 24*60*60*1000;
+  if(key==='1w')return 7*24*60*60*1000;
+  if(key==='1m')return 30*24*60*60*1000;
+  if(key==='3m')return 90*24*60*60*1000;
+  if(key==='1y')return 365*24*60*60*1000;
+  return 24*60*60*1000;
+}
+
+function filterMarketChartRowsByRange(rows,range){
+  const list=Array.isArray(rows)?rows:[];
+  if(!list.length)return list;
+  const ms=marketChartRangeMs(range);
+  const lastTs=Math.max(...list.map(r=>Number(r.t??r.time??r.timestamp??r.ts??0)).filter(Number.isFinite));
+  if(!lastTs)return list;
+  const cutoff=lastTs-ms;
+  const filtered=list.filter(r=>Number(r.t??r.time??r.timestamp??r.ts??0)>=cutoff);
+  return filtered.length>=2?filtered:list.slice(-Math.min(list.length,16));
+}
+
 
 function renderMarketTicker(){const el=$('saltMarketTicker');if(!el)return;let custom=currentCustomTickers();const ids=new Set(saltMarketRows.map(x=>x.id));custom=custom.filter(x=>!ids.has(x.id));const rows=[...saltMarketRows.map(x=>({row:x,custom:false})),...custom.map(x=>({row:x,custom:true}))];if(!rows.length){el.innerHTML='<div class="tickerLoading">Loading live market…</div>';return}const items=rows.map(x=>tickerItem(x.row,x.custom)).join('');el.innerHTML=`<div class="saltTickerTrack"><div class="saltTickerSet">${items}</div><div class="saltTickerSet" aria-hidden="true">${items}</div></div>`;el.querySelectorAll('.removeTicker').forEach(x=>x.addEventListener('click',e=>{e.stopPropagation();const id=x.closest('[data-market-id]')?.dataset.marketId;const next=currentCustomTickers().filter(t=>t.id!==id);saveCustomTickers(next);if(saltProfile)saltProfile.tickers=next;renderMarketTicker()}));el.querySelectorAll('.marketTickerItem').forEach(b=>b.addEventListener('click',()=>openTickerInSalt(b.dataset.marketId,b.dataset.marketSymbol)))}
 async function loadMarketTicker(){const el=$('saltMarketTicker');if(!el)return;renderMarketTicker();try{const j=await socialApi('/api/social-market');if(Array.isArray(j?.coins)&&j.coins.length)saltMarketRows=j.coins;renderMarketTicker()}catch(e){console.warn('Salt market refresh failed; keeping existing ticker.',e);renderMarketTicker()}}

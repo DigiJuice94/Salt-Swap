@@ -923,3 +923,10 @@ This update rebuilds the Portfolio information architecture around the current C
 - Adds a current-price tag aligned to the final chart point.
 - Keeps the Trenches dark green/light green visual system.
 - Vercel configuration unchanged.
+
+## V1.11.44 — Short-Term Chart Ranges
+- Adds `15S`, `1MIN`, and `15MIN` controls to the live market chart.
+- Keeps existing `1D`, `1W`, `1M`, `3M`, and `1Y` ranges.
+- Adds short-range duration/filter helpers so the new controls can display the corresponding history window.
+- Uses `1MIN` / `15MIN` labels to avoid confusion with the existing monthly `1M` button.
+- Vercel configuration unchanged.
