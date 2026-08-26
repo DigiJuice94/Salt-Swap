@@ -222,6 +222,21 @@ body.publicProfileOpen{overflow:hidden}
 
   <main>
     <section class="hero" id="home">
+      <div id="heroFlyby" class="heroFlyby" aria-hidden="true">
+        <div class="heroFlybyInner">
+          <div class="heroPlane" role="presentation">
+            <span class="heroPlaneBody"></span>
+            <span class="heroPlaneWing heroPlaneWingTop"></span>
+            <span class="heroPlaneWing heroPlaneWingBottom"></span>
+            <span class="heroPlaneTail"></span>
+            <span class="heroPlaneProp"></span>
+          </div>
+          <div class="heroTowLines" aria-hidden="true"></div>
+          <div class="heroBannerWrap">
+            <div class="heroBannerFlag"><span>Welcome to the Trenches</span></div>
+          </div>
+        </div>
+      </div>
       <div class="heroBadge">TRENCH INTELLIGENCE</div>
       <h1>Know what you’re buying<br /><span>before you enter the trenches.</span></h1>
       <p class="heroCopy">Paste any meme coin contract. We scan Solana, Ethereum, Base, BNB Chain and Robinhood Chain, then explain the risk in plain English.</p>
@@ -2853,6 +2868,126 @@ async function toggleViewedProfileFollow(){
     <div id="publicProfilePosts" class="publicProfilePosts"><div class="socialTimelineEmpty">Loading profile…</div></div>
   </section>
 </div>
+
+<script>
+(function(){
+  const flyby=document.getElementById('heroFlyby');
+  const home=document.getElementById('home');
+  if(!flyby||!home)return;
+
+  const INITIAL_DELAY_MS=7000;
+  const FLYBY_INTERVAL_MS=10*60*1000;
+  const FLYBY_DURATION_MS=22000;
+  let flybyTimer=null;
+  let cleanupTimer=null;
+  let userInteracted=false;
+  let audioCtx=null;
+
+  function noteInteraction(){
+    userInteracted=true;
+    try{
+      if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+      if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});
+    }catch(_){ }
+  }
+
+  window.addEventListener('pointerdown',noteInteraction,{passive:true});
+  window.addEventListener('keydown',noteInteraction);
+
+  function heroIsVisible(){
+    if(!home)return false;
+    if(home.classList.contains('hidden'))return false;
+    const style=window.getComputedStyle(home);
+    return style.display!=='none'&&style.visibility!=='hidden';
+  }
+
+  function playFlybySound(){
+    if(!userInteracted)return;
+    try{
+      if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+      if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});
+      const now=audioCtx.currentTime+0.02;
+      const master=audioCtx.createGain();
+      master.gain.setValueAtTime(0.0001,now);
+      master.gain.exponentialRampToValueAtTime(0.02,now+0.22);
+      master.gain.exponentialRampToValueAtTime(0.0001,now+2.9);
+      master.connect(audioCtx.destination);
+
+      const lowpass=audioCtx.createBiquadFilter();
+      lowpass.type='lowpass';
+      lowpass.frequency.setValueAtTime(540,now);
+      lowpass.frequency.linearRampToValueAtTime(300,now+2.9);
+      lowpass.connect(master);
+
+      const engine=audioCtx.createOscillator();
+      engine.type='sawtooth';
+      engine.frequency.setValueAtTime(160,now);
+      engine.frequency.exponentialRampToValueAtTime(108,now+2.9);
+
+      const engineGain=audioCtx.createGain();
+      engineGain.gain.setValueAtTime(0.9,now);
+      engineGain.gain.linearRampToValueAtTime(0.55,now+2.9);
+      engine.connect(engineGain);
+      engineGain.connect(lowpass);
+
+      const wobble=audioCtx.createOscillator();
+      wobble.type='sine';
+      wobble.frequency.setValueAtTime(7.2,now);
+      const wobbleGain=audioCtx.createGain();
+      wobbleGain.gain.setValueAtTime(13,now);
+      wobble.connect(wobbleGain);
+      wobbleGain.connect(engine.frequency);
+
+      const hiss=audioCtx.createBufferSource();
+      const buffer=audioCtx.createBuffer(1,Math.floor(audioCtx.sampleRate*2.8),audioCtx.sampleRate);
+      const channel=buffer.getChannelData(0);
+      for(let i=0;i<channel.length;i++){
+        channel[i]=(Math.random()*2-1)*0.18;
+      }
+      hiss.buffer=buffer;
+      const hissFilter=audioCtx.createBiquadFilter();
+      hissFilter.type='bandpass';
+      hissFilter.frequency.setValueAtTime(420,now);
+      hissFilter.Q.value=0.4;
+      const hissGain=audioCtx.createGain();
+      hissGain.gain.setValueAtTime(0.0001,now);
+      hissGain.gain.exponentialRampToValueAtTime(0.008,now+0.25);
+      hissGain.gain.exponentialRampToValueAtTime(0.0001,now+2.75);
+      hiss.connect(hissFilter);
+      hissFilter.connect(hissGain);
+      hissGain.connect(master);
+
+      engine.start(now);
+      wobble.start(now);
+      hiss.start(now);
+      engine.stop(now+3);
+      wobble.stop(now+3);
+      hiss.stop(now+2.85);
+    }catch(_){ }
+  }
+
+  function scheduleNext(delay=FLYBY_INTERVAL_MS){
+    clearTimeout(flybyTimer);
+    flybyTimer=setTimeout(runFlyby,delay);
+  }
+
+  function runFlyby(){
+    if(!heroIsVisible()){
+      scheduleNext(60000);
+      return;
+    }
+    clearTimeout(cleanupTimer);
+    flyby.classList.remove('is-active');
+    void flyby.offsetWidth;
+    flyby.classList.add('is-active');
+    playFlybySound();
+    cleanupTimer=setTimeout(()=>flyby.classList.remove('is-active'),FLYBY_DURATION_MS);
+    scheduleNext();
+  }
+
+  scheduleNext(INITIAL_DELAY_MS);
+})();
+</script>
 
 </body>
 </html>
