@@ -1736,6 +1736,83 @@ async function dexTokenUsdByAddress(address,chainHint=''){
     };
   }catch{return null}
 }
+
+const EVM_NFT_NETWORKS=[
+  {chain:'Ethereum',alchemy:'eth-mainnet',reservoir:'https://api.reservoir.tools'},
+  {chain:'Base',alchemy:'base-mainnet',reservoir:'https://api-base.reservoir.tools'},
+  {chain:'BNB Chain',alchemy:'bnb-mainnet',reservoir:'https://api-bsc.reservoir.tools'}
+];
+
+function normalizeNftImage(v){
+  const s=String(v||'').trim();
+  if(!s)return'';
+  if(s.startsWith('ipfs://'))return'https://ipfs.io/ipfs/'+s.slice(7);
+  if(/^https?:\/\//i.test(s))return s;
+  return'';
+}
+async function fetchAlchemyNfts(wallet,network){
+  const key=process.env.ALCHEMY_API_KEY||process.env.ALCHEMY_KEY||'';
+  if(!key)return[];
+  try{
+    const url=`https://${network.alchemy}.g.alchemy.com/nft/v3/${key}/getNFTsForOwner?owner=${encodeURIComponent(wallet)}&withMetadata=true&pageSize=100`;
+    const j=await fetchJson(url,{},10000);
+    const owned=Array.isArray(j?.ownedNfts)?j.ownedNfts:[];
+    return owned.map(n=>({
+      chain:network.chain,
+      name:n?.name||n?.title||n?.contract?.name||'NFT',
+      collection:n?.contract?.name||n?.collection?.name||network.chain,
+      image:normalizeNftImage(n?.image?.cachedUrl||n?.image?.thumbnailUrl||n?.image?.originalUrl||n?.raw?.metadata?.image||''),
+      contract:n?.contract?.address||'',
+      tokenId:n?.tokenId||''
+    })).filter(n=>n.image);
+  }catch{return[]}
+}
+async function fetchReservoirNfts(wallet,network){
+  try{
+    const url=`${network.reservoir}/users/${encodeURIComponent(wallet)}/tokens/v10?limit=100&includeTopBid=false&includeAttributes=false`;
+    const headers={};
+    if(process.env.RESERVOIR_API_KEY)headers['x-api-key']=process.env.RESERVOIR_API_KEY;
+    const j=await fetchJson(url,{headers},10000);
+    const rows=Array.isArray(j?.tokens)?j.tokens:[];
+    return rows.map(r=>{
+      const t=r?.token||r||{};
+      return{
+        chain:network.chain,
+        name:t?.name||t?.collection?.name||'NFT',
+        collection:t?.collection?.name||network.chain,
+        image:normalizeNftImage(t?.imageSmall||t?.image||t?.media||''),
+        contract:t?.contract||'',
+        tokenId:t?.tokenId||''
+      }
+    }).filter(n=>n.image);
+  }catch{return[]}
+}
+async function evmNftsHandler(req,res){
+  res.setHeader('Cache-Control','no-store');
+  try{
+    const wallet=String(req.query?.wallet||'').trim();
+    if(!/^0x[a-fA-F0-9]{40}$/.test(wallet))return res.status(400).json({error:'Valid EVM wallet required.'});
+
+    let nfts=[];
+    for(const network of EVM_NFT_NETWORKS){
+      let rows=await fetchAlchemyNfts(wallet,network);
+      if(!rows.length)rows=await fetchReservoirNfts(wallet,network);
+      nfts.push(...rows);
+    }
+
+    const seen=new Set();
+    nfts=nfts.filter(n=>{
+      const key=`${n.chain}:${String(n.contract).toLowerCase()}:${n.tokenId}`;
+      if(seen.has(key))return false;
+      seen.add(key);return true;
+    });
+
+    return res.status(200).json({wallet,nfts:nfts.slice(0,150)});
+  }catch(e){
+    return res.status(500).json({error:errorText(e)});
+  }
+}
+
 async function evmHoldingsHandler(req,res){
   res.setHeader('Cache-Control','no-store');
   try{
@@ -1871,7 +1948,7 @@ const pr=await kv('get',`salt:social:profile:${wallet}`);if(!pr)return res.statu
 
 async function healthHandler(req,res){
   res.setHeader('Cache-Control','no-store');
-  return res.status(200).json({ok:true,service:'The Trenches scanner',version:'1.11.79',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY),zerox:Boolean(process.env.ZEROX_API_KEY),social:Boolean(process.env.UPSTASH_REDIS_REST_URL&&process.env.UPSTASH_REDIS_REST_TOKEN)}});
+  return res.status(200).json({ok:true,service:'The Trenches scanner',version:'1.11.80',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY),zerox:Boolean(process.env.ZEROX_API_KEY),social:Boolean(process.env.UPSTASH_REDIS_REST_URL&&process.env.UPSTASH_REDIS_REST_TOKEN)}});
 }
 
 export default async function handler(req,res){
@@ -1902,6 +1979,7 @@ export default async function handler(req,res){
     if(route==='social-community-feed')return socialCommunityFeedHandler(req,res);
     if(route==='social-token-communities')return socialTokenCommunitiesHandler(req,res);
     if(route==='evm-holdings')return evmHoldingsHandler(req,res);
+    if(route==='evm-nfts')return evmNftsHandler(req,res);
     if(route==='social-market')return socialMarketHandler(req,res);
     if(route==='social-news')return socialNewsHandler(req,res);
     if(route==='social-reviews')return socialReviewsHandler(req,res);

@@ -1234,3 +1234,13 @@ This update rebuilds the Portfolio information architecture around the current C
 - Displays an estimated EVM wallet total.
 - Solana holdings behavior remains intact.
 - Adds `/api/evm-holdings` Vercel route.
+
+## V1.11.80 — Featured NFTs for Solana + EVM
+- Removes the Solana-only restriction from Featured NFT picking.
+- Solana wallets continue using the existing Solana NFT endpoint.
+- EVM wallets now use `/api/evm-nfts`.
+- Supports Ethereum, Base, and BNB Chain NFT discovery.
+- Uses Alchemy NFT API when an Alchemy key is configured.
+- Falls back to Reservoir APIs when available.
+- NFT picker shows image, name, collection, and chain.
+- Existing profile NFT slots remain unchanged.

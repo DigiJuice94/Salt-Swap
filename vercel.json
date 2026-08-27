@@ -109,6 +109,10 @@
       "dest": "/api.mjs?route=evm-holdings"
     },
     {
+      "src": "/api/evm-nfts",
+      "dest": "/api.mjs?route=evm-nfts"
+    },
+    {
       "src": "/api/social-market",
       "dest": "/api.mjs?route=social-market"
     },

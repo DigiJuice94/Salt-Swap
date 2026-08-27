@@ -5167,3 +5167,38 @@ body.salt-social-active .saltProfileFeed{
 .evmHoldingNumbers b,.evmHoldingNumbers small{display:block}
 .evmHoldingNumbers b{color:#34493e;font-size:11px}
 .evmHoldingNumbers small{margin-top:2px;color:#8c9187;font-size:9px}
+
+/* ==========================================================
+   V1.11.80 — All-chain featured NFTs
+   ========================================================== */
+.nftPickerLoading,.emptyNfts{
+  grid-column:1/-1;
+  padding:24px;
+  text-align:center;
+  color:#858b81;
+  font-size:11px;
+}
+.nftPickerItem{
+  appearance:none;
+  min-width:0;
+  padding:0;
+  overflow:hidden;
+  border:1px solid #d8caab;
+  border-radius:13px;
+  background:#fbf7ed;
+  text-align:left;
+  cursor:pointer;
+}
+.nftPickerImage{
+  display:block;
+  width:100%;
+  aspect-ratio:1/1;
+  overflow:hidden;
+  background:#ede4cf;
+}
+.nftPickerImage img{width:100%;height:100%;object-fit:cover;display:block}
+.nftPickerImage>span{width:100%;height:100%;display:grid;place-items:center;color:#737862;font-weight:900}
+.nftPickerMeta{display:block;padding:9px 10px}
+.nftPickerMeta b,.nftPickerMeta small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nftPickerMeta b{color:#2f453a;font-size:11px}
+.nftPickerMeta small{margin-top:2px;color:#92968c;font-size:9px}
