@@ -1252,3 +1252,13 @@ This update rebuilds the Portfolio information architecture around the current C
 - Confirms Connect Wallet and Run a Trench Check hooks remain intact.
 - Frontend and backend syntax validated.
 - Vercel routing unchanged from V1.11.80.
+
+## V1.11.82 — Swap Wallet + Profile Data Repair
+- Adds guaranteed click bindings for header/swap Connect Wallet buttons.
+- Restores the missing profile holdings loader.
+- EVM profiles now actually request `/api/evm-holdings`.
+- Solana profiles keep `/api/social-holdings`.
+- EVM holdings include native balances plus Alchemy ERC-20 balances when configured, with DeBank fallback retained.
+- Rebuilds Featured NFT picker to use the actual `nftPickerModal` / `nftPickerGrid`.
+- EVM profiles request `/api/evm-nfts`; Solana profiles request `/api/social-nfts`.
+- NFT selection is wired to save into the existing profile Featured NFT slots.

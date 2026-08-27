@@ -16,7 +16,7 @@
   <link rel="shortcut icon" href="/favicon.ico?v=11090" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=11090" />
   <link rel="manifest" href="/site.webmanifest?v=11090" />
-  <link rel="stylesheet" href="/styles.css?v=11181" />
+  <link rel="stylesheet" href="/styles.css?v=11182" />
   <script defer src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.4/lib/index.iife.min.js"></script>
 
 <style>
@@ -1964,29 +1964,112 @@ async function prepareBanner(file){if(!['image/jpeg','image/png','image/webp'].i
 let activeNftSlot=0;
 async function __loadSolanaProfileNfts(slot=0){if(!walletAddress||walletKind!=='solana')throw new Error('Featured NFT picking currently requires a Solana wallet.');activeNftSlot=slot;const modal=$('nftPickerModal'),grid=$('nftPickerGrid');modal?.classList.remove('hidden');document.body.classList.add('modalOpen');grid.innerHTML='<div class="emptyReviews">Loading your wallet NFTs…</div>';const j=await socialApi('/api/social-nfts?wallet='+encodeURIComponent(walletAddress));grid.innerHTML=j.items?.length?j.items.map((n,i)=>`<button class="nftPickItem" type="button" data-nft-i="${i}"><img src="${socialEsc(n.image)}" alt="" /><b>${socialEsc(n.name||'NFT')}</b><small>✓ Wallet owned</small></button>`).join(''):'<div class="emptyReviews">No supported NFTs found in this wallet.</div>';grid.querySelectorAll('[data-nft-i]').forEach(btn=>btn.addEventListener('click',async()=>{let nft=j.items[Number(btn.dataset.nftI)],favorites=[...(saltProfile?.favorites||[])];try{const d=await socialApi('/api/social-nft-detail?mint='+encodeURIComponent(nft.id));nft={...nft,collection:d.collection||nft.collection||nft.name||'NFT Collection',priceSol:Number.isFinite(Number(d.priceSol))?Number(d.priceSol):null}}catch{}favorites[activeNftSlot]=nft;await saveProfileAppearance({favorites});closeNftPicker()}))}
 async function openNftPicker(){
-  if(!walletAddress){alert('Connect a wallet first.');return}
-  const isEvm=/^0x[a-fA-F0-9]{40}$/.test(String(walletAddress||''));
-  if(!isEvm){
-    return __loadSolanaProfileNfts();
-  }
+  const profileWallet=(saltProfile||getRememberedSocialProfile())?.wallet||walletAddress;
+  if(!profileWallet){alert('Connect a wallet first.');return}
 
-  const grid=$('profileNftPickerGrid')||$('featuredNftGrid')||$('nftPickerGrid')||$('saltNftPicker')||$('profileNftGrid');
+  const modal=$('nftPickerModal');
+  const grid=$('nftPickerGrid');
+  if(modal)modal.classList.remove('hidden');
   if(!grid)return;
-  grid.innerHTML='<div class="nftPickerLoading">Loading NFTs…</div>';
+
+  const isEvm=/^0x[a-fA-F0-9]{40}$/.test(String(profileWallet||''));
+  grid.innerHTML='<div class="emptyReviews">Loading your wallet NFTs…</div>';
+
   try{
-    const j=await socialApi('/api/evm-nfts?wallet='+encodeURIComponent(walletAddress));
-    const rows=Array.isArray(j?.nfts)?j.nfts:[];
-    if(!rows.length){grid.innerHTML='<div class="emptyNfts">No NFTs found for this wallet.</div>';return}
-    grid.innerHTML=rows.slice(0,60).map(n=>`
-      <button type="button" class="nftPickerItem" data-nft-image="${socialEsc(n.image||'')}" data-nft-name="${socialEsc(n.name||'NFT')}">
-        <span class="nftPickerImage">${n.image?`<img src="${socialEsc(n.image)}" alt="" loading="lazy">`:'<span>NFT</span>'}</span>
-        <span class="nftPickerMeta"><b>${socialEsc(n.name||'NFT')}</b><small>${socialEsc(n.collection||n.chain||'')}</small></span>
+    const endpoint=isEvm
+      ?'/api/evm-nfts?wallet='+encodeURIComponent(profileWallet)
+      :'/api/social-nfts?wallet='+encodeURIComponent(profileWallet);
+
+    const r=await fetch(endpoint,{cache:'no-store',credentials:'same-origin'});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(j?.error||`HTTP ${r.status}`);
+    const rows=isEvm?(j?.nfts||[]):(j?.items||[]);
+
+    if(!rows.length){
+      grid.innerHTML='<div class="emptyReviews">No supported NFTs found in this wallet.</div>';
+      return;
+    }
+
+    grid.innerHTML=rows.slice(0,60).map((n,i)=>`
+      <button class="nftPickItem" type="button" data-nft-i="${i}">
+        ${n.image?`<img src="${socialEsc(n.image)}" alt="">`:'<span class="nftMissingImage">NFT</span>'}
+        <b>${socialEsc(n.name||'NFT')}</b>
+        <small>${socialEsc(n.collection||n.chain||'✓ Wallet owned')}</small>
       </button>`).join('');
+
+    grid.querySelectorAll('[data-nft-i]').forEach(btn=>btn.addEventListener('click',async()=>{
+      let nft=rows[Number(btn.dataset.nftI)];
+      const favorites=[...(saltProfile?.favorites||[])];
+      if(!isEvm){
+        try{
+          const d=await socialApi('/api/social-nft-detail?mint='+encodeURIComponent(nft.id));
+          nft={...nft,collection:d.collection||nft.collection||nft.name||'NFT Collection',priceSol:Number.isFinite(Number(d.priceSol))?Number(d.priceSol):null};
+        }catch{}
+      }
+      favorites[activeNftSlot]=nft;
+      await saveProfileAppearance({favorites});
+      closeNftPicker();
+    }));
   }catch(e){
-    grid.innerHTML=`<div class="emptyNfts">${socialEsc(readableError(e))}</div>`;
+    grid.innerHTML=`<div class="emptyReviews">${socialEsc(readableError(e))}</div>`;
   }
 }
-async function loadProfileHoldings(){return loadProfileHoldingsFor(walletAddress)}
+async function loadProfileHoldingsFor(profileWallet){
+  const el=$('saltWalletHoldings');
+  if(!el||!profileWallet)return;
+
+  const isEvm=/^0x[a-fA-F0-9]{40}$/.test(String(profileWallet||''));
+  const card=el.closest('.walletHoldingsCard');
+  const title=card?.querySelector('.saltAsideTitle b');
+  const note=card?.querySelector('.walletOwnedNote');
+
+  if(isEvm){
+    if(title)title.innerHTML='Wallet holdings <em>(EVM)</em>';
+    if(note)note.textContent='Live from this EVM wallet';
+    el.innerHTML='<div class="saltEmptyMini">Loading EVM holdings…</div>';
+
+    try{
+      const r=await fetch('/api/evm-holdings?wallet='+encodeURIComponent(profileWallet),{cache:'no-store',credentials:'same-origin'});
+      const j=await r.json().catch(()=>({}));
+      if(!r.ok)throw new Error(j?.error||`HTTP ${r.status}`);
+      const rows=Array.isArray(j?.holdings)?j.holdings:[];
+      if(!rows.length){
+        el.innerHTML='<div class="saltEmptyMini">No EVM token balances found.</div>';
+        return;
+      }
+      el.innerHTML=rows.slice(0,30).map(h=>`
+        <div class="holdingRow evmHoldingRow">
+          <div class="holdingTokenLeft">
+            <span class="holdingTokenLogo">${h.image?`<img src="${socialEsc(h.image)}" alt="">`:socialEsc(String(h.symbol||'?').slice(0,1).toUpperCase())}</span>
+            <span><b>${socialEsc(h.symbol||h.name||'Token')}</b><small>${socialEsc(h.name||h.chain||'EVM')}</small></span>
+          </div>
+          <strong>${Number(h.balanceFormatted||0).toLocaleString(undefined,{maximumFractionDigits:6})}<small>${Number(h.usdValue||0)>0?'$'+Number(h.usdValue).toLocaleString(undefined,{maximumFractionDigits:2}):socialEsc(h.chain||'')}</small></strong>
+        </div>`).join('');
+    }catch(e){
+      el.innerHTML=`<div class="saltEmptyMini">${socialEsc(readableError(e))}</div>`;
+    }
+    return;
+  }
+
+  if(title)title.innerHTML='Wallet holdings <em>(Solana)</em>';
+  if(note)note.textContent='Live from your connected Solana wallet';
+  el.innerHTML='<div class="saltEmptyMini">Loading wallet coins…</div>';
+  try{
+    const j=await socialApi('/api/social-holdings?wallet='+encodeURIComponent(profileWallet));
+    const rows=Array.isArray(j?.items)?j.items:[];
+    el.innerHTML=rows.length?rows.map(h=>`
+      <div class="holdingRow">
+        <div><b>${socialEsc(h.symbol||h.name||'Token')}</b><span>${socialEsc(h.name||'')}</span></div>
+        <strong>${socialEsc(h.displayBalance||Number(h.balance||0).toLocaleString(undefined,{maximumFractionDigits:5}))}</strong>
+      </div>`).join(''):'<div class="saltEmptyMini">No tracked token holdings found.</div>';
+  }catch(e){
+    el.innerHTML=`<div class="saltEmptyMini">${socialEsc(readableError(e))}</div>`;
+  }
+}
+async function loadProfileHoldings(){
+  const profileWallet=(saltProfile||getRememberedSocialProfile())?.wallet||walletAddress;
+  return loadProfileHoldingsFor(profileWallet);
+}
 async function loadProfileThesesFor(profileWallet,emptyText='No posted token ratings or theses yet.'){
   const el=$('saltProfileTheses');
   if(!el||!profileWallet)return;
@@ -3342,6 +3425,16 @@ document.addEventListener('click',async e=>{
     if(btn.dataset.originalHtml)btn.innerHTML=btn.dataset.originalHtml;
     btn.disabled=false;
   }
+});
+
+
+/* V1.11.82 — guaranteed wallet button bindings */
+document.addEventListener('click',e=>{
+  const btn=e.target.closest('#connectWalletBtn,#swapWalletBtn');
+  if(!btn)return;
+  e.preventDefault();
+  e.stopPropagation();
+  if(typeof openWalletConnectModal==='function')openWalletConnectModal('general');
 });
 
 </script>

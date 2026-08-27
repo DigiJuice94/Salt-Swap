@@ -1813,6 +1813,34 @@ async function evmNftsHandler(req,res){
   }
 }
 
+
+async function fetchAlchemyEvmTokens(wallet,chain){
+  const key=process.env.ALCHEMY_API_KEY||process.env.ALCHEMY_KEY||'';
+  if(!key)return[];
+  const network=chain.id==='eth'?'eth-mainnet':chain.id==='base'?'base-mainnet':chain.id==='bsc'?'bnb-mainnet':'';
+  if(!network)return[];
+  try{
+    const rpcUrl=`https://${network}.g.alchemy.com/v2/${key}`;
+    const bj=await fetchJson(rpcUrl,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method:'alchemy_getTokenBalances',params:[wallet,'DEFAULT_TOKENS']})},10000);
+    const out=[];
+    for(const t of bj?.result?.tokenBalances||[]){
+      if(!t?.tokenBalance||t.tokenBalance==='0x0')continue;
+      let md={};
+      try{
+        const mj=await fetchJson(rpcUrl,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:2,method:'alchemy_getTokenMetadata',params:[t.contractAddress]})},7000);
+        md=mj?.result||{};
+      }catch{}
+      const dec=Number(md.decimals??18);
+      let amount=0;
+      try{amount=Number(BigInt(t.tokenBalance))/10**dec}catch{}
+      if(!Number.isFinite(amount)||amount<=0)continue;
+      const market=await dexTokenUsdByAddress(t.contractAddress,chain.id==='bsc'?'bsc':chain.id);
+      const price=Number(market?.price)||0;
+      out.push({chain:chain.name,symbol:String(md.symbol||market?.symbol||'TOKEN'),name:String(md.name||market?.name||md.symbol||'Token'),balanceFormatted:amount,usdValue:amount*price,image:String(md.logo||market?.image||''),contract:t.contractAddress});
+    }
+    return out;
+  }catch{return[]}
+}
 async function evmHoldingsHandler(req,res){
   res.setHeader('Cache-Control','no-store');
   try{
@@ -1836,7 +1864,12 @@ async function evmHoldingsHandler(req,res){
       }
     }
 
-    // Zerion/DeBank-style token list fallback using DeBank OpenAPI public endpoint.
+    // ERC-20 balances via Alchemy when configured.
+    for(const chain of EVM_HOLDING_CHAINS){
+      try{holdings.push(...await fetchAlchemyEvmTokens(wallet,chain))}catch{}
+    }
+
+    // DeBank fallback when reachable.
     try{
       const rows=await fetchJson(`https://openapi.debank.com/v1/user/all_token_list?id=${encodeURIComponent(wallet)}&is_all=false`,{},10000);
       if(Array.isArray(rows)){
@@ -1948,7 +1981,7 @@ const pr=await kv('get',`salt:social:profile:${wallet}`);if(!pr)return res.statu
 
 async function healthHandler(req,res){
   res.setHeader('Cache-Control','no-store');
-  return res.status(200).json({ok:true,service:'The Trenches scanner',version:'1.11.81',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY),zerox:Boolean(process.env.ZEROX_API_KEY),social:Boolean(process.env.UPSTASH_REDIS_REST_URL&&process.env.UPSTASH_REDIS_REST_TOKEN)}});
+  return res.status(200).json({ok:true,service:'The Trenches scanner',version:'1.11.82',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY),zerox:Boolean(process.env.ZEROX_API_KEY),social:Boolean(process.env.UPSTASH_REDIS_REST_URL&&process.env.UPSTASH_REDIS_REST_TOKEN)}});
 }
 
 export default async function handler(req,res){
