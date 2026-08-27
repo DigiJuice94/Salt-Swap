@@ -1244,3 +1244,11 @@ This update rebuilds the Portfolio information architecture around the current C
 - Falls back to Reservoir APIs when available.
 - NFT picker shows image, name, collection, and chain.
 - Existing profile NFT slots remain unchanged.
+
+## V1.11.81 — Connect Wallet + Trench Check Regression Fix
+- Repairs the frontend regression introduced while replacing the NFT picker in V1.11.80.
+- Restores the original stable Solana NFT picker implementation and wraps it with a separate EVM NFT path instead of replacing shared surrounding JavaScript.
+- Keeps all-chain NFT support for EVM wallets.
+- Confirms Connect Wallet and Run a Trench Check hooks remain intact.
+- Frontend and backend syntax validated.
+- Vercel routing unchanged from V1.11.80.
