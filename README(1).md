@@ -1198,3 +1198,13 @@ This update rebuilds the Portfolio information architecture around the current C
 - Confirms Connect Wallet and Trench Check UI hooks remain present.
 - Keeps V1.11.74 backend EVM verification improvements.
 - Vercel configuration unchanged.
+
+## V1.11.76 — Zerion Smart Wallet Signature Support
+- Adds ERC-1271 smart-wallet signature verification for Zerion and other contract wallets.
+- Keeps normal EOA EIP-191 recovery first for MetaMask-style accounts.
+- Frontend sends the active EVM chain ID with Social login and profile signature requests.
+- Backend uses the connected chain to check contract code and call `isValidSignature(bytes32,bytes)`.
+- Supports Ethereum, Base, and BNB public read-only RPC fallbacks plus configured RPC environment variables.
+- Solana verification remains unchanged.
+- Trench Check and Connect Wallet code are not modified.
+- Vercel routing unchanged.
