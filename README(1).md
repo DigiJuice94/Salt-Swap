@@ -1208,3 +1208,12 @@ This update rebuilds the Portfolio information architecture around the current C
 - Solana verification remains unchanged.
 - Trench Check and Connect Wallet code are not modified.
 - Vercel routing unchanged.
+
+## V1.11.77 — Zerion Signed-Message Address Fix
+- Fixes the actual Zerion profile signature rejection.
+- EVM wallet addresses are now lowercased inside the exact profile message before signing, matching backend canonicalization.
+- Solana addresses keep their original case.
+- Backend also accepts a legacy mixed/checksummed EVM wallet string if a signature was already produced with it.
+- Keeps EOA + ERC-1271 smart-wallet verification from V1.11.76.
+- Trench Check and Connect Wallet are unchanged.
+- Vercel configuration unchanged.

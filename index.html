@@ -16,7 +16,7 @@
   <link rel="shortcut icon" href="/favicon.ico?v=11090" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=11090" />
   <link rel="manifest" href="/site.webmanifest?v=11090" />
-  <link rel="stylesheet" href="/styles.css?v=11176" />
+  <link rel="stylesheet" href="/styles.css?v=11177" />
   <script defer src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.4/lib/index.iife.min.js"></script>
 
 <style>
@@ -1941,6 +1941,10 @@ async function prepareProfilePicture(file){if(!file)return '';if(!['image/jpeg',
 async function avatarDigest(data){if(!data)return 'none';const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(data));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
 function b58decode(s){const A='123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz',map=Object.fromEntries([...A].map((c,i)=>[c,i]));let bytes=[0];for(const c of String(s)){const v=map[c];if(v==null)throw new Error('Invalid Solana wallet address.');let carry=v;for(let j=0;j<bytes.length;j++){carry+=bytes[j]*58;bytes[j]=carry&255;carry>>=8}while(carry){bytes.push(carry&255);carry>>=8}}for(let i=0;i<s.length-1&&s[i]==='1';i++)bytes.push(0);return new Uint8Array(bytes.reverse())}
 function utf8ToHex(message){return '0x'+[...new TextEncoder().encode(String(message||''))].map(b=>b.toString(16).padStart(2,'0')).join('')}
+function socialSigningWallet(wallet=walletAddress){
+  const v=String(wallet||'').trim();
+  return /^0x[a-fA-F0-9]{40}$/.test(v)?v.toLowerCase():v;
+}
 async function currentEvmChainId(provider=walletProvider){
   if(!provider?.request)return '';
   try{return String(await provider.request({method:'eth_chainId'} )||'').toLowerCase()}catch{return''}
@@ -1953,7 +1957,8 @@ async function clearSocialAuthSession(){socialAuthSessionWallet='';try{await soc
 async function ensureSocialAuthSession(options={}){const suppliedWallet=String(options.wallet||walletAddress||''),suppliedProvider=options.provider||walletProvider||null;let signer;if(suppliedWallet&&suppliedProvider){signer={wallet:suppliedWallet,provider:suppliedProvider,profile:options.profile||getCachedProfileForWallet(suppliedWallet)||saltProfile}}else signer=await ensureScanSocialSigner();const active=await checkSocialAuthSession();if(active&&active.toLowerCase()===String(signer.wallet).toLowerCase())return signer;if(options.interactive===false)return null;const challenge=await socialApi('/api/social-auth?action=challenge&wallet='+encodeURIComponent(signer.wallet));let signature;if(/^0x[a-fA-F0-9]{40}$/.test(signer.wallet)){const hex=utf8ToHex(challenge.message),addr=String(signer.wallet).toLowerCase();try{signature=await signer.provider.request({method:'personal_sign',params:[hex,addr]})}catch(first){try{signature=await signer.provider.request({method:'personal_sign',params:[addr,hex]})}catch{throw first}}}else{if(!signer.provider?.signMessage)throw new Error('This wallet cannot sign the Trenches login message.');const signed=await signer.provider.signMessage(new TextEncoder().encode(challenge.message),'utf8');signature=bytesToBase64(signed?.signature||signed)}const evmChainId=/^0x[a-fA-F0-9]{40}$/.test(signer.wallet)?await currentEvmChainId(signer.provider):'';
 await socialApi('/api/social-auth',{method:'POST',body:JSON.stringify({wallet:signer.wallet,nonce:challenge.nonce,message:challenge.message,signature,evmChainId})});socialAuthSessionWallet=signer.wallet;return signer}
 function renderFavoriteNfts(favorites=[]){const slots=[...document.querySelectorAll('.favoriteNftSlot')];slots.forEach((el,i)=>{const nft=favorites[i];if(nft&&nft.image){const collection=socialEsc(nft.collection||nft.name||'NFT Collection'),price=Number.isFinite(Number(nft.priceSol))?`${Number(nft.priceSol).toLocaleString(undefined,{maximumFractionDigits:3})} SOL`:'Not listed';el.innerHTML=`<img src="${socialEsc(nft.image)}" alt="${socialEsc(nft.name||'NFT')}" /><div class="featuredNftMeta"><b>${collection}</b><div><span>Current price</span><strong>${price}</strong></div></div><small>Choose NFT</small>`}else el.innerHTML='<span>＋</span><small>Choose NFT</small>'})}
-async function saveProfileAppearance(patch={}){if(!walletAddress||!saltProfile)throw new Error('Connect your Salt profile first.');const banner=patch.banner!==undefined?patch.banner:(saltProfile.banner||''),favorites=patch.favorites!==undefined?patch.favorites:(saltProfile.favorites||[]),data=JSON.stringify({banner,favorites});const message=`Salt Swap profile appearance\nWallet: ${walletAddress}\nData: ${data}`;const signature=await signSaltMessage(message);const evmChainId=walletKind==='evm'?await currentEvmChainId(walletProvider):'';
+async function saveProfileAppearance(patch={}){if(!walletAddress||!saltProfile)throw new Error('Connect your Salt profile first.');const banner=patch.banner!==undefined?patch.banner:(saltProfile.banner||''),favorites=patch.favorites!==undefined?patch.favorites:(saltProfile.favorites||[]),data=JSON.stringify({banner,favorites});const signingWallet=socialSigningWallet(walletAddress);
+const message=`Salt Swap profile appearance\nWallet: ${signingWallet}\nData: ${data}`;const signature=await signSaltMessage(message);const evmChainId=walletKind==='evm'?await currentEvmChainId(walletProvider):'';
 const saved=await socialApi('/api/social-profile',{method:'POST',body:JSON.stringify({action:'appearance',wallet:walletAddress,banner,favorites,message,signature,evmChainId})});cacheProfile(saved);renderProfile();return saved}
 async function prepareBanner(file){if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw new Error('Choose a JPG, PNG, or WebP banner.');if(file.size>10*1024*1024)throw new Error('Banner must be under 10 MB.');const bitmap=await createImageBitmap(file),w=1500,h=500,canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d'),scale=Math.max(w/bitmap.width,h/bitmap.height),sw=w/scale,sh=h/scale,sx=(bitmap.width-sw)/2,sy=(bitmap.height-sh)/2;ctx.drawImage(bitmap,sx,sy,sw,sh,0,0,w,h);bitmap.close?.();return canvas.toDataURL('image/jpeg',.76)}
 let activeNftSlot=0;
@@ -2045,7 +2050,8 @@ if(editing){
 
 btn.textContent='Verify profile…';
 status.textContent=`Connected ${shortWallet(walletAddress)}. Approve the message signature in your wallet.`;
-const message=`Salt Swap profile\nWallet: ${walletAddress}\nUsername: ${username}\nAvatar: ${avatarHash}\nBio: ${bio}`;
+const signingWallet=socialSigningWallet(walletAddress);
+const message=`Salt Swap profile\nWallet: ${signingWallet}\nUsername: ${username}\nAvatar: ${avatarHash}\nBio: ${bio}`;
 const signature=await signSaltMessage(message);
 btn.textContent='Creating profile…';
 const evmChainId=walletKind==='evm'?await currentEvmChainId(walletProvider):'';
