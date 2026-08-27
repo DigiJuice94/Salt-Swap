@@ -16,7 +16,7 @@
   <link rel="shortcut icon" href="/favicon.ico?v=11090" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=11090" />
   <link rel="manifest" href="/site.webmanifest?v=11090" />
-  <link rel="stylesheet" href="/styles.css?v=11184" />
+  <link rel="stylesheet" href="/styles.css?v=11185" />
   <script defer src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.4/lib/index.iife.min.js"></script>
 
 <style>
@@ -1375,6 +1375,33 @@ function render(data){renderTokenProjectLinks(data.projectLinks);const symbol=da
 
 function readableError(value){if(value==null)return 'Scan failed.';if(typeof value==='string')return value;if(value instanceof Error)return readableError(value.message);if(typeof value==='object'){const preferred=value.message??value.error?.message??value.error?.detail??value.error?.reason??value.error??value.details?.message??value.details??value.reason??value.statusText;if(preferred!=null&&preferred!==value)return readableError(preferred);try{const s=JSON.stringify(value);return s&&s!=='{}'?s:'Scan failed.'}catch{return 'Scan failed.'}}return String(value)}
 function showError(message){const e=$('error');if(!e)return;e.textContent=readableError(message);e.classList.remove('hidden')}function clearError(){const e=$('error');if(e)e.classList.add('hidden')}
+
+function detectTrenchesChainFromAddress(address){
+  const a=String(address||'').trim();
+  if(/^0x[a-fA-F0-9]{40}$/.test(a))return 'evm';
+  if(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(a))return 'solana';
+  return '';
+}
+function scannerSelectedChain(){
+  return String(
+    document.getElementById('chainSelect')?.value||
+    document.getElementById('chain')?.value||
+    'auto'
+  ).toLowerCase();
+}
+function effectiveScannerChain(address){
+  const detected=detectTrenchesChainFromAddress(address);
+  const selected=scannerSelectedChain();
+
+  if(detected==='solana')return 'solana';
+
+  if(detected==='evm'){
+    if(['ethereum','eth','base','bnb','bsc','robinhood'].includes(selected))return selected;
+    return 'ethereum';
+  }
+
+  return selected;
+}
 async function scan(){
   const input=$('mintInput'), chainEl=$('chainSelect'), btn=$('scanBtn');
   const mint=input?.value.trim(), pref=chainEl?.value||'auto';
@@ -3436,7 +3463,7 @@ document.addEventListener('click',async e=>{
 });
 
 
-/* V1.11.84 — guaranteed wallet button bindings */
+/* V1.11.85 — guaranteed wallet button bindings */
 document.addEventListener('click',e=>{
   const btn=e.target.closest('#connectWalletBtn,#swapWalletBtn');
   if(!btn)return;
@@ -3489,7 +3516,7 @@ document.addEventListener('click',e=>{
 
 
 /* ==========================================================
-   V1.11.84 — guaranteed Run a Trench Check binding
+   V1.11.85 — guaranteed Run a Trench Check binding
    ========================================================== */
 (function(){
   function bindRealTrenchCheck(){
@@ -3517,6 +3544,35 @@ document.addEventListener('click',e=>{
   }else{
     bindRealTrenchCheck();
   }
+})();
+
+
+/* V1.11.85 — scanner chain auto-detection */
+(function(){
+  function syncScannerChain(){
+    const input=document.getElementById('mintInput');
+    const select=document.getElementById('chainSelect')||document.getElementById('chain');
+    if(!input||!select)return;
+
+    const detected=detectTrenchesChainFromAddress(input.value);
+    if(detected==='solana'){
+      const option=[...select.options].find(o=>String(o.value).toLowerCase()==='solana');
+      if(option)select.value=option.value;
+      return;
+    }
+
+    if(detected==='evm'){
+      const current=String(select.value||'').toLowerCase();
+      if(current==='solana'||current==='auto'||!current){
+        const option=[...select.options].find(o=>['ethereum','eth'].includes(String(o.value).toLowerCase()));
+        if(option)select.value=option.value;
+      }
+    }
+  }
+
+  const input=document.getElementById('mintInput');
+  input?.addEventListener('input',syncScannerChain);
+  input?.addEventListener('paste',()=>setTimeout(syncScannerChain,0));
 })();
 
 </script>

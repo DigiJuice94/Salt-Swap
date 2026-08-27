@@ -1278,3 +1278,11 @@ This update rebuilds the Portfolio information architecture around the current C
 - Existing scanner API call and rendering logic remain unchanged.
 - Connect Wallet, NFT, profile, holdings, and wallet-signature code are untouched.
 - Frontend/backend syntax validated.
+
+## V1.11.85 — Multi-Chain Scanner Auto-Detection
+- Scanner detects contract family from the pasted address before validation.
+- `0x...` addresses automatically use the EVM scanner path.
+- Solana-style addresses continue to use the Solana scanner path.
+- Pasting an EVM address while Solana is selected no longer throws a Solana mint error.
+- The visible selector automatically switches from Solana to Ethereum for EVM addresses.
+- Explicit Base, BNB, and Robinhood selections remain respected.
