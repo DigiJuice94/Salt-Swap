@@ -105,6 +105,10 @@
       "dest": "/api.mjs?route=social-token-communities"
     },
     {
+      "src": "/api/evm-holdings",
+      "dest": "/api.mjs?route=evm-holdings"
+    },
+    {
       "src": "/api/social-market",
       "dest": "/api.mjs?route=social-market"
     },

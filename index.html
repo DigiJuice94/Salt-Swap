@@ -16,7 +16,7 @@
   <link rel="shortcut icon" href="/favicon.ico?v=11090" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=11090" />
   <link rel="manifest" href="/site.webmanifest?v=11090" />
-  <link rel="stylesheet" href="/styles.css?v=11178" />
+  <link rel="stylesheet" href="/styles.css?v=11179" />
   <script defer src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.4/lib/index.iife.min.js"></script>
 
 <style>
@@ -1967,15 +1967,67 @@ function closeNftPicker(){$('nftPickerModal')?.classList.add('hidden');document.
 function holdingIconMarkup(x){const initial=socialEsc(String(x?.symbol||x?.name||'?').trim().slice(0,1).toUpperCase()||'?'),urls=[x?.image,...(Array.isArray(x?.imageFallbacks)?x.imageFallbacks:[])].filter((v,i,a)=>v&&a.indexOf(v)===i);if(!urls.length)return `<span class="holdingIconFallback">${initial}</span>`;const encoded=socialEsc(JSON.stringify(urls));return `<img src="${socialEsc(urls[0])}" alt="" data-icon-sources='${encoded}' data-icon-index="0" referrerpolicy="no-referrer" onerror="holdingIconError(this)" /><span class="holdingIconFallback hidden">${initial}</span>`}
 function holdingIconError(img){try{const urls=JSON.parse(img.dataset.iconSources||'[]'),next=Number(img.dataset.iconIndex||0)+1;if(next<urls.length){img.dataset.iconIndex=String(next);img.src=urls[next];return}img.style.display='none';img.nextElementSibling?.classList.remove('hidden')}catch{img.style.display='none';img.nextElementSibling?.classList.remove('hidden')}}
 async function loadProfileHoldingsFor(profileWallet){
-  const el=$('saltWalletHoldings');
+  const el=$('saltHoldings');
   if(!el||!profileWallet)return;
-  if(/^0x[a-fA-F0-9]{40}$/.test(String(profileWallet))){el.innerHTML='<div class="saltEmptyMini">EVM holdings display is coming soon.</div>';return}
+
+  const isEvm=/^0x[a-fA-F0-9]{40}$/.test(String(profileWallet||''));
+
+  if(isEvm){
+    el.innerHTML='<div class="holdingsLoading">Loading EVM holdings…</div>';
+    try{
+      const j=await socialApi('/api/evm-holdings?wallet='+encodeURIComponent(profileWallet));
+      const rows=Array.isArray(j?.holdings)?j.holdings:[];
+      const total=Number(j?.totalUsd)||0;
+
+      const heading=document.querySelector('.saltHoldingsTitle');
+      if(heading)heading.innerHTML='Wallet holdings <span>(EVM)</span>';
+
+      if(!rows.length){
+        el.innerHTML='<div class="emptyHoldings">No supported EVM holdings found.</div>';
+        return;
+      }
+
+      el.innerHTML=`
+        <div class="evmHoldingsSummary">
+          <span>Estimated wallet value</span>
+          <b>${total>0?'$'+total.toLocaleString(undefined,{maximumFractionDigits:2}):'—'}</b>
+        </div>
+        <div class="evmHoldingsList">
+          ${rows.slice(0,20).map(h=>`
+            <div class="evmHoldingRow">
+              <div class="evmHoldingToken">
+                <span class="evmHoldingLogo">
+                  ${h.image?`<img src="${socialEsc(h.image)}" alt="" loading="lazy">`:socialEsc(String(h.symbol||'?').slice(0,1).toUpperCase())}
+                </span>
+                <span class="evmHoldingIdentity">
+                  <b>${socialEsc(h.symbol||h.name||'Token')}</b>
+                  <small>${socialEsc(h.name||h.chain||'EVM')}</small>
+                </span>
+              </div>
+              <div class="evmHoldingNumbers">
+                <b>${Number(h.balanceFormatted||0).toLocaleString(undefined,{maximumFractionDigits:5})}</b>
+                <small>${Number(h.usdValue||0)>0?'$'+Number(h.usdValue).toLocaleString(undefined,{maximumFractionDigits:2}):socialEsc(h.chain||'')}</small>
+              </div>
+            </div>
+          `).join('')}
+        </div>`;
+    }catch(e){
+      el.innerHTML=`<div class="emptyHoldings">${socialEsc(readableError(e))}</div>`;
+    }
+    return;
+  }
+
+  const heading=document.querySelector('.saltHoldingsTitle');
+  if(heading)heading.innerHTML='Wallet holdings <span>(Solana)</span>';
+
+  el.innerHTML='<div class="holdingsLoading">Loading holdings…</div>';
   try{
     const j=await socialApi('/api/social-holdings?wallet='+encodeURIComponent(profileWallet));
-    const rows=j.items||[];
-    el.innerHTML=rows.length?rows.slice(0,12).map(x=>`<div class="holdingRow"><div class="holdingIcon">${holdingIconMarkup(x)}</div><div class="holdingName"><b>${socialEsc(x.symbol||x.name||'Token')}</b><small>${socialEsc(x.name||shortWallet(x.mint||''))}</small></div><strong>${socialEsc(x.displayBalance||'0')}</strong></div>`).join(''):'<div class="saltEmptyMini">No fungible tokens found.</div>'
+    const rows=j.holdings||[];
+    if(!rows.length){el.innerHTML='<div class="emptyHoldings">No tracked token holdings found.</div>';return}
+    el.innerHTML=rows.map(h=>`<div class="holdingRow"><div><b>${socialEsc(h.symbol||h.name||'Token')}</b><span>${socialEsc(h.name||'')}</span></div><strong>${Number(h.amount||0).toLocaleString(undefined,{maximumFractionDigits:5})}</strong></div>`).join('')
   }catch(e){
-    el.innerHTML=`<div class="saltEmptyMini">${socialEsc(readableError(e))}</div>`
+    el.innerHTML=`<div class="emptyHoldings">${socialEsc(readableError(e))}</div>`
   }
 }
 async function loadProfileHoldings(){return loadProfileHoldingsFor(walletAddress)}

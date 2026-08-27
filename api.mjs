@@ -1700,6 +1700,103 @@ async function resolveCommunityTokenMetadata(ca,body={}){
   return fallback;
 }
 
+
+const EVM_HOLDING_CHAINS=[
+  {id:'eth',name:'Ethereum',rpc:()=>process.env.ETH_RPC_URL||'https://ethereum-rpc.publicnode.com',native:'ETH'},
+  {id:'base',name:'Base',rpc:()=>process.env.BASE_RPC_URL||'https://base-rpc.publicnode.com',native:'ETH'},
+  {id:'bsc',name:'BNB Chain',rpc:()=>process.env.BNB_RPC_URL||'https://bsc-rpc.publicnode.com',native:'BNB'}
+];
+
+function weiHexToNumber(hex,decimals=18){
+  try{
+    const n=BigInt(hex||'0x0');
+    const whole=Number(n)/10**decimals;
+    return Number.isFinite(whole)?whole:0;
+  }catch{return 0}
+}
+async function evmNativeBalance(wallet,chain){
+  try{
+    const rpc=chain.rpc();
+    const bal=await evmRpcCall(rpc,'eth_getBalance',[wallet,'latest']);
+    return weiHexToNumber(bal,18);
+  }catch{return 0}
+}
+async function dexTokenUsdByAddress(address,chainHint=''){
+  try{
+    const ds=await fetchJson(`https://api.dexscreener.com/latest/dex/tokens/${encodeURIComponent(address)}`,{},7000);
+    const pairs=Array.isArray(ds?.pairs)?ds.pairs:[];
+    const filtered=chainHint?pairs.filter(p=>String(p?.chainId||'').toLowerCase().includes(chainHint)):pairs;
+    const best=(filtered.length?filtered:pairs).sort((a,b)=>Number(b?.liquidity?.usd||0)-Number(a?.liquidity?.usd||0))[0];
+    if(!best)return null;
+    return {
+      price:Number(best.priceUsd)||0,
+      image:best?.info?.imageUrl||'',
+      name:best?.baseToken?.name||'',
+      symbol:best?.baseToken?.symbol||''
+    };
+  }catch{return null}
+}
+async function evmHoldingsHandler(req,res){
+  res.setHeader('Cache-Control','no-store');
+  try{
+    const wallet=String(req.query?.wallet||'').trim();
+    if(!/^0x[a-fA-F0-9]{40}$/.test(wallet))return res.status(400).json({error:'Valid EVM wallet required.'});
+
+    const holdings=[];
+
+    // Native balances across the supported EVM chains.
+    for(const chain of EVM_HOLDING_CHAINS){
+      const amount=await evmNativeBalance(wallet,chain);
+      if(amount>0){
+        holdings.push({
+          chain:chain.name,
+          symbol:chain.native,
+          name:chain.native==='BNB'?'BNB':'Ethereum',
+          balanceFormatted:amount,
+          usdValue:0,
+          image:''
+        });
+      }
+    }
+
+    // Zerion/DeBank-style token list fallback using DeBank OpenAPI public endpoint.
+    try{
+      const rows=await fetchJson(`https://openapi.debank.com/v1/user/all_token_list?id=${encodeURIComponent(wallet)}&is_all=false`,{},10000);
+      if(Array.isArray(rows)){
+        for(const t of rows){
+          const amount=Number(t?.amount)||0;
+          const price=Number(t?.price)||0;
+          const usdValue=amount*price;
+          if(amount<=0||usdValue<0.01)continue;
+          holdings.push({
+            chain:String(t?.chain||'EVM').toUpperCase(),
+            symbol:String(t?.symbol||t?.name||'TOKEN'),
+            name:String(t?.name||t?.symbol||'Token'),
+            balanceFormatted:amount,
+            usdValue,
+            image:String(t?.logo_url||'')
+          });
+        }
+      }
+    }catch(_){}
+
+    // De-duplicate native/token rows by chain + symbol + approximate amount.
+    const seen=new Set(),dedup=[];
+    for(const h of holdings){
+      const key=`${h.chain}:${h.symbol}:${Number(h.balanceFormatted||0).toFixed(8)}`;
+      if(seen.has(key))continue;
+      seen.add(key);dedup.push(h);
+    }
+
+    dedup.sort((a,b)=>Number(b.usdValue||0)-Number(a.usdValue||0));
+    const totalUsd=dedup.reduce((s,h)=>s+Number(h.usdValue||0),0);
+
+    return res.status(200).json({wallet,holdings:dedup.slice(0,50),totalUsd});
+  }catch(e){
+    return res.status(500).json({error:errorText(e)});
+  }
+}
+
 async function socialTokenCommunitiesHandler(req,res){
   res.setHeader('Cache-Control','no-store');
   try{
@@ -1774,7 +1871,7 @@ const pr=await kv('get',`salt:social:profile:${wallet}`);if(!pr)return res.statu
 
 async function healthHandler(req,res){
   res.setHeader('Cache-Control','no-store');
-  return res.status(200).json({ok:true,service:'The Trenches scanner',version:'1.11.78',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY),zerox:Boolean(process.env.ZEROX_API_KEY),social:Boolean(process.env.UPSTASH_REDIS_REST_URL&&process.env.UPSTASH_REDIS_REST_TOKEN)}});
+  return res.status(200).json({ok:true,service:'The Trenches scanner',version:'1.11.79',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY),zerox:Boolean(process.env.ZEROX_API_KEY),social:Boolean(process.env.UPSTASH_REDIS_REST_URL&&process.env.UPSTASH_REDIS_REST_TOKEN)}});
 }
 
 export default async function handler(req,res){
@@ -1804,6 +1901,7 @@ export default async function handler(req,res){
     if(route==='social-profile-feed')return socialProfileFeedHandler(req,res);
     if(route==='social-community-feed')return socialCommunityFeedHandler(req,res);
     if(route==='social-token-communities')return socialTokenCommunitiesHandler(req,res);
+    if(route==='evm-holdings')return evmHoldingsHandler(req,res);
     if(route==='social-market')return socialMarketHandler(req,res);
     if(route==='social-news')return socialNewsHandler(req,res);
     if(route==='social-reviews')return socialReviewsHandler(req,res);

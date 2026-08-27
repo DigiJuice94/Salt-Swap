@@ -5127,3 +5127,43 @@ body.salt-social-active .saltProfileFeed{
   object-fit:contain!important;
   border-radius:8px!important;
 }
+
+/* ==========================================================
+   V1.11.79 — EVM profile holdings
+   ========================================================== */
+.evmHoldingsSummary{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:12px 14px;
+  margin-bottom:10px;
+  border:1px solid #dfd2b7;
+  border-radius:12px;
+  background:#fffaf0;
+}
+.evmHoldingsSummary span{color:#8b9086;font-size:10px;font-weight:800}
+.evmHoldingsSummary b{color:#263d32;font-size:15px}
+.evmHoldingsList{display:flex;flex-direction:column}
+.evmHoldingRow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:11px 2px;
+  border-bottom:1px solid rgba(214,202,174,.7);
+}
+.evmHoldingRow:last-child{border-bottom:0}
+.evmHoldingToken{min-width:0;display:flex;align-items:center;gap:10px}
+.evmHoldingLogo{
+  width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;
+  overflow:hidden;border-radius:50%;background:#ece3cc;border:1px solid #d9caa9;
+  color:#596047;font-size:12px;font-weight:950
+}
+.evmHoldingLogo img{width:100%;height:100%;object-fit:cover}
+.evmHoldingIdentity{min-width:0;display:flex;flex-direction:column}
+.evmHoldingIdentity b{color:#2a4035;font-size:12px}
+.evmHoldingIdentity small{overflow:hidden;color:#91968d;font-size:9px;text-overflow:ellipsis;white-space:nowrap}
+.evmHoldingNumbers{flex:0 0 auto;text-align:right}
+.evmHoldingNumbers b,.evmHoldingNumbers small{display:block}
+.evmHoldingNumbers b{color:#34493e;font-size:11px}
+.evmHoldingNumbers small{margin-top:2px;color:#8c9187;font-size:9px}

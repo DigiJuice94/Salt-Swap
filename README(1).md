@@ -1224,3 +1224,13 @@ This update rebuilds the Portfolio information architecture around the current C
 - Keeps the existing EIP-191 EOA verification, ERC-1271 smart-wallet fallback, Zerion EIP-6963 connection support, and message canonicalization.
 - Does not change Trench Check, Connect Wallet UI, Social UI, scanner, or Vercel routes.
 - Backend will now actually have the signature-recovery library it already calls.
+
+## V1.11.79 — EVM Profile Holdings
+- Adds real EVM holdings to the Social profile wallet-holdings panel.
+- Automatically switches the panel between Solana and EVM based on the profile wallet address.
+- Shows Ethereum, Base, and BNB native balances.
+- Pulls ERC-20 token holdings and USD values through the DeBank public token-list endpoint when available.
+- Shows token image, symbol, name, balance, chain, and estimated USD value.
+- Displays an estimated EVM wallet total.
+- Solana holdings behavior remains intact.
+- Adds `/api/evm-holdings` Vercel route.
