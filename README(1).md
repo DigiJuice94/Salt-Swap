@@ -1217,3 +1217,10 @@ This update rebuilds the Portfolio information architecture around the current C
 - Keeps EOA + ERC-1271 smart-wallet verification from V1.11.76.
 - Trench Check and Connect Wallet are unchanged.
 - Vercel configuration unchanged.
+
+## V1.11.78 — Zerion EVM Verification Dependency Fix
+- Root cause found: the backend EVM verifier imports `ethers`, but previous ZIPs had no package.json, so Vercel had no dependency manifest from which to install ethers.
+- Adds a minimal root package.json with ethers 6.15.0.
+- Keeps the existing EIP-191 EOA verification, ERC-1271 smart-wallet fallback, Zerion EIP-6963 connection support, and message canonicalization.
+- Does not change Trench Check, Connect Wallet UI, Social UI, scanner, or Vercel routes.
+- Backend will now actually have the signature-recovery library it already calls.

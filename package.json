@@ -1,7 +1,9 @@
 {
   "name": "the-trenches",
-  "version": "1.11.13",
+  "version": "1.11.78",
   "private": true,
   "type": "module",
-  "description": "The Trenches production app. Vercel routing is controlled by vercel.json."
+  "dependencies": {
+    "ethers": "6.15.0"
+  }
 }
