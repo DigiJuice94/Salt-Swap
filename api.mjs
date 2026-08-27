@@ -1145,15 +1145,16 @@ function utf8Hex(v){return '0x'+Buffer.from(String(v||''),'utf8').toString('hex'
 async function verifyEvmMessage(wallet,message,signature){
   const wanted=String(wallet||'').toLowerCase(),sig=String(signature||'');
   if(!isEvmSocialWallet(wanted)||!/^0x[a-fA-F0-9]{130}$/.test(sig))return false;
-  const payload={jsonrpc:'2.0',id:1,method:'personal_ecRecover',params:[utf8Hex(message),sig]};
-  const endpoints=['https://ethereum-rpc.publicnode.com','https://eth.llamarpc.com','https://rpc.payload.de'];
-  for(const url of endpoints){
-    try{
-      const r=await fetch(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload),signal:AbortSignal.timeout(6000)}),j=await r.json();
-      if(String(j?.result||'').toLowerCase()===wanted)return true;
-    }catch(_){}
+  try{
+    const mod=await import('ethers');
+    const verifyMessage=mod.verifyMessage||mod.ethers?.verifyMessage||mod.utils?.verifyMessage||mod.ethers?.utils?.verifyMessage;
+    if(typeof verifyMessage!=='function')return false;
+    const recovered=String(verifyMessage(String(message||''),sig)||'').toLowerCase();
+    return recovered===wanted;
+  }catch(e){
+    console.warn('EVM social signature verification failed:',e?.message||e);
+    return false;
   }
-  return false
 }
 async function verifySocialMessage(wallet,message,signature){return socialWalletKind(wallet)==='evm'?verifyEvmMessage(wallet,message,signature):verifySolMessage(wallet,message,signature)}
 function cleanUsername(v){v=String(v||'').trim();return /^[A-Za-z0-9_]{3,24}$/.test(v)?v:''}
@@ -1703,7 +1704,7 @@ const pr=await kv('get',`salt:social:profile:${wallet}`);if(!pr)return res.statu
 
 async function healthHandler(req,res){
   res.setHeader('Cache-Control','no-store');
-  return res.status(200).json({ok:true,service:'The Trenches scanner',version:'1.11.73',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY),zerox:Boolean(process.env.ZEROX_API_KEY),social:Boolean(process.env.UPSTASH_REDIS_REST_URL&&process.env.UPSTASH_REDIS_REST_TOKEN)}});
+  return res.status(200).json({ok:true,service:'The Trenches scanner',version:'1.11.74',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY),zerox:Boolean(process.env.ZEROX_API_KEY),social:Boolean(process.env.UPSTASH_REDIS_REST_URL&&process.env.UPSTASH_REDIS_REST_TOKEN)}});
 }
 
 export default async function handler(req,res){

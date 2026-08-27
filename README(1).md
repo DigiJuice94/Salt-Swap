@@ -1182,3 +1182,11 @@ This update rebuilds the Portfolio information architecture around the current C
 - Profile lookup/edit/follow/feed identity supports both wallet types.
 - Solana-only NFT/Helius holdings features stay Solana-only; EVM profiles no longer get a misleading Solana-wallet profile error.
 - Vercel configuration unchanged.
+
+## V1.11.74 — Zerion Signature Verification Fix
+- Replaces RPC-based `personal_ecRecover` verification with local EIP-191 recovery via ethers.
+- Zerion / EVM signatures are now recovered from the exact message text signed in the wallet.
+- EVM signing tries both common `personal_sign` parameter orders for injected-wallet compatibility.
+- Recovered addresses are compared case-insensitively.
+- Solana signature behavior is unchanged.
+- Vercel routing unchanged.
