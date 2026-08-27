@@ -5114,3 +5114,19 @@ body.salt-social-active .saltProfileFeed{
   .tokenCommunityGrid{grid-template-columns:1fr!important}
   .tokenCommunityOverlayIdentity h3{font-size:20px!important}
 }
+
+/* ==========================================================
+   V1.11.71 — Zerion Wallet
+   ========================================================== */
+.walletProviderIcon[src*="zerion-wallet"],
+.walletOption img[src*="zerion-wallet"],
+[data-wallet="zerion"] img,
+[data-wallet-provider="zerion"] img{
+  width:78px!important;
+  height:auto!important;
+  max-height:28px!important;
+  object-fit:contain!important;
+  object-position:left center!important;
+  border-radius:0!important;
+  background:transparent!important;
+}

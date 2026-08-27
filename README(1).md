@@ -1140,3 +1140,23 @@ This update rebuilds the Portfolio information architecture around the current C
   `/api/social-token-communities` -> `/api.mjs?route=social-token-communities`
 - Existing Redis persistence, one-community-per-CA enforcement, and token metadata enrichment now become reachable in production.
 - Image/name/ticker/price enrichment from V1.11.68 remains intact.
+
+## V1.11.70 — Existing Profile Edit Fix
+- Separates new-profile creation from existing-profile editing.
+- Existing profile edits no longer enter the "Verify profile..." signature flow.
+- Edit Profile now shows "Save changes" and saves through the wallet's existing authenticated Trenches session.
+- If the login session truly expired, the app asks for one login confirmation and then saves.
+- Username uniqueness is still enforced server-side.
+- Avatar verification/hash checks are still enforced.
+- New profile creation still keeps the original wallet-signature verification.
+- Vercel routing unchanged.
+
+## V1.11.71 — Zerion Wallet
+- Adds Zerion to the supported wallet picker.
+- Uses the provided Zerion logo asset.
+- Supports Zerion via EIP-6963 provider discovery.
+- Also supports direct Zerion injected providers (`window.zerionWallet` / `window.ethereum.isZerion`).
+- Connects Zerion through the normal EIP-1193 `eth_requestAccounts` flow.
+- Reuses the existing EVM wallet state after connection.
+- Existing wallets remain unchanged.
+- Vercel configuration unchanged.

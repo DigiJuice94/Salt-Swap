@@ -16,7 +16,7 @@
   <link rel="shortcut icon" href="/favicon.ico?v=11090" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=11090" />
   <link rel="manifest" href="/site.webmanifest?v=11090" />
-  <link rel="stylesheet" href="/styles.css?v=11169" />
+  <link rel="stylesheet" href="/styles.css?v=11171" />
   <script defer src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.4/lib/index.iife.min.js"></script>
 
 <style>
@@ -129,7 +129,12 @@ body.publicProfileOpen{overflow:hidden}
       <button id="walletBtn" class="walletBtn" type="button" aria-haspopup="dialog" aria-expanded="false">Connect Wallet</button>
       <div id="walletAccountMenu" class="walletAccountMenu hidden" role="dialog" aria-label="Wallet account menu">
         <div id="walletAccountCurrent" class="walletAccountCurrent">
-          <span id="walletAccountAvatar" class="walletAccountAvatar">W</span>
+          <span id="walletAccountAvatar" class="walletAccountAvatar">W
+        <button class="walletOption" type="button" data-wallet="zerion">
+          <img src="/zerion-wallet.png" alt="" class="walletProviderIcon">
+          <span>Zerion</span>
+        </button>
+</span>
           <span class="walletAccountText"><b id="walletAccountName">Wallet</b><small id="walletAccountAddress">Not connected</small></span>
           <span id="walletAccountStatus" class="walletAccountStatus">OFFLINE</span>
         </div>
@@ -1372,6 +1377,55 @@ function renderTokenProjectLinks(rows){
 }
 
 function render(data){renderTokenProjectLinks(data.projectLinks);const symbol=data.symbol||'TOKEN';currentMint=data.mint||'';currentChain=data.chain||'';currentSymbol=symbol;currentDecimals=Number(data.decimals??0);const picked=pendingReceiveToken&&pendingReceiveToken.id===data.mint?pendingReceiveToken:null;outputToken=normalizeClientToken({...(picked||{}),id:data.mint,name:data.name||picked?.name||'Unknown token',symbol,decimals:currentDecimals,icon:picked?.icon||data.logoUri||null,iconFallbacks:[picked?.icon,data.logoUri,...(Array.isArray(data.logoUris)?data.logoUris:[])].filter((v,i,a)=>v&&a.indexOf(v)===i),chain:data.chain||picked?.chain||'solana'});pendingReceiveToken=null;currentRiskLabel=data.label||'PRELIMINARY';lastQuote=null;applyHeaderTokenImage([...(picked?.icon?[picked.icon]:[]),...(Array.isArray(picked?.iconFallbacks)?picked.iconFallbacks:[]),...(Array.isArray(data.logoUris)?data.logoUris:[]),data.logoUri].filter(Boolean),symbol); $('tokenName').textContent=data.name||'Unknown token';$('tokenSymbol').textContent='$'+symbol;setTokenButton('receiveSymbol',outputToken);$('tokenCA').textContent=data.mint?`${data.mint.slice(0,12)}…${data.mint.slice(-8)}`:'Unknown contract';$('tokenPrice').textContent=formatTokenPrice(data.priceUsd);const isStockToken=data.assetType==='robinhood_stock_token';const tokenMarketCap=isStockToken&&Number(data.tokenizedMarketValueUsd)>0?Number(data.tokenizedMarketValueUsd):Number(data.marketCapUsd);$('tokenMarketCapLabel').textContent='Market Cap';$('tokenMarketCap').textContent=formatMarketCap(tokenMarketCap);const showCompanyCap=isStockToken&&Number(data.marketCapUsd)>0;$('companyMarketCapSep').classList.toggle('hidden',!showCompanyCap);$('companyMarketCapStat').classList.toggle('hidden',!showCompanyCap);$('companyMarketCapLabel').textContent=data.marketCapLabel||'Company Market Cap';$('companyMarketCap').textContent=showCompanyCap?formatMarketCap(data.marketCapUsd):'—';$('marketIdentity').classList.toggle('partial',!(Number(data.priceUsd)>0&&tokenMarketCap>0));$('verifiedBadge').classList.toggle('hidden',!data.verified);const nb=$('networkBadge');nb.textContent=chainName(data.chain);nb.className=`networkBadge ${data.chain||''}`;if(data.chain==='solana'){if(inputToken.chain!=='solana')inputToken={id:SOL_MINT,name:'Solana',symbol:'SOL',decimals:9,icon:SOL_ICON,chain:'solana'};}else{inputToken=EVM_POPULAR[data.chain][0];walletAddress='';walletProvider=null;walletKind='';$('walletBtn').textContent='Connect Wallet';}$('quoteStatus').textContent=data.chain==='solana'?'Live via Jupiter':'Live via 0x';setTokenButton('paySymbol',inputToken);$('scoreBox').className=`scoreBox ${data.tone||'unknown'}`;$('scoreNum').textContent=data.score??'—';$('scoreLabel').textContent=data.label||'PRELIMINARY';$('swapLabel').textContent=data.label||'PRELIMINARY';$('scoreHint').textContent=data.hardRiskOverride?`Hard risk override: ${(data.hardRiskReasons||[]).join('; ')}.`:data.confidence<45?'The Trenches needs more verified checks before treating this score as conclusive.':data.tone==='good'?'No major warning in the checks The Trenches could verify.':data.tone==='warn'?'There are risks worth reviewing before you trade.':data.tone==='bad'?'Serious warning signs were detected.':'Score based only on checks The Trenches can actually verify.';$('confidenceNum').textContent=`${data.confidence??0}%`;$('confidenceFill').style.width=`${Math.max(0,Math.min(100,data.confidence??0))}%`;$('confidenceChecks').textContent=`${data.checksCompleted??0}/${data.checksTotal??0} core checks completed`;$('summaryText').textContent=data.summary||'The Trenches does not have enough verified data to summarize this token yet.';$('qAuthenticity').textContent=data.authenticity?.value||'Unknown';$('qOwnership').textContent=data.top10?.value||'Unknown';$('qBundles').textContent=data.bundled?.value||'Needs wallet graph';$('qLiquidity').textContent=data.liquidity?.value||'Unknown';$('metrics').innerHTML=Object.keys(labels).filter(k=>data[k]).map(k=>{const v=data[k];const icon=v.status==='good'?'✓':v.status==='bad'?'!':v.status==='warn'?'⚠':'?';return `<div class="metric ${esc(v.status||'unknown')}"><div class="metricTop"><span>${icon}</span><span class="metricLabel">${esc(labels[k])}</span><strong>${esc(v.value)}</strong></div><p>${esc(v.detail)}</p>${explain[k]?`<small><b>Why it matters:</b> ${esc(explain[k])}</small>`:''}${v.source?`<small class="metricSource">Source: ${esc(String(v.source).replace(/^Salt$/,'Trenches Engine').replace(/^Salt \+/,'Trenches Engine +').replace(/^Salt launch bundle analysis$/,'Trenches Bundle Analysis'))}</small>`:''}</div>`}).join('');$('results').classList.remove('hidden');$('receiveAmount').value='';$('payAmount').value='';$('quoteDetails').classList.add('hidden');setSwapError('');updateSwapButton();startQuoteRefresh();enrichAutoSelectedTokenImage(data);startScanChart(data);updateScanThesisComposer();loadReviews();renderProfile();setTimeout(()=>$('results').scrollIntoView({behavior:'smooth',block:'start'}),70)}
+
+let trenchesDiscoveredWalletProviders=window.trenchesDiscoveredWalletProviders||new Map();
+window.trenchesDiscoveredWalletProviders=trenchesDiscoveredWalletProviders;
+
+if(!window.__trenchesEip6963Listener){
+  window.__trenchesEip6963Listener=true;
+  window.addEventListener('eip6963:announceProvider',event=>{
+    const detail=event?.detail;
+    const rdns=String(detail?.info?.rdns||'').toLowerCase();
+    const name=String(detail?.info?.name||'').toLowerCase();
+    if(detail?.provider){
+      if(rdns.includes('zerion')||name.includes('zerion')){
+        trenchesDiscoveredWalletProviders.set('zerion',detail.provider);
+      }
+    }
+  });
+  window.dispatchEvent(new Event('eip6963:requestProvider'));
+}
+
+function getZerionProvider(){
+  return (
+    trenchesDiscoveredWalletProviders.get('zerion') ||
+    window.zerionWallet?.provider ||
+    window.zerionWallet ||
+    (window.ethereum?.isZerion ? window.ethereum : null)
+  );
+}
+
+async function connectZerionWallet(){
+  let provider=getZerionProvider();
+
+  // Give EIP-6963 wallets a moment to announce after the picker opens.
+  if(!provider){
+    window.dispatchEvent(new Event('eip6963:requestProvider'));
+    await new Promise(r=>setTimeout(r,120));
+    provider=getZerionProvider();
+  }
+
+  if(!provider){
+    throw new Error('Zerion Wallet was not detected. Open this site inside Zerion or enable the Zerion browser extension.');
+  }
+
+  const accounts=await provider.request({method:'eth_requestAccounts'});
+  const address=String(accounts?.[0]||'');
+  if(!address)throw new Error('Zerion did not return a wallet address.');
+
+  return {provider,address,kind:'evm',walletName:'Zerion'};
+}
+
 function readableError(value){if(value==null)return 'Scan failed.';if(typeof value==='string')return value;if(value instanceof Error)return readableError(value.message);if(typeof value==='object'){const preferred=value.message??value.error?.message??value.error?.detail??value.error?.reason??value.error??value.details?.message??value.details??value.reason??value.statusText;if(preferred!=null&&preferred!==value)return readableError(preferred);try{const s=JSON.stringify(value);return s&&s!=='{}'?s:'Scan failed.'}catch{return 'Scan failed.'}}return String(value)}
 function showError(message){const e=$('error');if(!e)return;e.textContent=readableError(message);e.classList.remove('hidden')}function clearError(){const e=$('error');if(e)e.classList.add('hidden')}
 async function scan(){
@@ -1945,13 +1999,66 @@ async function loadProfileTheses(){
   const profileWallet=(saltProfile||getRememberedSocialProfile())?.wallet||walletAddress;
   return loadProfileThesesFor(profileWallet,'Your posted token ratings and theses will appear here.')
 }
-function openProfileModal(){const m=$('profileCreateModal');if(!m)return;m.classList.remove('hidden');document.documentElement.classList.add('modalOpen');document.body.classList.add('modalOpen');const input=$('profileUsernameInput');if(input){input.value=saltProfile?.username||'';setTimeout(()=>input.focus(),50)}const bioInput=$('profileBioInput');if(bioInput){bioInput.value=saltProfile?.bio||'';$('profileBioCount')&&($('profileBioCount').textContent=`${bioInput.value.length}/160`)}pendingProfileAvatar=saltProfile?.avatar||'';const prev=$('profilePicturePreview');if(prev){if(pendingProfileAvatar)prev.innerHTML=`<img src="${socialEsc(pendingProfileAvatar)}" alt="" />`;else prev.textContent='🧂'}$('profileCreateStatus').textContent='Update your username, picture, and bio. Your wallet will sign one verification message.';$('profileCreateStatus').className='profileCreateStatus'}
+function openProfileModal(){const m=$('profileCreateModal');if(!m)return;m.classList.remove('hidden');document.documentElement.classList.add('modalOpen');document.body.classList.add('modalOpen');const editing=Boolean(saltProfile?.wallet&&saltProfile.wallet===walletAddress);const title=m.querySelector('h2');if(title)title.textContent=editing?'Edit your Trenches profile':'Create your Trenches profile';const input=$('profileUsernameInput');if(input){input.value=saltProfile?.username||'';setTimeout(()=>input.focus(),50)}const bioInput=$('profileBioInput');if(bioInput){bioInput.value=saltProfile?.bio||'';$('profileBioCount')&&($('profileBioCount').textContent=`${bioInput.value.length}/160`)}pendingProfileAvatar=saltProfile?.avatar||'';const prev=$('profilePicturePreview');if(prev){if(pendingProfileAvatar)prev.innerHTML=`<img src="${socialEsc(pendingProfileAvatar)}" alt="" />`;else prev.textContent='🧂'}const btn=$('profileContinueBtn');if(btn){btn.disabled=false;btn.textContent=editing?'Save changes':'Continue with Solana wallet'}$('profileCreateStatus').textContent=editing?'Update your username, picture, and bio. No extra wallet signature is needed.':'Your wallet will verify ownership when you create the profile.';$('profileCreateStatus').className='profileCreateStatus'}
 function closeProfileModal(){const m=$('profileCreateModal');if(!m)return;m.classList.add('hidden');document.documentElement.classList.remove('modalOpen');document.body.classList.remove('modalOpen')}
 
 function renderSocialOnboardingWalletChoices(){const box=$('socialOnboardingWalletChoices'),st=$('socialOnboardingStatus');if(!box)return;const rows=solWalletChoices();if(!rows.length){box.innerHTML='<div class="socialWalletChoiceMissing"><b>No Solana wallet detected</b><small>Use a Solana-capable wallet such as Trust Wallet, Phantom, or Solflare.</small></div>';box.classList.remove('hidden');if(st)st.textContent='No compatible Solana wallet was detected in this browser.';return}box.innerHTML=`<div class="socialWalletChoiceTitle">Choose the wallet you want to use for this Trenches profile</div>${rows.map(x=>`<button type="button" data-social-wallet-provider="${socialEsc(x.id)}"><span class="socialWalletChoiceDot ${socialEsc(x.id)}"></span><span><b>${socialEsc(x.label)}</b><small>Use this Solana account</small></span><span>›</span></button>`).join('')}`;box.classList.remove('hidden');box.querySelectorAll('[data-social-wallet-provider]').forEach(btn=>btn.addEventListener('click',async()=>{const b=$('socialOnboardingConnectBtn');try{box.classList.add('hidden');if(b){b.disabled=true;b.textContent='Connecting…'}if(st)st.textContent=`Opening ${solWalletChoices().find(x=>x.id===btn.dataset.socialWalletProvider)?.label||'wallet'}…`;await connectSocialSolana(btn.dataset.socialWalletProvider);if(st)st.textContent=`Connected ${shortWallet(walletAddress)}. Checking your Trenches profile…`;const existing=await loadSaltProfile();if(existing){if(st)st.textContent=`Welcome back, @${existing.username} · signed in for 7 days`;renderProfile()}else{if(st)st.textContent='Wallet connected ✓ Now create your profile.';openProfileModal()}}catch(e){if(st)st.textContent=readableError(e);box.classList.remove('hidden')}finally{if(b){b.disabled=false;b.textContent='Connect Solana Wallet'}}}))}
 async function connectSocialSolana(preferred=''){const rows=solWalletChoices(),row=(preferred&&rows.find(x=>x.id===preferred))||preferredSocialSolWalletChoice();if(!row?.provider)throw new Error(rows.length?'Choose which Solana wallet you want to use.':'No Solana wallet detected. Install Trust Wallet, Phantom, or Solflare, then try again.');const p=row.provider,r=await p.connect();const nextWallet=String(r?.publicKey||p.publicKey||'');if(!nextWallet)throw new Error('Wallet connected but no address was returned.');if(walletAddress!==nextWallet)saltProfile=null;walletProvider=p;walletKind='solana';walletAddress=nextWallet;scanSocialProvider=p;scanSocialWallet=walletAddress;rememberSolWalletProvider(row.id);rememberSocialWallet();closeWalletConnectModal();renderProfile();updateHeaderWallet();$('swapWalletBtn')?.classList.add('connected');updateScanThesisComposer();updateSwapButton();const cached=getCachedProfileForWallet(walletAddress);if(cached&&cached.wallet===walletAddress)cacheProfile(cached);const profile=await loadSaltProfile();if(profile)await ensureSocialAuthSession({wallet:walletAddress,provider:p,profile,interactive:true});updateScanThesisComposer();updateSwapButton();return walletAddress}
 async function loadSaltProfile(){if(!walletAddress||walletKind!=='solana')return null;const requestedWallet=walletAddress;try{const p=await socialApi('/api/social-profile?wallet='+encodeURIComponent(requestedWallet));if(walletAddress!==requestedWallet)return null;if(p&&p.wallet===requestedWallet){const merged=await mergeLocalAppearance(p);cacheProfile(merged);updateHeaderWallet();return merged}saltProfile=null;try{localStorage.removeItem(`salt:profile:${requestedWallet}`)}catch{}renderProfile();updateHeaderWallet();updateScanThesisComposer();return null}catch(e){console.warn('Trenches profile lookup:',e);if(walletAddress!==requestedWallet)return null;const cached=getCachedProfileForWallet(requestedWallet);if(cached&&cached.wallet===requestedWallet){cacheProfile(cached);return cached}saltProfile=null;renderProfile();updateHeaderWallet();updateScanThesisComposer();return null}}
-async function createSaltProfile(){const input=$('profileUsernameInput'),status=$('profileCreateStatus'),btn=$('profileContinueBtn');try{let username=String(input?.value||'').trim(),bio=String($('profileBioInput')?.value||'').trim().slice(0,160);if(!/^[A-Za-z0-9_]{3,24}$/.test(username)){input?.focus();throw new Error('Use 3–24 letters, numbers, or underscores for your username.')}btn.disabled=true;if(!walletAddress||walletKind!=='solana'){btn.textContent='Connecting wallet…';status.textContent='Use the Solana wallet you selected for this Trenches profile.';await connectSocialSolana();}btn.textContent='Verify profile…';status.textContent=`Connected ${shortWallet(walletAddress)}. Approve the message signature in your wallet.`;const avatarHash=await avatarDigest(pendingProfileAvatar);const message=`Salt Swap profile\nWallet: ${walletAddress}\nUsername: ${username}\nAvatar: ${avatarHash}\nBio: ${bio}`;const signature=await signSaltMessage(message);btn.textContent='Creating profile…';const p=await socialApi('/api/social-profile',{method:'POST',body:JSON.stringify({wallet:walletAddress,username,avatar:pendingProfileAvatar,avatarHash,bio,message,signature})});cacheProfile(p);rememberSocialWallet();socialAuthSessionWallet=walletAddress;updateHeaderWallet();$('socialOnboarding')?.classList.add('hidden');status.textContent='Profile created & signed in ✓';status.className='profileCreateStatus success';btn.textContent='Profile created ✓';setTimeout(()=>{closeProfileModal();btn.disabled=false;btn.textContent='Continue with Solana wallet'},650);await loadReviews()}catch(e){status.textContent=readableError(e);status.className='profileCreateStatus errorState';if(btn){btn.disabled=false;btn.textContent='Try again'}}}
+async function createSaltProfile(){const input=$('profileUsernameInput'),status=$('profileCreateStatus'),btn=$('profileContinueBtn');try{let username=String(input?.value||'').trim(),bio=String($('profileBioInput')?.value||'').trim().slice(0,160);if(!/^[A-Za-z0-9_]{3,24}$/.test(username)){input?.focus();throw new Error('Use 3–24 letters, numbers, or underscores for your username.')}btn.disabled=true;if(!walletAddress||walletKind!=='solana'){btn.textContent='Connecting wallet…';status.textContent='Use the Solana wallet you selected for this Trenches profile.';await connectSocialSolana();}
+
+const editing=Boolean(saltProfile?.wallet&&saltProfile.wallet===walletAddress);
+const avatarHash=await avatarDigest(pendingProfileAvatar);
+
+if(editing){
+  btn.textContent='Saving changes…';
+  status.textContent='Saving your profile…';
+
+  // Reuse the login session the wallet already verified instead of asking
+  // for a second profile-edit signature.
+  let active=await checkSocialAuthSession();
+  if(active!==walletAddress){
+    btn.textContent='Confirm wallet once…';
+    status.textContent='Your login session expired. Confirm your wallet once to continue.';
+    await ensureSocialAuthSession({wallet:walletAddress,provider:walletProvider,profile:saltProfile,interactive:true});
+  }
+
+  btn.textContent='Saving changes…';
+  const p=await socialApi('/api/social-profile',{
+    method:'POST',
+    body:JSON.stringify({
+      action:'edit',
+      wallet:walletAddress,
+      username,
+      avatar:pendingProfileAvatar,
+      avatarHash,
+      bio
+    })
+  });
+
+  cacheProfile(p);
+  rememberSocialWallet();
+  socialAuthSessionWallet=walletAddress;
+  updateHeaderWallet();
+  status.textContent='Profile updated ✓';
+  status.className='profileCreateStatus success';
+  btn.textContent='Saved ✓';
+  setTimeout(()=>{
+    closeProfileModal();
+    btn.disabled=false;
+    btn.textContent='Save changes';
+  },550);
+  await loadReviews();
+  return;
+}
+
+btn.textContent='Verify profile…';
+status.textContent=`Connected ${shortWallet(walletAddress)}. Approve the message signature in your wallet.`;
+const message=`Salt Swap profile\nWallet: ${walletAddress}\nUsername: ${username}\nAvatar: ${avatarHash}\nBio: ${bio}`;
+const signature=await signSaltMessage(message);
+btn.textContent='Creating profile…';
+const p=await socialApi('/api/social-profile',{method:'POST',body:JSON.stringify({wallet:walletAddress,username,avatar:pendingProfileAvatar,avatarHash,bio,message,signature})});
+cacheProfile(p);rememberSocialWallet();socialAuthSessionWallet=walletAddress;updateHeaderWallet();$('socialOnboarding')?.classList.add('hidden');status.textContent='Profile created & signed in ✓';status.className='profileCreateStatus success';btn.textContent='Profile created ✓';setTimeout(()=>{closeProfileModal();btn.disabled=false;btn.textContent='Continue with Solana wallet'},650);await loadReviews()}catch(e){status.textContent=readableError(e);status.className='profileCreateStatus errorState';if(btn){btn.disabled=false;btn.textContent=saltProfile?.wallet===walletAddress?'Save changes':'Try again'}}}
 
 let scanSocialProvider=null,scanSocialWallet='';
 function updateScanThesisComposer(){const card=$('scanThesisCard'),identity=$('scanThesisIdentity'),status=$('scanThesisStatus'),btn=$('scanThesisSubmit'),p=getRememberedSocialProfile();if(!card)return;const drawIdentity=(profile,headline,subline)=>{if(!identity)return;const avatar=profile?.avatar?`<img src="${socialEsc(profile.avatar)}" alt="" />`:`<span>${socialEsc(String(profile?.username||'?')[0].toUpperCase())}</span>`;identity.innerHTML=`<span class="scanThesisIdentityAvatar">${avatar}</span><span class="scanThesisIdentityText"><b>${socialEsc(headline)}</b><small>${socialEsc(subline)}</small></span>`};card.classList.toggle('disabled',!currentMint);if(!currentMint){drawIdentity(p,'Scan a token first',p?.wallet?`@${p.username||'saltuser'}`:'Trenches Social');status.textContent='Scan a token to write a thesis.';btn.textContent='Scan a token first';btn.disabled=true;return}btn.disabled=false;if(p?.wallet){drawIdentity(p,`@${p.username||'saltuser'}`,shortWallet(p.wallet));status.textContent='Posted from your verified Trenches session — no wallet popup needed.';btn.textContent='Post Thesis'}else{drawIdentity(null,'Social wallet required','Connect your Trenches profile');status.textContent='Connect the Solana wallet tied to your Trenches profile to post.';btn.textContent='Connect profile & post thesis'}}
@@ -3191,6 +3298,45 @@ async function toggleViewedProfileFollow(){
     btn.dataset.busy='0';
   }
 }
+
+
+document.addEventListener('click',async e=>{
+  const btn=e.target.closest('[data-wallet-provider="zerion"],[data-wallet="zerion"]');
+  if(!btn)return;
+  e.preventDefault();
+  e.stopPropagation();
+
+  try{
+    btn.disabled=true;
+    const original=btn.innerHTML;
+    btn.dataset.originalHtml=original;
+    const connected=await connectZerionWallet();
+
+    // Reuse the app's shared EVM wallet state.
+    walletProvider=connected.provider;
+    walletAddress=connected.address;
+    walletKind='evm';
+
+    try{localStorage.setItem('trenches_wallet_name','Zerion')}catch(_){}
+    updateHeaderWallet?.();
+
+    // Close any wallet picker/modal using existing helpers when available.
+    if(typeof closeWalletModal==='function')closeWalletModal();
+    if(typeof closeWalletPicker==='function')closeWalletPicker();
+
+    // If a shared post-connect hook exists, run it.
+    if(typeof onWalletConnected==='function')await onWalletConnected();
+    if(typeof loadPortfolio==='function' && document.body.classList.contains('portfolio-active'))loadPortfolio();
+  }catch(err){
+    const msg=typeof readableError==='function'?readableError(err):String(err?.message||err);
+    console.warn('Zerion connect:',err);
+    if(typeof showToast==='function')showToast(msg,'error');
+    else alert(msg);
+  }finally{
+    if(btn.dataset.originalHtml)btn.innerHTML=btn.dataset.originalHtml;
+    btn.disabled=false;
+  }
+});
 
 </script>
 
