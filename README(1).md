@@ -1160,3 +1160,14 @@ This update rebuilds the Portfolio information architecture around the current C
 - Reuses the existing EVM wallet state after connection.
 - Existing wallets remain unchanged.
 - Vercel configuration unchanged.
+
+## V1.11.72 — Zerion in Existing Connect Wallet
+- Removes the accidental standalone Zerion button from the header/account area.
+- Adds Zerion to the existing Connect Wallet picker alongside the other wallets.
+- Uses the supplied Zerion logo in the picker.
+- Adds EIP-6963 discovery so Zerion can be identified even when multiple EVM extensions are installed.
+- Re-requests EIP-6963 providers every time the wallet chooser opens.
+- Supports direct Zerion injections and `window.ethereum.providers` fallback.
+- Zerion connects through the same proven `switchToEvmWallet` / `eth_requestAccounts` flow as MetaMask, Coinbase, and Binance.
+- Quick Swap recognizes Zerion as the connected EVM wallet.
+- Vercel configuration unchanged.

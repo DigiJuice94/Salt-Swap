@@ -5115,18 +5115,15 @@ body.salt-social-active .saltProfileFeed{
   .tokenCommunityOverlayIdentity h3{font-size:20px!important}
 }
 
+
 /* ==========================================================
-   V1.11.71 — Zerion Wallet
+   V1.11.72 — Zerion inside existing Connect Wallet picker
    ========================================================== */
-.walletProviderIcon[src*="zerion-wallet"],
-.walletOption img[src*="zerion-wallet"],
-[data-wallet="zerion"] img,
-[data-wallet-provider="zerion"] img{
-  width:78px!important;
-  height:auto!important;
-  max-height:28px!important;
+.walletConnectRow[data-connect-wallet="zerion"] .walletConnectLogo img{
+  width:100%!important;
+  height:100%!important;
+  max-width:42px!important;
+  max-height:42px!important;
   object-fit:contain!important;
-  object-position:left center!important;
-  border-radius:0!important;
-  background:transparent!important;
+  border-radius:8px!important;
 }
