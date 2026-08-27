@@ -16,7 +16,7 @@
   <link rel="shortcut icon" href="/favicon.ico?v=11090" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=11090" />
   <link rel="manifest" href="/site.webmanifest?v=11090" />
-  <link rel="stylesheet" href="/styles.css?v=11182" />
+  <link rel="stylesheet" href="/styles.css?v=11184" />
   <script defer src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.4/lib/index.iife.min.js"></script>
 
 <style>
@@ -382,7 +382,7 @@ body.publicProfileOpen{overflow:hidden}
         <div id="createCommunityModal" class="communityModal hidden" aria-hidden="true">
           <div class="communityModalBackdrop" data-close-community-modal="1"></div>
           <div class="communityModalCard" role="dialog" aria-modal="true" aria-labelledby="createCommunityTitle">
-            <button class="communityModalClose" type="button" data-close-community-modal="1" aria-label="Close">×</button>
+            <button id="nftPickerClose" class="communityModalClose" type="button" data-close-community-modal="1" aria-label="Close">×</button>
             <small>CREATE A COMMUNITY</small>
             <h3 id="createCommunityTitle">Paste a contract address</h3>
             <p>Each token can only have one community. We’ll use the contract address to identify it.</p>
@@ -395,7 +395,7 @@ body.publicProfileOpen{overflow:hidden}
       </section>
 
       <div id="nftPickerModal" class="profileModal hidden" role="dialog" aria-modal="true">
-        <div class="profileModalBackdrop" data-close-nft-modal></div><div class="profileModalCard nftPickerCard"><button id="closeNftModal" class="profileModalClose" type="button">×</button><small>SALT PROFILE</small><h2>Choose a favorite NFT</h2><p>Salt only shows NFTs detected in your connected Solana wallet.</p><div id="nftPickerGrid" class="nftPickerGrid"><div class="emptyReviews">Loading your NFTs…</div></div></div>
+        <div class="profileModalBackdrop" data-close-nft-modal></div><div class="profileModalCard nftPickerCard"><button id="closeNftModal" class="profileModalClose" type="button">×</button><small>SALT PROFILE</small><h2>Choose a favorite NFT</h2><p>The Trenches shows NFTs detected in your connected wallet across supported chains.</p><div id="nftPickerGrid" class="nftPickerGrid"><div class="emptyReviews">Loading your NFTs…</div></div></div>
       </div>
 
       <div class="socialSectionTitle"><div><small>YOUR TOKEN REVIEW</small><h2 id="socialTokenTitle">Scan a token to join its conversation</h2></div><div class="communityScore"><strong id="communityScore">—</strong><span>/10</span><small id="communityCount">No ratings yet</small></div></div>
@@ -1396,7 +1396,7 @@ async function scan(){
     if(e?.name==='AbortError')showError('The Salt scanner timed out. Try again.');
     else if(String(e?.message||'').includes('Failed to fetch'))showError('The Trenches could not reach its scanner backend. Make sure the API route is deployed, then try again.');
     else showError(e);
-  }finally{btn.disabled=false;btn.textContent='Scan Token';}
+  }finally{btn.disabled=false;btn.textContent='Run a Trench Check';}
 }
 const SOL_MINT='So11111111111111111111111111111111111111112';
 const SOL_ICON='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%221%22%20x2%3D%221%22%20y2%3D%220%22%3E%3Cstop%20stop-color%3D%22%239945ff%22%2F%3E%3Cstop%20offset%3D%22.5%22%20stop-color%3D%22%2314f195%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2300d1ff%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20rx%3D%2250%22%20fill%3D%22%23090a12%22%2F%3E%3Cpath%20fill%3D%22url%28%23g%29%22%20d%3D%22M27%2024h49l-10%2012H17zM34%2044h49L73%2056H24zM27%2064h49L66%2076H17z%22%2F%3E%3C%2Fsvg%3E';
@@ -1963,6 +1963,14 @@ const saved=await socialApi('/api/social-profile',{method:'POST',body:JSON.strin
 async function prepareBanner(file){if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw new Error('Choose a JPG, PNG, or WebP banner.');if(file.size>10*1024*1024)throw new Error('Banner must be under 10 MB.');const bitmap=await createImageBitmap(file),w=1500,h=500,canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d'),scale=Math.max(w/bitmap.width,h/bitmap.height),sw=w/scale,sh=h/scale,sx=(bitmap.width-sw)/2,sy=(bitmap.height-sh)/2;ctx.drawImage(bitmap,sx,sy,sw,sh,0,0,w,h);bitmap.close?.();return canvas.toDataURL('image/jpeg',.76)}
 let activeNftSlot=0;
 async function __loadSolanaProfileNfts(slot=0){if(!walletAddress||walletKind!=='solana')throw new Error('Featured NFT picking currently requires a Solana wallet.');activeNftSlot=slot;const modal=$('nftPickerModal'),grid=$('nftPickerGrid');modal?.classList.remove('hidden');document.body.classList.add('modalOpen');grid.innerHTML='<div class="emptyReviews">Loading your wallet NFTs…</div>';const j=await socialApi('/api/social-nfts?wallet='+encodeURIComponent(walletAddress));grid.innerHTML=j.items?.length?j.items.map((n,i)=>`<button class="nftPickItem" type="button" data-nft-i="${i}"><img src="${socialEsc(n.image)}" alt="" /><b>${socialEsc(n.name||'NFT')}</b><small>✓ Wallet owned</small></button>`).join(''):'<div class="emptyReviews">No supported NFTs found in this wallet.</div>';grid.querySelectorAll('[data-nft-i]').forEach(btn=>btn.addEventListener('click',async()=>{let nft=j.items[Number(btn.dataset.nftI)],favorites=[...(saltProfile?.favorites||[])];try{const d=await socialApi('/api/social-nft-detail?mint='+encodeURIComponent(nft.id));nft={...nft,collection:d.collection||nft.collection||nft.name||'NFT Collection',priceSol:Number.isFinite(Number(d.priceSol))?Number(d.priceSol):null}}catch{}favorites[activeNftSlot]=nft;await saveProfileAppearance({favorites});closeNftPicker()}))}
+function closeNftPicker(){
+  const modal=$('nftPickerModal');
+  if(!modal)return;
+  modal.classList.add('hidden');
+  modal.setAttribute('aria-hidden','true');
+  document.documentElement.classList.remove('modalOpen');
+  document.body.classList.remove('modalOpen');
+}
 async function openNftPicker(){
   const profileWallet=(saltProfile||getRememberedSocialProfile())?.wallet||walletAddress;
   if(!profileWallet){alert('Connect a wallet first.');return}
@@ -3428,7 +3436,7 @@ document.addEventListener('click',async e=>{
 });
 
 
-/* V1.11.82 — guaranteed wallet button bindings */
+/* V1.11.84 — guaranteed wallet button bindings */
 document.addEventListener('click',e=>{
   const btn=e.target.closest('#connectWalletBtn,#swapWalletBtn');
   if(!btn)return;
@@ -3436,6 +3444,80 @@ document.addEventListener('click',e=>{
   e.stopPropagation();
   if(typeof openWalletConnectModal==='function')openWalletConnectModal('general');
 });
+
+
+(function(){
+  function bindV11183(){
+    const swap=document.getElementById('swapWalletBtn');
+    if(swap&&!swap.dataset.v11183){
+      swap.dataset.v11183='1';
+      swap.onclick=function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        if(typeof openWalletConnectModal==='function')openWalletConnectModal('general');
+      };
+    }
+    const head=document.getElementById('connectWalletBtn');
+    if(head&&!head.dataset.v11183){
+      head.dataset.v11183='1';
+      head.onclick=function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        if(typeof openWalletConnectModal==='function')openWalletConnectModal('general');
+      };
+    }
+    const close=document.getElementById('nftPickerClose');
+    if(close&&!close.dataset.v11183){
+      close.dataset.v11183='1';
+      close.onclick=function(e){e.preventDefault();e.stopPropagation();closeNftPicker();};
+    }
+    const modal=document.getElementById('nftPickerModal');
+    if(modal&&!modal.dataset.v11183){
+      modal.dataset.v11183='1';
+      modal.addEventListener('click',function(e){
+        if(e.target===modal||e.target.matches('.nftPickerBackdrop,[data-close-nft-picker],.modalBackdrop'))closeNftPicker();
+      });
+    }
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bindV11183);
+  else bindV11183();
+  document.addEventListener('keydown',function(e){
+    const modal=document.getElementById('nftPickerModal');
+    if(e.key==='Escape'&&modal&&!modal.classList.contains('hidden'))closeNftPicker();
+  });
+})();
+
+
+/* ==========================================================
+   V1.11.84 — guaranteed Run a Trench Check binding
+   ========================================================== */
+(function(){
+  function bindRealTrenchCheck(){
+    const btn=document.getElementById('scanBtn');
+    if(!btn||btn.dataset.v11184ScanBound)return;
+
+    btn.dataset.v11184ScanBound='1';
+    btn.type='button';
+
+    btn.addEventListener('click',async function(e){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+
+      try{
+        await scan();
+      }catch(err){
+        console.error('Run a Trench Check failed:',err);
+        if(typeof showError==='function')showError(err);
+      }
+    },true);
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',bindRealTrenchCheck,{once:true});
+  }else{
+    bindRealTrenchCheck();
+  }
+})();
 
 </script>
 

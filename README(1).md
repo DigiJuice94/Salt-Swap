@@ -1262,3 +1262,19 @@ This update rebuilds the Portfolio information architecture around the current C
 - Rebuilds Featured NFT picker to use the actual `nftPickerModal` / `nftPickerGrid`.
 - EVM profiles request `/api/evm-nfts`; Solana profiles request `/api/social-nfts`.
 - NFT selection is wired to save into the existing profile Featured NFT slots.
+
+## V1.11.83 — NFT Modal Close + Swap Wallet Fix
+- Directly wires `#swapWalletBtn` to the existing wallet chooser.
+- Directly wires the header Connect Wallet button as a backup.
+- Fixes NFT modal close button `#nftPickerClose`.
+- NFT modal also closes with backdrop click and Escape.
+- Removes stale Solana-only NFT picker wording.
+
+## V1.11.84 — Run a Trench Check Fix
+- Traced the actual scanner action to the existing `scan()` function.
+- Directly binds the real `#scanBtn` to `scan()` using a late capture-phase listener.
+- Prevents stale/broken click handlers from swallowing the scan button action.
+- Restores the button label to `Run a Trench Check` after every scan attempt.
+- Existing scanner API call and rendering logic remain unchanged.
+- Connect Wallet, NFT, profile, holdings, and wallet-signature code are untouched.
+- Frontend/backend syntax validated.
