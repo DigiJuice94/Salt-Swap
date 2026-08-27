@@ -1190,3 +1190,11 @@ This update rebuilds the Portfolio information architecture around the current C
 - Recovered addresses are compared case-insensitively.
 - Solana signature behavior is unchanged.
 - Vercel routing unchanged.
+
+## V1.11.75 — Global Frontend Regression Fix
+- Restores the stable Social/wallet signing function from the last working all-wallet build.
+- Keeps EVM signature compatibility without replacing unrelated global JavaScript.
+- Verifies the main frontend script parses successfully.
+- Confirms Connect Wallet and Trench Check UI hooks remain present.
+- Keeps V1.11.74 backend EVM verification improvements.
+- Vercel configuration unchanged.

@@ -16,7 +16,7 @@
   <link rel="shortcut icon" href="/favicon.ico?v=11090" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=11090" />
   <link rel="manifest" href="/site.webmanifest?v=11090" />
-  <link rel="stylesheet" href="/styles.css?v=11174" />
+  <link rel="stylesheet" href="/styles.css?v=11175" />
   <script defer src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.4/lib/index.iife.min.js"></script>
 
 <style>
@@ -1941,34 +1941,31 @@ async function prepareProfilePicture(file){if(!file)return '';if(!['image/jpeg',
 async function avatarDigest(data){if(!data)return 'none';const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(data));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
 function b58decode(s){const A='123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz',map=Object.fromEntries([...A].map((c,i)=>[c,i]));let bytes=[0];for(const c of String(s)){const v=map[c];if(v==null)throw new Error('Invalid Solana wallet address.');let carry=v;for(let j=0;j<bytes.length;j++){carry+=bytes[j]*58;bytes[j]=carry&255;carry>>=8}while(carry){bytes.push(carry&255);carry>>=8}}for(let i=0;i<s.length-1&&s[i]==='1';i++)bytes.push(0);return new Uint8Array(bytes.reverse())}
 function utf8ToHex(message){return '0x'+[...new TextEncoder().encode(String(message||''))].map(b=>b.toString(16).padStart(2,'0')).join('')}
-async function signSaltMessage(message){
-  if(!walletAddress)throw new Error('Connect your wallet first.');
-  if(walletKind==='solana'){
-    const provider=walletProvider||window.solana;
-    if(!provider?.signMessage)throw new Error('This Solana wallet cannot sign messages.');
-    const encoded=new TextEncoder().encode(message);
-    const signed=await provider.signMessage(encoded,'utf8');
-    const sig=signed?.signature||signed;
-    if(!sig)throw new Error('Wallet did not return a signature.');
-    return typeof sig==='string'?sig:bs58Encode(sig);
+async function signSaltMessage(message){if(!walletAddress||!walletProvider)throw new Error('Connect the wallet you want to use for this Trenches profile.');if(walletKind==='solana'){if(!walletProvider?.signMessage)throw new Error('This Solana wallet does not support message signing.');const msg=new TextEncoder().encode(message),signed=await walletProvider.signMessage(msg,'utf8'),sig=signed?.signature||signed;return bytesToBase64(sig)}if(walletKind==='evm'){if(typeof walletProvider?.request!=='function')throw new Error('This EVM wallet does not support message signing.');const hex=utf8ToHex(message),addr=String(walletAddress).toLowerCase();try{return await walletProvider.request({method:'personal_sign',params:[hex,addr]})}catch(first){try{return await walletProvider.request({method:'personal_sign',params:[addr,hex]})}catch{throw first}}}throw new Error('Connect a supported wallet first.')}
+async function socialApi(path,opts={}){const r=await fetch(path,{credentials:'same-origin',headers:{'content-type':'application/json',accept:'application/json',...(opts.headers||{})},...opts}),j=await r.json();if(!r.ok)throw new Error(readableError(j?.error??j));return j}
+let socialAuthSessionWallet='';
+async function checkSocialAuthSession(){try{const j=await socialApi('/api/social-auth');socialAuthSessionWallet=j?.authenticated?String(j.wallet||''):'';return socialAuthSessionWallet}catch{socialAuthSessionWallet='';return''}}
+async function clearSocialAuthSession(){socialAuthSessionWallet='';try{await socialApi('/api/social-auth',{method:'DELETE'})}catch{}}
+async function ensureSocialAuthSession(options={}){const suppliedWallet=String(options.wallet||walletAddress||''),suppliedProvider=options.provider||walletProvider||null;let signer;if(suppliedWallet&&suppliedProvider){signer={wallet:suppliedWallet,provider:suppliedProvider,profile:options.profile||getCachedProfileForWallet(suppliedWallet)||saltProfile}}else signer=await ensureScanSocialSigner();const active=await checkSocialAuthSession();if(active&&active.toLowerCase()===String(signer.wallet).toLowerCase())return signer;if(options.interactive===false)return null;const challenge=await socialApi('/api/social-auth?action=challenge&wallet='+encodeURIComponent(signer.wallet));let signature;if(/^0x[a-fA-F0-9]{40}$/.test(signer.wallet)){const hex=utf8ToHex(challenge.message),addr=String(signer.wallet).toLowerCase();try{signature=await signer.provider.request({method:'personal_sign',params:[hex,addr]})}catch(first){try{signature=await signer.provider.request({method:'personal_sign',params:[addr,hex]})}catch{throw first}}}else{if(!signer.provider?.signMessage)throw new Error('This wallet cannot sign the Trenches login message.');const signed=await signer.provider.signMessage(new TextEncoder().encode(challenge.message),'utf8');signature=bytesToBase64(signed?.signature||signed)}await socialApi('/api/social-auth',{method:'POST',body:JSON.stringify({wallet:signer.wallet,nonce:challenge.nonce,message:challenge.message,signature})});socialAuthSessionWallet=signer.wallet;return signer}
+function renderFavoriteNfts(favorites=[]){const slots=[...document.querySelectorAll('.favoriteNftSlot')];slots.forEach((el,i)=>{const nft=favorites[i];if(nft&&nft.image){const collection=socialEsc(nft.collection||nft.name||'NFT Collection'),price=Number.isFinite(Number(nft.priceSol))?`${Number(nft.priceSol).toLocaleString(undefined,{maximumFractionDigits:3})} SOL`:'Not listed';el.innerHTML=`<img src="${socialEsc(nft.image)}" alt="${socialEsc(nft.name||'NFT')}" /><div class="featuredNftMeta"><b>${collection}</b><div><span>Current price</span><strong>${price}</strong></div></div><small>Choose NFT</small>`}else el.innerHTML='<span>＋</span><small>Choose NFT</small>'})}
+async function saveProfileAppearance(patch={}){if(!walletAddress||!saltProfile)throw new Error('Connect your Salt profile first.');const banner=patch.banner!==undefined?patch.banner:(saltProfile.banner||''),favorites=patch.favorites!==undefined?patch.favorites:(saltProfile.favorites||[]),data=JSON.stringify({banner,favorites});const message=`Salt Swap profile appearance\nWallet: ${walletAddress}\nData: ${data}`;const signature=await signSaltMessage(message);const saved=await socialApi('/api/social-profile',{method:'POST',body:JSON.stringify({action:'appearance',wallet:walletAddress,banner,favorites,message,signature})});cacheProfile(saved);renderProfile();return saved}
+async function prepareBanner(file){if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw new Error('Choose a JPG, PNG, or WebP banner.');if(file.size>10*1024*1024)throw new Error('Banner must be under 10 MB.');const bitmap=await createImageBitmap(file),w=1500,h=500,canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d'),scale=Math.max(w/bitmap.width,h/bitmap.height),sw=w/scale,sh=h/scale,sx=(bitmap.width-sw)/2,sy=(bitmap.height-sh)/2;ctx.drawImage(bitmap,sx,sy,sw,sh,0,0,w,h);bitmap.close?.();return canvas.toDataURL('image/jpeg',.76)}
+let activeNftSlot=0;
+async function openNftPicker(slot=0){if(!walletAddress||walletKind!=='solana')throw new Error('Featured NFT picking currently requires a Solana wallet.');activeNftSlot=slot;const modal=$('nftPickerModal'),grid=$('nftPickerGrid');modal?.classList.remove('hidden');document.body.classList.add('modalOpen');grid.innerHTML='<div class="emptyReviews">Loading your wallet NFTs…</div>';const j=await socialApi('/api/social-nfts?wallet='+encodeURIComponent(walletAddress));grid.innerHTML=j.items?.length?j.items.map((n,i)=>`<button class="nftPickItem" type="button" data-nft-i="${i}"><img src="${socialEsc(n.image)}" alt="" /><b>${socialEsc(n.name||'NFT')}</b><small>✓ Wallet owned</small></button>`).join(''):'<div class="emptyReviews">No supported NFTs found in this wallet.</div>';grid.querySelectorAll('[data-nft-i]').forEach(btn=>btn.addEventListener('click',async()=>{let nft=j.items[Number(btn.dataset.nftI)],favorites=[...(saltProfile?.favorites||[])];try{const d=await socialApi('/api/social-nft-detail?mint='+encodeURIComponent(nft.id));nft={...nft,collection:d.collection||nft.collection||nft.name||'NFT Collection',priceSol:Number.isFinite(Number(d.priceSol))?Number(d.priceSol):null}}catch{}favorites[activeNftSlot]=nft;await saveProfileAppearance({favorites});closeNftPicker()}))}
+function closeNftPicker(){$('nftPickerModal')?.classList.add('hidden');document.body.classList.remove('modalOpen')}
+function holdingIconMarkup(x){const initial=socialEsc(String(x?.symbol||x?.name||'?').trim().slice(0,1).toUpperCase()||'?'),urls=[x?.image,...(Array.isArray(x?.imageFallbacks)?x.imageFallbacks:[])].filter((v,i,a)=>v&&a.indexOf(v)===i);if(!urls.length)return `<span class="holdingIconFallback">${initial}</span>`;const encoded=socialEsc(JSON.stringify(urls));return `<img src="${socialEsc(urls[0])}" alt="" data-icon-sources='${encoded}' data-icon-index="0" referrerpolicy="no-referrer" onerror="holdingIconError(this)" /><span class="holdingIconFallback hidden">${initial}</span>`}
+function holdingIconError(img){try{const urls=JSON.parse(img.dataset.iconSources||'[]'),next=Number(img.dataset.iconIndex||0)+1;if(next<urls.length){img.dataset.iconIndex=String(next);img.src=urls[next];return}img.style.display='none';img.nextElementSibling?.classList.remove('hidden')}catch{img.style.display='none';img.nextElementSibling?.classList.remove('hidden')}}
+async function loadProfileHoldingsFor(profileWallet){
+  const el=$('saltWalletHoldings');
+  if(!el||!profileWallet)return;
+  if(/^0x[a-fA-F0-9]{40}$/.test(String(profileWallet))){el.innerHTML='<div class="saltEmptyMini">EVM holdings display is coming soon.</div>';return}
+  try{
+    const j=await socialApi('/api/social-holdings?wallet='+encodeURIComponent(profileWallet));
+    const rows=j.items||[];
+    el.innerHTML=rows.length?rows.slice(0,12).map(x=>`<div class="holdingRow"><div class="holdingIcon">${holdingIconMarkup(x)}</div><div class="holdingName"><b>${socialEsc(x.symbol||x.name||'Token')}</b><small>${socialEsc(x.name||shortWallet(x.mint||''))}</small></div><strong>${socialEsc(x.displayBalance||'0')}</strong></div>`).join(''):'<div class="saltEmptyMini">No fungible tokens found.</div>'
+  }catch(e){
+    el.innerHTML=`<div class="saltEmptyMini">${socialEsc(readableError(e))}</div>`
   }
-
-  const provider=walletProvider||window.ethereum;
-  if(!provider?.request)throw new Error('This EVM wallet cannot sign messages.');
-
-  const hex='0x'+Array.from(new TextEncoder().encode(message),b=>b.toString(16).padStart(2,'0')).join('');
-  let lastError=null;
-
-  for(const params of [[hex,walletAddress],[walletAddress,hex]]){
-    try{
-      const sig=await provider.request({method:'personal_sign',params});
-      if(sig)return sig;
-    }catch(e){
-      lastError=e;
-      if(Number(e?.code)===4001||Number(e?.code)===-32002)throw e;
-    }
-  }
-  throw lastError||new Error('Wallet did not return a signature.');
 }
 async function loadProfileHoldings(){return loadProfileHoldingsFor(walletAddress)}
 async function loadProfileThesesFor(profileWallet,emptyText='No posted token ratings or theses yet.'){
