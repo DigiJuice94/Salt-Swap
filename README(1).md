@@ -1171,3 +1171,14 @@ This update rebuilds the Portfolio information architecture around the current C
 - Zerion connects through the same proven `switchToEvmWallet` / `eth_requestAccounts` flow as MetaMask, Coinbase, and Binance.
 - Quick Swap recognizes Zerion as the connected EVM wallet.
 - Vercel configuration unchanged.
+
+## V1.11.73 — All Wallet Social Profiles
+- Trenches Social profiles can now be created with any supported Solana or EVM wallet.
+- Social Connect Wallet picker now enables MetaMask, Coinbase Wallet, Binance Wallet, Zerion, Trust Wallet EVM, Phantom/Solflare, and detected browser wallets.
+- EVM profiles use personal_sign for profile ownership and 7-day Social login verification.
+- Backend accepts both Solana base58 addresses and EVM 0x addresses for Social identity/profile/session records.
+- EVM signatures are verified server-side using personal_ecRecover against public Ethereum RPC endpoints.
+- Solana signature verification remains unchanged.
+- Profile lookup/edit/follow/feed identity supports both wallet types.
+- Solana-only NFT/Helius holdings features stay Solana-only; EVM profiles no longer get a misleading Solana-wallet profile error.
+- Vercel configuration unchanged.
