@@ -382,18 +382,19 @@ async function scanSolana(mint){
   };
 }
 
+function hasDeployedEvmCode(code){return typeof code==='string'&&!/^0x0*$/i.test(code)}
 async function detectEvm(address,pref){
-  if(['ethereum','base','bnb','robinhood'].includes(pref))return pref;
-  const [eth,base,bnb,robinhood]=await Promise.allSettled([
-    evmRpcTry('ethereum','eth_getCode',[address,'latest']),
-    evmRpcTry('base','eth_getCode',[address,'latest']),
-    evmRpcTry('bnb','eth_getCode',[address,'latest']),
-    evmRpcTry('robinhood','eth_getCode',[address,'latest'])
-  ]);
-  if(eth.status==='fulfilled'&&eth.value&&eth.value!=='0x')return 'ethereum';
-  if(base.status==='fulfilled'&&base.value&&base.value!=='0x')return 'base';
-  if(bnb.status==='fulfilled'&&bnb.value&&bnb.value!=='0x')return 'bnb';
-  if(robinhood.status==='fulfilled'&&robinhood.value&&robinhood.value!=='0x')return 'robinhood';
+  const supported=['ethereum','base','bnb','robinhood'];
+  const preferred=supported.includes(pref)?pref:null;
+  if(preferred){
+    try{
+      const code=await evmRpcTry(preferred,'eth_getCode',[address,'latest']);
+      if(hasDeployedEvmCode(code))return preferred;
+    }catch(e){console.warn(`Preferred EVM detection ${preferred}:`,e.message)}
+  }
+  const remaining=supported.filter(chain=>chain!==preferred);
+  const probes=await Promise.allSettled(remaining.map(chain=>evmRpcTry(chain,'eth_getCode',[address,'latest'])));
+  for(let i=0;i<remaining.length;i++)if(probes[i].status==='fulfilled'&&hasDeployedEvmCode(probes[i].value))return remaining[i];
   throw Object.assign(new Error('No contract was found at that 0x address on Ethereum, Base, BNB Chain, or Robinhood Chain.'),{status:404});
 }
 async function scanEvm(address,pref){
@@ -409,7 +410,7 @@ async function scanEvm(address,pref){
     rhAsset?robinhoodUnderlyingStats(String(rhAsset?.tokenSymbol||'')):Promise.resolve(null)
   ]);
   const code=codeR.status==='fulfilled'?codeR.value:null;
-  if(!code||code==='0x')throw Object.assign(new Error(`No contract found on ${chainLabel}.`),{status:404});
+  if(!hasDeployedEvmCode(code))throw Object.assign(new Error(`No contract found on ${chainLabel}.`),{status:404});
   const overview=overviewR.status==='fulfilled'?overviewR.value:null,security=securityR.status==='fulfilled'?securityR.value:null,gp=gpR.status==='fulfilled'?gpR.value:null,dex=dexR.status==='fulfilled'?dexR.value:null,rhPrice=rhPriceR.status==='fulfilled'?rhPriceR.value:null,rhStats=rhStatsR.status==='fulfilled'?rhStatsR.value:null;
   const liq=number(field(overview,'liquidity','liquidityUsd','liquidity_usd'))??number(dex?.liquidityUsd);
   const holders=number(field(overview,'holder','holderCount','holder_count','holders'))??number(field(gp,'holder_count','holderCount'));
@@ -1981,7 +1982,7 @@ const pr=await kv('get',`salt:social:profile:${wallet}`);if(!pr)return res.statu
 
 async function healthHandler(req,res){
   res.setHeader('Cache-Control','no-store');
-  return res.status(200).json({ok:true,service:'The Trenches scanner',version:'1.11.85',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY),zerox:Boolean(process.env.ZEROX_API_KEY),social:Boolean(process.env.UPSTASH_REDIS_REST_URL&&process.env.UPSTASH_REDIS_REST_TOKEN)}});
+  return res.status(200).json({ok:true,service:'The Trenches scanner',version:'1.11.86',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY),zerox:Boolean(process.env.ZEROX_API_KEY),social:Boolean(process.env.UPSTASH_REDIS_REST_URL&&process.env.UPSTASH_REDIS_REST_TOKEN)}});
 }
 
 export default async function handler(req,res){

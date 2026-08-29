@@ -1,3 +1,10 @@
+# The Trenches V1.11.87 — Robinhood Chain Scan Fix
+
+- Pasting a `0x` contract no longer forces the scanner dropdown to Ethereum.
+- A selected EVM chain is checked first, then the scanner automatically checks the other supported EVM chains when no contract exists there.
+- Robinhood Chain contracts now resolve even if the dropdown was left on Ethereum from an earlier search.
+- After a successful scan, the dropdown updates to the chain where the contract was actually found.
+
 # Salt Swap V1.10.44 — Crypto News Feed
 
 Adds a live crypto-only news front page to Social → Feed, directly below the market ticker. One lead story is centered with four smaller supporting stories, sourced server-side from crypto RSS feeds. Headlines link to the original publisher. News is cached and deduplicated so failures do not break the social feed.
@@ -1286,3 +1293,10 @@ This update rebuilds the Portfolio information architecture around the current C
 - Pasting an EVM address while Solana is selected no longer throws a Solana mint error.
 - The visible selector automatically switches from Solana to Ethereum for EVM addresses.
 - Explicit Base, BNB, and Robinhood selections remain respected.
+
+## V1.11.86 — Global Header Stacking Fix
+- Keeps the top header above all page content while scrolling.
+- Swap, Social, Portfolio, and Trending content now scroll behind the header.
+- Prevents hero text/background/decorative layers from painting over the header.
+- Keeps wallet/header controls above page content.
+- Existing navigation and responsive behavior preserved.

@@ -5209,3 +5209,59 @@ body.salt-social-active .saltProfileFeed{
 .holdingTokenLogo img{width:100%;height:100%;object-fit:cover}
 .evmHoldingRow strong small{display:block;margin-top:2px;color:#92978e;font-size:9px;font-weight:700}
 .nftMissingImage{display:grid;place-items:center;width:100%;aspect-ratio:1/1;background:#ece3cc;color:#6f745e;font-size:12px;font-weight:900}
+
+/* ==========================================================
+   V1.11.86 — Global header stacking fix
+   ========================================================== */
+
+/* Keep the top header above every page/hero/card while scrolling. */
+.topbar,
+header.topbar{
+  position:sticky!important;
+  top:0!important;
+  z-index:10000!important;
+  isolation:isolate!important;
+}
+
+/* Header menus/modals launched from the header stay above page content. */
+.walletMenu,
+.walletConnectModal,
+.headerWalletShell,
+.topbar .nav,
+.topbar .brand{
+  position:relative;
+  z-index:10001!important;
+}
+
+/* Main app views must remain below the sticky header. */
+main,
+.hero,
+.swapPage,
+.socialShell,
+.saltSocialShell,
+.portfolioPage,
+.trendingPage,
+#home,
+#swapView,
+#socialView,
+#portfolioView,
+#trendingView{
+  position:relative;
+  z-index:1!important;
+}
+
+/* Decorative hero/background layers should never paint above the header. */
+.hero::before,
+.hero::after,
+.parachuteLayer,
+.heroParachutes,
+.trenchBackdrop,
+.trenchesBackground,
+[data-parachute-layer]{
+  z-index:0!important;
+}
+
+/* Avoid transformed sections creating a stacking context above the header. */
+body{
+  isolation:isolate;
+}

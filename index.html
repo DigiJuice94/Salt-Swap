@@ -16,7 +16,7 @@
   <link rel="shortcut icon" href="/favicon.ico?v=11090" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=11090" />
   <link rel="manifest" href="/site.webmanifest?v=11090" />
-  <link rel="stylesheet" href="/styles.css?v=11185" />
+  <link rel="stylesheet" href="/styles.css?v=11186" />
   <script defer src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.4/lib/index.iife.min.js"></script>
 
 <style>
@@ -1397,7 +1397,7 @@ function effectiveScannerChain(address){
 
   if(detected==='evm'){
     if(['ethereum','eth','base','bnb','bsc','robinhood'].includes(selected))return selected;
-    return 'ethereum';
+    return 'auto';
   }
 
   return selected;
@@ -1418,6 +1418,7 @@ async function scan(){
     let data={};
     try{data=text?JSON.parse(text):{}}catch{throw new Error(`Salt scanner returned an invalid response (HTTP ${response.status}).`)}
     if(!response.ok){const detail=readableError(data?.error??data?.message??data);throw new Error(detail&&detail!=='{}'?detail:`Salt scanner failed (HTTP ${response.status}).`);}
+    if(chainEl&&data?.chain&&['solana','ethereum','base','bnb','robinhood'].includes(data.chain))chainEl.value=data.chain;
     render(data);
   }catch(e){
     if(e?.name==='AbortError')showError('The Salt scanner timed out. Try again.');
@@ -3463,7 +3464,7 @@ document.addEventListener('click',async e=>{
 });
 
 
-/* V1.11.85 — guaranteed wallet button bindings */
+/* V1.11.86 — guaranteed wallet button bindings */
 document.addEventListener('click',e=>{
   const btn=e.target.closest('#connectWalletBtn,#swapWalletBtn');
   if(!btn)return;
@@ -3516,7 +3517,7 @@ document.addEventListener('click',e=>{
 
 
 /* ==========================================================
-   V1.11.85 — guaranteed Run a Trench Check binding
+   V1.11.86 — guaranteed Run a Trench Check binding
    ========================================================== */
 (function(){
   function bindRealTrenchCheck(){
@@ -3547,7 +3548,7 @@ document.addEventListener('click',e=>{
 })();
 
 
-/* V1.11.85 — scanner chain auto-detection */
+/* V1.11.87 — scanner chain auto-detection */
 (function(){
   function syncScannerChain(){
     const input=document.getElementById('mintInput');
@@ -3563,8 +3564,8 @@ document.addEventListener('click',e=>{
 
     if(detected==='evm'){
       const current=String(select.value||'').toLowerCase();
-      if(current==='solana'||current==='auto'||!current){
-        const option=[...select.options].find(o=>['ethereum','eth'].includes(String(o.value).toLowerCase()));
+      if(current==='solana'||!current){
+        const option=[...select.options].find(o=>String(o.value).toLowerCase()==='auto');
         if(option)select.value=option.value;
       }
     }
