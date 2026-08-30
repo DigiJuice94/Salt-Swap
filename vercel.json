@@ -15,6 +15,22 @@
       "use": "@vercel/static"
     },
     {
+      "src": "intro.css",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "intro.js",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "intro-battlefield.png",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "the-trenches-full-logo.png",
+      "use": "@vercel/static"
+    },
+    {
       "src": "assets/**",
       "use": "@vercel/static"
     }
@@ -147,6 +163,22 @@
     {
       "src": "/styles.css",
       "dest": "/styles.css"
+    },
+    {
+      "src": "/intro.css",
+      "dest": "/intro.css"
+    },
+    {
+      "src": "/intro.js",
+      "dest": "/intro.js"
+    },
+    {
+      "src": "/intro-battlefield.png",
+      "dest": "/intro-battlefield.png"
+    },
+    {
+      "src": "/the-trenches-full-logo.png",
+      "dest": "/the-trenches-full-logo.png"
     },
     {
       "src": "/assets/(.*)",

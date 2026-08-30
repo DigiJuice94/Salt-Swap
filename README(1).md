@@ -1,4 +1,13 @@
-# The Trenches V1.11.88 — Animated Battlefield Intro
+# The Trenches V1.11.89 — Animated Battlefield Intro Deployment Fix
+
+## V1.11.89 fix
+
+- Adds every animated-intro stylesheet, script, battlefield image, and logo to the Vercel static build.
+- Adds explicit public routes for all four intro files so they cannot fall through or return the app HTML.
+- Fixes the unstyled welcome text, broken intro logo, missing battlefield art, and inactive animation seen in V1.11.88.
+- Preserves the complete animated intro and every V1.11.87 application feature.
+
+## Previous V1.11.88 update
 
 ## V1.11.88 update
 
