@@ -1,4 +1,4 @@
-/* V1.11.90 — layered cinematic battlefield intro */
+/* V1.11.91 — synchronized Canvas battlefield animation */
 body.trenches-intro-open {
   overflow: hidden !important;
 }
@@ -40,7 +40,7 @@ body.trenches-intro-open {
 
 .trenchesIntroScene {
   z-index: -7;
-  background-image: url('/intro-battlefield.png?v=11190');
+  background-image: url('/intro-battlefield.png?v=11191');
   background-position: 50% 48%;
   background-repeat: no-repeat;
   background-size: cover;
@@ -50,11 +50,20 @@ body.trenches-intro-open {
 
 .trenchesIntroActors { z-index: -5; }
 
+.trenchesBattleCanvas {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
 .trenchesIntroActor {
   position: absolute;
   inset: 0;
   display: block;
-  background: url('/intro-battlefield.png?v=11190') 50% 48% / cover no-repeat;
+  background: url('/intro-battlefield.png?v=11191') 50% 48% / cover no-repeat;
   will-change: transform;
   filter: saturate(1.04) contrast(1.02);
 }
@@ -63,32 +72,50 @@ body.trenches-intro-open {
   -webkit-mask-image: radial-gradient(ellipse 18% 27% at 15% 77%, #000 0 57%, transparent 76%);
   mask-image: radial-gradient(ellipse 18% 27% at 15% 77%, #000 0 57%, transparent 76%);
   animation: actorSheepRecoil 2.15s steps(1) infinite;
+  transform-origin: 15% 78%;
 }
 .actor-pepe {
   -webkit-mask-image: radial-gradient(ellipse 11% 18% at 7% 49%, #000 0 55%, transparent 76%);
   mask-image: radial-gradient(ellipse 11% 18% at 7% 49%, #000 0 55%, transparent 76%);
   animation: actorReload 3.4s ease-in-out infinite;
+  transform-origin: 7% 50%;
 }
 .actor-medic {
   -webkit-mask-image: radial-gradient(ellipse 17% 20% at 31% 54%, #000 0 55%, transparent 78%);
   mask-image: radial-gradient(ellipse 17% 20% at 31% 54%, #000 0 55%, transparent 78%);
   animation: actorMedic 2.8s ease-in-out infinite;
+  transform-origin: 31% 57%;
 }
 .actor-cashcat {
   -webkit-mask-image: radial-gradient(ellipse 16% 25% at 88% 70%, #000 0 58%, transparent 77%);
   mask-image: radial-gradient(ellipse 16% 25% at 88% 70%, #000 0 58%, transparent 77%);
   animation: actorCashCat 2.45s steps(1) .4s infinite;
+  transform-origin: 88% 73%;
 }
 .actor-troll {
   -webkit-mask-image: radial-gradient(ellipse 10% 16% at 94% 45%, #000 0 56%, transparent 77%);
   mask-image: radial-gradient(ellipse 10% 16% at 94% 45%, #000 0 56%, transparent 77%);
   animation: actorTrollThrow 3.8s ease-in-out .2s infinite;
+  transform-origin: 94% 48%;
 }
 .actor-distant {
   -webkit-mask-image: radial-gradient(ellipse 16% 11% at 55% 55%, #000 0 52%, transparent 78%);
   mask-image: radial-gradient(ellipse 16% 11% at 55% 55%, #000 0 52%, transparent 78%);
   animation: actorDistantRun 5.2s ease-in-out infinite;
+  transform-origin: 55% 57%;
 }
+
+/* JavaScript fires these classes on one shared timeline. Each masked actor
+   receives a different, readable action instead of one global camera wobble. */
+.battle-sheep-fire .actor-sheep { animation: sheepCombatBeat .72s cubic-bezier(.2,.8,.2,1) both; }
+.battle-pepe-reload .actor-pepe { animation: pepeReloadBeat 1.45s ease-in-out both; }
+.battle-medic-work .actor-medic { animation: medicBandageBeat 1.8s ease-in-out both; }
+.battle-cashcat-fire .actor-cashcat { animation: cashCatCombatBeat .76s cubic-bezier(.2,.8,.2,1) both; }
+.battle-troll-throw .actor-troll { animation: trollThrowBeat 1.15s cubic-bezier(.3,.7,.25,1) both; }
+.battle-distant-run .actor-distant { animation: distantRunnerBeat 2.3s ease-in-out both; }
+.battle-shake .trenchesIntroShade { animation: battlefieldFlash .38s ease-out; }
+
+.trenchesIntroAction { opacity: .22; }
 
 .trenchesIntroShade {
   z-index: -6;
@@ -484,6 +511,57 @@ body.trenches-intro-open {
 @keyframes actorCashCat { 0%,67%,100%{transform:translate3d(0,0,0)} 69%{transform:translate3d(3px,1px,0)} 72%{transform:translate3d(-1px,0,0)} }
 @keyframes actorTrollThrow { 0%,100%{transform:translate3d(0,1px,0) rotate(0)} 42%{transform:translate3d(-2px,-3px,0) rotate(-.18deg)} 58%{transform:translate3d(2px,0,0) rotate(.12deg)} }
 @keyframes actorDistantRun { 0%,100%{transform:translate3d(-2px,0,0)} 50%{transform:translate3d(4px,-1px,0)} }
+@keyframes sheepCombatBeat {
+  0%{transform:translate3d(0,10px,0) rotate(.2deg)}
+  28%{transform:translate3d(0,-3px,0) rotate(-.12deg)}
+  42%{transform:translate3d(-10px,-1px,0) rotate(-.45deg)}
+  54%{transform:translate3d(2px,0,0) rotate(.15deg)}
+  70%{transform:translate3d(-6px,1px,0) rotate(-.28deg)}
+  100%{transform:translate3d(0,8px,0) rotate(0)}
+}
+@keyframes pepeReloadBeat {
+  0%{transform:translate3d(0,0,0) rotate(0)}
+  20%{transform:translate3d(2px,7px,0) rotate(1deg)}
+  42%{transform:translate3d(-3px,3px,0) rotate(-1.2deg)}
+  62%{transform:translate3d(2px,-3px,0) rotate(.8deg)}
+  82%{transform:translate3d(-1px,-7px,0) rotate(-.55deg)}
+  100%{transform:translate3d(0,0,0) rotate(0)}
+}
+@keyframes medicBandageBeat {
+  0%,100%{transform:translate3d(0,0,0) rotate(0)}
+  18%{transform:translate3d(3px,4px,0) rotate(.45deg)}
+  38%{transform:translate3d(-2px,7px,0) rotate(-.4deg)}
+  58%{transform:translate3d(4px,2px,0) rotate(.3deg)}
+  78%{transform:translate3d(-1px,5px,0) rotate(-.35deg)}
+}
+@keyframes cashCatCombatBeat {
+  0%{transform:translate3d(0,11px,0) rotate(-.12deg)}
+  30%{transform:translate3d(0,-3px,0) rotate(.15deg)}
+  44%{transform:translate3d(10px,0,0) rotate(.5deg)}
+  58%{transform:translate3d(-2px,1px,0) rotate(-.15deg)}
+  72%{transform:translate3d(7px,2px,0) rotate(.32deg)}
+  100%{transform:translate3d(0,9px,0) rotate(0)}
+}
+@keyframes trollThrowBeat {
+  0%{transform:translate3d(0,9px,0) rotate(0)}
+  25%{transform:translate3d(-5px,-5px,0) rotate(-1.2deg)}
+  48%{transform:translate3d(7px,-2px,0) rotate(1.35deg)}
+  68%{transform:translate3d(1px,1px,0) rotate(.2deg)}
+  100%{transform:translate3d(0,8px,0) rotate(0)}
+}
+@keyframes distantRunnerBeat {
+  0%{transform:translate3d(-12px,4px,0) rotate(-.4deg)}
+  18%{transform:translate3d(-5px,-4px,0) rotate(.5deg)}
+  38%{transform:translate3d(5px,3px,0) rotate(-.45deg)}
+  58%{transform:translate3d(14px,-4px,0) rotate(.5deg)}
+  78%{transform:translate3d(23px,3px,0) rotate(-.35deg)}
+  100%{transform:translate3d(31px,0,0) rotate(0)}
+}
+@keyframes battlefieldFlash {
+  0%{filter:none}
+  18%{filter:brightness(1.28) sepia(.18)}
+  100%{filter:none}
+}
 @keyframes welcomeReveal { from{opacity:0;transform:translateY(-18px);letter-spacing:.5em} to{opacity:1;transform:none;letter-spacing:.24em} }
 @keyframes titleSlam { 0%{opacity:0;transform:translateY(-42vh) scale(1.35,.75)} 68%{opacity:1;transform:translateY(7px) scale(.91,1.07)} 82%{transform:translateY(-3px) scale(.96,.98)} 100%{opacity:1;transform:scaleX(.94)} }
 @keyframes detailReveal { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:none} }
@@ -593,4 +671,5 @@ body.trenches-intro-open {
   .trenchDebrisPiece {
     animation: none !important;
   }
+  .trenchesBattleCanvas { display: none !important; }
 }

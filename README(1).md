@@ -1,4 +1,14 @@
-# The Trenches V1.11.90 — Layered Battlefield Intro
+# The Trenches V1.11.91 — Full Canvas Battle Animation
+
+## V1.11.91 update
+
+- Replaces the mostly decorative motion pass with a synchronized five-second battle timeline.
+- Adds a real-time Canvas renderer for bullets, tracer trails, ricochets, dirt bursts, smoke, shell casings, explosions, and a thrown grenade.
+- Gives the sheep, Pepe, Shiba and black bull, Cash Cat, Troll Face, and distant runners their own stronger action beats.
+- Keeps the approved battlefield artwork and the animated title/bullet-hole sequence.
+- Includes responsive scaling, cleanup when entering the app, and reduced-motion support.
+
+## Previous V1.11.90 update
 
 ## V1.11.90 update
 
