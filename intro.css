@@ -1,4 +1,4 @@
-/* V1.11.88 — cinematic battlefield intro */
+/* V1.11.90 — layered cinematic battlefield intro */
 body.trenches-intro-open {
   overflow: hidden !important;
 }
@@ -26,6 +26,7 @@ body.trenches-intro-open {
 }
 
 .trenchesIntroScene,
+.trenchesIntroActors,
 .trenchesIntroShade,
 .trenchesIntroVignette,
 .trenchesIntroGrain,
@@ -39,13 +40,54 @@ body.trenches-intro-open {
 
 .trenchesIntroScene {
   z-index: -7;
-  background-image: url('/intro-battlefield.png?v=11189');
+  background-image: url('/intro-battlefield.png?v=11190');
   background-position: 50% 48%;
   background-repeat: no-repeat;
   background-size: cover;
-  transform: scale(1.035);
-  animation: trenchesIntroCamera 13s ease-in-out infinite alternate;
-  will-change: transform, background-position;
+  transform: none;
+  will-change: background-position;
+}
+
+.trenchesIntroActors { z-index: -5; }
+
+.trenchesIntroActor {
+  position: absolute;
+  inset: 0;
+  display: block;
+  background: url('/intro-battlefield.png?v=11190') 50% 48% / cover no-repeat;
+  will-change: transform;
+  filter: saturate(1.04) contrast(1.02);
+}
+
+.actor-sheep {
+  -webkit-mask-image: radial-gradient(ellipse 18% 27% at 15% 77%, #000 0 57%, transparent 76%);
+  mask-image: radial-gradient(ellipse 18% 27% at 15% 77%, #000 0 57%, transparent 76%);
+  animation: actorSheepRecoil 2.15s steps(1) infinite;
+}
+.actor-pepe {
+  -webkit-mask-image: radial-gradient(ellipse 11% 18% at 7% 49%, #000 0 55%, transparent 76%);
+  mask-image: radial-gradient(ellipse 11% 18% at 7% 49%, #000 0 55%, transparent 76%);
+  animation: actorReload 3.4s ease-in-out infinite;
+}
+.actor-medic {
+  -webkit-mask-image: radial-gradient(ellipse 17% 20% at 31% 54%, #000 0 55%, transparent 78%);
+  mask-image: radial-gradient(ellipse 17% 20% at 31% 54%, #000 0 55%, transparent 78%);
+  animation: actorMedic 2.8s ease-in-out infinite;
+}
+.actor-cashcat {
+  -webkit-mask-image: radial-gradient(ellipse 16% 25% at 88% 70%, #000 0 58%, transparent 77%);
+  mask-image: radial-gradient(ellipse 16% 25% at 88% 70%, #000 0 58%, transparent 77%);
+  animation: actorCashCat 2.45s steps(1) .4s infinite;
+}
+.actor-troll {
+  -webkit-mask-image: radial-gradient(ellipse 10% 16% at 94% 45%, #000 0 56%, transparent 77%);
+  mask-image: radial-gradient(ellipse 10% 16% at 94% 45%, #000 0 56%, transparent 77%);
+  animation: actorTrollThrow 3.8s ease-in-out .2s infinite;
+}
+.actor-distant {
+  -webkit-mask-image: radial-gradient(ellipse 16% 11% at 55% 55%, #000 0 52%, transparent 78%);
+  mask-image: radial-gradient(ellipse 16% 11% at 55% 55%, #000 0 52%, transparent 78%);
+  animation: actorDistantRun 5.2s ease-in-out infinite;
 }
 
 .trenchesIntroShade {
@@ -162,6 +204,18 @@ body.trenches-intro-open {
   justify-items: center;
 }
 
+.trenchesIntro:not(.intro-ready) .trenchesIntroEyebrow,
+.trenchesIntro:not(.intro-ready) .trenchesIntroTitle,
+.trenchesIntro:not(.intro-ready) .trenchesIntroTagline,
+.trenchesIntro:not(.intro-ready) .trenchesIntroEnter,
+.trenchesIntro:not(.intro-ready) .trenchesIntroMotto { opacity: 0; }
+
+.trenchesIntro.intro-ready .trenchesIntroEyebrow { animation: welcomeReveal .7s .25s both; }
+.trenchesIntro.intro-ready .trenchesIntroTitle { animation: titleSlam .82s .8s cubic-bezier(.18,.86,.24,1.18) both; }
+.trenchesIntro.intro-ready .trenchesIntroTagline { animation: detailReveal .7s 1.7s both; }
+.trenchesIntro.intro-ready .trenchesIntroEnter { animation: detailReveal .7s 2.05s both; }
+.trenchesIntro.intro-ready .trenchesIntroMotto { animation: detailReveal .7s 2.28s both; }
+
 .trenchesIntroEyebrow {
   display: inline-flex;
   align-items: center;
@@ -188,6 +242,7 @@ body.trenches-intro-open {
 }
 
 .trenchesIntroTitle {
+  position: relative;
   margin: 0;
   color: #fff8df;
   font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
@@ -202,6 +257,24 @@ body.trenches-intro-open {
     0 15px 42px rgba(0, 0, 0, .9);
   transform: scaleX(.94);
 }
+
+.trenchesIntroTitle > span { position: relative; z-index: 1; }
+
+.titleBulletHole {
+  position: absolute;
+  z-index: 5;
+  width: clamp(11px, 1.25vw, 21px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  opacity: 0;
+  background: radial-gradient(circle, #050505 0 24%, #2a271d 27% 39%, #c3ac70 42% 47%, transparent 52%);
+  filter: drop-shadow(1px 2px 1px #000);
+}
+.hole-one { left: 19%; top: 29%; --hole-delay: 3.35s; }
+.hole-two { left: 43%; top: 62%; --hole-delay: 3.62s; }
+.hole-three { right: 23%; top: 22%; --hole-delay: 3.88s; }
+.hole-four { right: 8%; top: 67%; --hole-delay: 4.12s; }
+.trenchesIntro.intro-ready .titleBulletHole { animation: titleShot .22s var(--hole-delay) cubic-bezier(.2,.9,.3,1.5) forwards; }
 
 .trenchesIntroTagline {
   margin: clamp(18px, 2.3vw, 30px) 0 0;
@@ -316,6 +389,30 @@ body.trenches-intro-open {
 .trenchMuzzle.two { left: 18.5%; top: 68%; --muzzle-delay: 1.2s; }
 .trenchMuzzle.three { left: 23%; top: 52%; --muzzle-delay: 2s; }
 
+.trenchExplosion {
+  position: absolute;
+  width: clamp(54px, 7vw, 115px);
+  aspect-ratio: 1;
+  opacity: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff7bf 0 5%, #ffc343 14%, #f06a16 31%, rgba(100,55,20,.45) 48%, transparent 70%);
+  mix-blend-mode: screen;
+  animation: battlefieldImpact 4.6s var(--impact-delay) infinite;
+}
+.trenchExplosion.one { left: 60%; top: 57%; --impact-delay: .6s; }
+.trenchExplosion.two { left: 49%; top: 72%; --impact-delay: 2.7s; }
+
+.trenchesIntroImpacts { position:absolute; inset:0; z-index:17; pointer-events:none; }
+.trenchImpact {
+  position:absolute;
+  width:9px;
+  aspect-ratio:1;
+  border-radius:50%;
+  background:#fff5b0;
+  box-shadow:0 0 8px 3px #ff9a24, 0 0 22px 7px rgba(255,110,20,.55);
+  animation: liveImpact .52s ease-out forwards;
+}
+
 .trenchesIntroSmoke {
   z-index: 2;
   overflow: hidden;
@@ -381,6 +478,19 @@ body.trenches-intro-open {
   100% { transform: scale(1.095) translate3d(.9%, .5%, 0); }
 }
 
+@keyframes actorSheepRecoil { 0%,74%,100%{transform:translate3d(0,0,0)} 76%{transform:translate3d(-3px,1px,0)} 79%{transform:translate3d(1px,0,0)} }
+@keyframes actorReload { 0%,100%{transform:translate3d(0,1px,0)} 45%{transform:translate3d(1px,-2px,0)} 65%{transform:translate3d(-1px,-1px,0)} }
+@keyframes actorMedic { 0%,100%{transform:translate3d(0,0,0) rotate(0)} 50%{transform:translate3d(1px,2px,0) rotate(-.12deg)} }
+@keyframes actorCashCat { 0%,67%,100%{transform:translate3d(0,0,0)} 69%{transform:translate3d(3px,1px,0)} 72%{transform:translate3d(-1px,0,0)} }
+@keyframes actorTrollThrow { 0%,100%{transform:translate3d(0,1px,0) rotate(0)} 42%{transform:translate3d(-2px,-3px,0) rotate(-.18deg)} 58%{transform:translate3d(2px,0,0) rotate(.12deg)} }
+@keyframes actorDistantRun { 0%,100%{transform:translate3d(-2px,0,0)} 50%{transform:translate3d(4px,-1px,0)} }
+@keyframes welcomeReveal { from{opacity:0;transform:translateY(-18px);letter-spacing:.5em} to{opacity:1;transform:none;letter-spacing:.24em} }
+@keyframes titleSlam { 0%{opacity:0;transform:translateY(-42vh) scale(1.35,.75)} 68%{opacity:1;transform:translateY(7px) scale(.91,1.07)} 82%{transform:translateY(-3px) scale(.96,.98)} 100%{opacity:1;transform:scaleX(.94)} }
+@keyframes detailReveal { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:none} }
+@keyframes titleShot { 0%{opacity:0;transform:scale(5);filter:blur(3px)} 65%{opacity:1;transform:scale(.72)} 100%{opacity:1;transform:scale(1);filter:drop-shadow(1px 2px 1px #000)} }
+@keyframes battlefieldImpact { 0%,76%,100%{opacity:0;transform:scale(.1)} 78%{opacity:1;transform:scale(1.2)} 82%{opacity:.3;transform:scale(1.65)} 86%{opacity:0;transform:scale(2)} }
+@keyframes liveImpact { 0%{opacity:1;transform:scale(.2)} 28%{opacity:1;transform:scale(1.8)} 100%{opacity:0;transform:scale(4)} }
+
 @keyframes trenchesIntroLivePulse {
   50% { opacity: .55; box-shadow: 0 0 0 7px rgba(230, 183, 94, 0), 0 0 24px #e6b75e; }
 }
@@ -424,7 +534,8 @@ body.trenches-intro-open {
 }
 
 @media (max-width: 760px) {
-  .trenchesIntroScene {
+  .trenchesIntroScene,
+  .trenchesIntroActor {
     background-position: 43% 52%;
   }
 
@@ -468,6 +579,11 @@ body.trenches-intro-open {
 
 @media (prefers-reduced-motion: reduce) {
   .trenchesIntroScene,
+  .trenchesIntroActor,
+  .trenchesIntroEyebrow,
+  .trenchesIntroTitle,
+  .trenchesIntroTagline,
+  .trenchesIntroMotto,
   .trenchesIntroGrain,
   .trenchesIntroLive::before,
   .trenchesIntroEnter::before,

@@ -1,4 +1,14 @@
-# The Trenches V1.11.89 — Animated Battlefield Intro Deployment Fix
+# The Trenches V1.11.90 — Layered Battlefield Intro
+
+## V1.11.90 update
+
+- Uses the approved zoomed-out battlefield artwork with the sheep, Pepe, Shiba medic, wounded black bull, Cash Cat, Troll Face, radio frog, and ammo runner.
+- Adds separately timed localized motion around the major character positions.
+- Adds bidirectional bullet tracers, muzzle flashes, battlefield impacts, smoke, debris, and optional generated ambience.
+- Animates “WELCOME TO” first, slams “THE TRENCHES” into place, then leaves four permanent bullet holes in the title.
+- Preserves the Enter The Trenches transition and every existing app feature.
+
+## Previous V1.11.89 fix
 
 ## V1.11.89 fix
 

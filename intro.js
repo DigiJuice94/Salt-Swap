@@ -1,4 +1,4 @@
-/* V1.11.88 — cinematic intro motion, transition, and optional generated ambience */
+/* V1.11.90 — layered battlefield motion, title sequence, and optional generated ambience */
 (() => {
   const intro = document.getElementById('trenchesIntro');
   if (!intro) return;
@@ -6,11 +6,27 @@
   const enter = document.getElementById('trenchesIntroEnter');
   const soundButton = document.getElementById('trenchesIntroSound');
   const debrisLayer = intro.querySelector('.trenchesIntroDebris');
+  const impactsLayer = intro.querySelector('.trenchesIntroImpacts');
   let audioContext = null;
   let masterGain = null;
   let ambienceTimer = 0;
 
   document.body.classList.add('trenches-intro-open');
+  window.requestAnimationFrame(() => window.requestAnimationFrame(() => intro.classList.add('intro-ready')));
+
+  function spawnImpact() {
+    if (!impactsLayer || intro.hidden || intro.classList.contains('is-exiting')) return;
+    const impact = document.createElement('i');
+    impact.className = 'trenchImpact';
+    impact.style.left = `${24 + Math.random() * 54}%`;
+    impact.style.top = `${45 + Math.random() * 38}%`;
+    impactsLayer.appendChild(impact);
+    impact.addEventListener('animationend', () => impact.remove(), { once: true });
+  }
+
+  const impactTimer = window.setInterval(() => {
+    if (Math.random() > .34) spawnImpact();
+  }, 620);
 
   if (debrisLayer) {
     const fragment = document.createDocumentFragment();
@@ -119,6 +135,7 @@
   function enterTheTrenches() {
     if (intro.classList.contains('is-exiting')) return;
     stopSound();
+    window.clearInterval(impactTimer);
     intro.classList.add('is-exiting');
     document.body.classList.remove('trenches-intro-open');
     window.setTimeout(() => {
