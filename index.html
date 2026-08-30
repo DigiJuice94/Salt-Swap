@@ -17,6 +17,7 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=11090" />
   <link rel="manifest" href="/site.webmanifest?v=11090" />
   <link rel="stylesheet" href="/styles.css?v=11186" />
+  <link rel="stylesheet" href="/intro.css?v=11188" />
   <script defer src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.4/lib/index.iife.min.js"></script>
 
 <style>
@@ -97,6 +98,41 @@ body.publicProfileOpen{overflow:hidden}
 
 </head>
 <body>
+  <section id="trenchesIntro" class="trenchesIntro" aria-label="Welcome to The Trenches">
+    <div class="trenchesIntroScene" aria-hidden="true"></div>
+    <div class="trenchesIntroShade" aria-hidden="true"></div>
+    <div class="trenchesIntroSmoke" aria-hidden="true">
+      <i class="trenchSmokePuff"></i><i class="trenchSmokePuff"></i><i class="trenchSmokePuff"></i>
+    </div>
+    <div class="trenchesIntroAction" aria-hidden="true">
+      <i class="trenchTracer"></i><i class="trenchTracer"></i><i class="trenchTracer"></i><i class="trenchTracer"></i>
+      <i class="trenchMuzzle one"></i><i class="trenchMuzzle two"></i><i class="trenchMuzzle three"></i>
+    </div>
+    <div class="trenchesIntroDebris" aria-hidden="true"></div>
+    <div class="trenchesIntroVignette" aria-hidden="true"></div>
+    <div class="trenchesIntroGrain" aria-hidden="true"></div>
+
+    <header class="trenchesIntroTopbar">
+      <div class="trenchesIntroBrand">
+        <img src="/the-trenches-full-logo.png" alt="The Trenches" />
+        <span class="trenchesIntroLive">Battlefield live</span>
+      </div>
+      <button id="trenchesIntroSound" class="trenchesIntroSound" type="button" data-sound="off" aria-pressed="false" aria-label="Turn battlefield sound on">🔇</button>
+    </header>
+
+    <div class="trenchesIntroContent">
+      <div class="trenchesIntroEyebrow">Welcome to</div>
+      <h1 class="trenchesIntroTitle">The Trenches</h1>
+      <p class="trenchesIntroTagline">Where meme coins go to war—and <strong>only the strongest survive.</strong></p>
+      <button id="trenchesIntroEnter" class="trenchesIntroEnter" type="button"><span>Enter The Trenches</span></button>
+      <div class="trenchesIntroMotto">Hodl the line&nbsp;&nbsp;•&nbsp;&nbsp;DYOR&nbsp;&nbsp;•&nbsp;&nbsp;Survive the trenches</div>
+    </div>
+
+    <footer class="trenchesIntroFooter">
+      <span>Crypto intelligence for the front line</span>
+      <span>Not financial advice&nbsp;&nbsp;•&nbsp;&nbsp;Trade responsibly</span>
+    </footer>
+  </section>
   <img src="assets/trenches-sheep.png" alt="" class="trenchLogoAsset" aria-hidden="true" />
   <div class="ambient ambient-one"></div>
   <div class="ambient ambient-two"></div>
@@ -3599,5 +3635,6 @@ document.addEventListener('click',e=>{
     <div id="publicProfilePosts" class="publicProfilePosts"><div class="socialTimelineEmpty">Loading profile…</div></div>
   </section>
 </div>
+<script src="/intro.js?v=11188"></script>
 </body>
 </html>

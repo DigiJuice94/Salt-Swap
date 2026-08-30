@@ -1,4 +1,14 @@
-# The Trenches V1.11.87 — Robinhood Chain Scan Fix
+# The Trenches V1.11.88 — Animated Battlefield Intro
+
+## V1.11.88 update
+
+- Adds a full-screen animated battlefield welcome experience before the main app.
+- Uses the established sheep, Pepe, Shiba, and bear Trenches artwork.
+- Adds smoke, debris, muzzle flashes, tracer fire, cinematic camera movement, and an Enter The Trenches transition.
+- Adds optional synthesized battlefield sound with a visible mute control.
+- Preserves every V1.11.87 Robinhood Chain scanner fix and all existing application features.
+
+## Previous V1.11.87 update
 
 - Pasting a `0x` contract no longer forces the scanner dropdown to Ethereum.
 - A selected EVM chain is checked first, then the scanner automatically checks the other supported EVM chains when no contract exists there.
