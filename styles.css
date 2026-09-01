@@ -1476,7 +1476,7 @@ body.entrance-locked {
   position: absolute;
   inset: -3%;
   z-index: -4;
-  background-image: url('/assets/trenches-entrance-sheep.png');
+  background-image: url('./assets/trenches-entrance-sheep.png');
   background-position: center 45%;
   background-size: cover;
   filter: saturate(.88) contrast(1.05) brightness(.82);

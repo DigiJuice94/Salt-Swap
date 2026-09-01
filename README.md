@@ -16,3 +16,5 @@ This update keeps the V1.10.44 scanner and social functionality intact while rep
 - `index.html` — existing V1.10.44 app plus the entrance markup and transition logic.
 - `styles.css` — existing styles plus the V1.10.45 entrance design and animation.
 - `assets/trenches-entrance-sheep.png` — the established single-sheep trench artwork.
+
+The stylesheet and entrance image now use folder-relative paths so the scene works when opened directly, previewed from a subfolder, or deployed as the site root.
