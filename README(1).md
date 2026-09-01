@@ -1,3 +1,14 @@
+# The Trenches V1.11.97 — Flicker-Free Video Entrance
+
+## V1.11.97 update
+
+- Removes the rapid animated grain that caused visible flickering.
+- Removes the full-screen brightness flash and the two repeating overlay explosions.
+- Keeps a light static texture plus the video, text, button, smoke, debris, and subtle particles.
+- Preserves the root-level video fix and the GitHub-ready file size.
+
+## Previous V1.11.96 update
+
 # The Trenches V1.11.96 — Root Video GitHub Fix
 
 ## V1.11.96 update

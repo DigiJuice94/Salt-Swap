@@ -1,4 +1,4 @@
-/* V1.11.96 — root-level GitHub entrance video with restrained effects and optional sound */
+/* V1.11.97 — flicker-free root-level entrance video with restrained effects and optional sound */
 (() => {
   const intro = document.getElementById('trenchesIntro');
   if (!intro) return;
@@ -81,9 +81,6 @@
     }
     for (let i = 0; i < 9 * size; i += 1) battle.dirt.push({ x: p.x, y: p.y, vx: (Math.random() - .5) * 210, vy: -85 - Math.random() * 180, age: 0, ttl: .8 + Math.random() * .6, size: 2 + Math.random() * 6 });
     for (let i = 0; i < 3 * size; i += 1) battle.smoke.push({ x: p.x, y: p.y, vx: (Math.random() - .5) * 22, vy: -18 - Math.random() * 22, age: 0, ttl: 1.8 + Math.random(), radius: 12 + Math.random() * 22 });
-    intro.classList.remove('battle-shake');
-    void intro.offsetWidth;
-    intro.classList.add('battle-shake');
   }
 
   function smokePlume(nx, ny, count = 8) {

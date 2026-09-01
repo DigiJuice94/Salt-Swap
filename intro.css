@@ -1,4 +1,4 @@
-/* V1.11.96 — root-level GitHub video fix with cinematic battle overlays */
+/* V1.11.97 — flicker-free root-level video entrance */
 body.trenches-intro-open {
   overflow: hidden !important;
 }
@@ -30,7 +30,6 @@ body.trenches-intro-open {
 .trenchesIntroVignette,
 .trenchesIntroGrain,
 .trenchesIntroHud,
-.trenchesIntroAction,
 .trenchesIntroSmoke,
 .trenchesIntroDebris {
   position: absolute;
@@ -42,7 +41,7 @@ body.trenches-intro-open {
   z-index: 0;
   overflow: hidden;
   background-color: #17150f;
-  background-image: url('/entrance-battlefield-poster.jpg?v=11196');
+  background-image: url('/entrance-battlefield-poster.jpg?v=11197');
   background-position: 50% 50%;
   background-repeat: no-repeat;
   background-size: cover;
@@ -74,10 +73,6 @@ body.trenches-intro-open {
   pointer-events: none;
 }
 
-.battle-shake .trenchesIntroShade { animation: battlefieldFlash .38s ease-out; }
-
-.trenchesIntroAction { opacity: .42; }
-
 .trenchesIntroShade {
   z-index: 1;
   background:
@@ -92,10 +87,10 @@ body.trenches-intro-open {
 
 .trenchesIntroGrain {
   z-index: 8;
-  opacity: .12;
+  opacity: .055;
   mix-blend-mode: soft-light;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.88' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
-  animation: trenchesIntroGrain .25s steps(2) infinite;
+  animation: none;
 }
 
 .trenchesIntroHud {
@@ -420,19 +415,6 @@ body.trenches-intro-open {
 .trenchMuzzle.one { left: 38%; top: 47%; --muzzle-delay: .3s; }
 .trenchMuzzle.two { left: 18.5%; top: 68%; --muzzle-delay: 1.2s; }
 .trenchMuzzle.three { left: 23%; top: 52%; --muzzle-delay: 2s; }
-
-.trenchExplosion {
-  position: absolute;
-  width: clamp(38px, 4.5vw, 78px);
-  aspect-ratio: 1;
-  opacity: 0;
-  border-radius: 50%;
-  background: radial-gradient(circle, #fff7bf 0 5%, #ffc343 14%, #f06a16 31%, rgba(100,55,20,.45) 48%, transparent 70%);
-  mix-blend-mode: screen;
-  animation: battlefieldImpact 4.6s var(--impact-delay) infinite;
-}
-.trenchExplosion.one { left: 12%; top: 18%; --impact-delay: .6s; }
-.trenchExplosion.two { right: 13%; top: 24%; --impact-delay: 2.9s; }
 
 .trenchesIntroImpacts { position:absolute; inset:0; z-index:17; pointer-events:none; }
 .trenchImpact {
