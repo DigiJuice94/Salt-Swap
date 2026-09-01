@@ -18,3 +18,5 @@ This update keeps the V1.10.44 scanner and social functionality intact while rep
 - `assets/trenches-entrance-sheep.png` — the established single-sheep trench artwork.
 
 The stylesheet and entrance image now use folder-relative paths so the scene works when opened directly, previewed from a subfolder, or deployed as the site root.
+
+The entrance scene, atmosphere, shade, and text also use explicit positive stacking layers so the sheep artwork remains visible above the entrance background.

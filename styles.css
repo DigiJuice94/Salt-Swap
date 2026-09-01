@@ -1475,7 +1475,7 @@ body.entrance-locked {
 .trenchEntranceScene {
   position: absolute;
   inset: -3%;
-  z-index: -4;
+  z-index: 0;
   background-image: url('./assets/trenches-entrance-sheep.png');
   background-position: center 45%;
   background-size: cover;
@@ -1487,7 +1487,7 @@ body.entrance-locked {
 .trenchEntranceShade {
   position: absolute;
   inset: 0;
-  z-index: -1;
+  z-index: 2;
   pointer-events: none;
   background:
     linear-gradient(180deg, rgba(10,10,7,.18) 0%, transparent 33%, rgba(9,9,7,.18) 58%, rgba(8,8,6,.88) 100%),
@@ -1503,7 +1503,7 @@ body.entrance-locked {
 
 .trenchEntranceAtmosphere {
   inset: 0;
-  z-index: -2;
+  z-index: 1;
   overflow: hidden;
 }
 
@@ -1564,6 +1564,7 @@ body.entrance-locked {
 
 .trenchEntranceContent {
   position: absolute;
+  z-index: 3;
   left: 50%;
   bottom: clamp(42px, 7vh, 88px);
   width: min(92vw, 860px);
@@ -1640,6 +1641,7 @@ body.entrance-locked {
 
 .entranceScrollCue {
   position: absolute;
+  z-index: 3;
   left: 50%;
   bottom: 14px;
   width: 18px;
