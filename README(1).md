@@ -1,4 +1,14 @@
-# The Trenches V1.11.91 — Full Canvas Battle Animation
+# The Trenches V1.11.92 — Simple Sheep Trench Animation
+
+## V1.11.92 update
+
+- Starts from the complete V1.11.91 full-canvas project and preserves every scanner, swap, social, portfolio, community, and wallet feature.
+- Simplifies the entrance artwork to one sheep running through one trench.
+- Removes the Pepe, Shiba/black bull, Cash Cat, Troll Face, radio frog, ammo runner, character masks, muzzle flashes, and crossfire from the entrance.
+- Keeps the real-time Canvas system for distant bombs, expanding smoke, dirt, sparks, debris, subtle camera movement, and battlefield ambience.
+- Keeps the animated Welcome to The Trenches title, bullet holes, sound control, and Enter The Trenches transition.
+
+## Previous V1.11.91 update
 
 ## V1.11.91 update
 

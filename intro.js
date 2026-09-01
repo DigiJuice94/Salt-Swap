@@ -1,4 +1,4 @@
-/* V1.11.91 — synchronized character beats, Canvas battle effects, title sequence, and ambience */
+/* V1.11.92 — one-sheep trench scene with restrained Canvas bombs, smoke, title sequence, and ambience */
 (() => {
   const intro = document.getElementById('trenchesIntro');
   if (!intro) return;
@@ -19,15 +19,15 @@
     if (!impactsLayer || intro.hidden || intro.classList.contains('is-exiting')) return;
     const impact = document.createElement('i');
     impact.className = 'trenchImpact';
-    impact.style.left = `${24 + Math.random() * 54}%`;
-    impact.style.top = `${45 + Math.random() * 38}%`;
+    impact.style.left = `${10 + Math.random() * 80}%`;
+    impact.style.top = `${18 + Math.random() * 31}%`;
     impactsLayer.appendChild(impact);
     impact.addEventListener('animationend', () => impact.remove(), { once: true });
   }
 
   const impactTimer = window.setInterval(() => {
     if (Math.random() > .34) spawnImpact();
-  }, 620);
+  }, 900);
 
   /* A real-time battle renderer keeps every projectile, casing, smoke puff,
      explosion and action beat independent instead of moving one flat layer. */
@@ -74,6 +74,21 @@
     intro.classList.add('battle-shake');
   }
 
+  function smokePlume(nx, ny, count = 8) {
+    const p = point(nx, ny);
+    for (let i = 0; i < count; i += 1) {
+      battle.smoke.push({
+        x: p.x + (Math.random() - .5) * 85,
+        y: p.y + (Math.random() - .5) * 32,
+        vx: (Math.random() - .5) * 18,
+        vy: -15 - Math.random() * 27,
+        age: 0,
+        ttl: 2.4 + Math.random() * 1.8,
+        radius: 20 + Math.random() * 34
+      });
+    }
+  }
+
   function throwGrenade() {
     const p = point(.82, .43);
     battle.grenades.push({ x: p.x, y: p.y, vx: -window.innerWidth * .23, vy: -window.innerHeight * .34, age: 0, ttl: 1.55, rot: 0 });
@@ -88,25 +103,13 @@
 
   function runBattleBeat() {
     if (!battleRunning || intro.hidden || intro.classList.contains('is-exiting')) return;
-    actionClass('battle-sheep-fire', 720);
-    tracer(.31, .765, .76, .59, 'friendly');
-    window.setTimeout(() => tracer(.31, .765, .87, .67, 'friendly'), 125);
-
+    burst(.16 + Math.random() * .1, .25 + Math.random() * .1, 1.05);
+    smokePlume(.18, .24, 7);
     window.setTimeout(() => {
-      actionClass('battle-cashcat-fire', 760);
-      tracer(.82, .705, .34, .62, 'enemy');
-      window.setTimeout(() => tracer(.82, .705, .19, .74, 'enemy'), 145);
-    }, 420);
-
-    window.setTimeout(() => actionClass('battle-pepe-reload', 1450), 780);
-    window.setTimeout(() => actionClass('battle-medic-work', 1800), 1080);
-    window.setTimeout(() => { actionClass('battle-troll-throw', 1150); throwGrenade(); }, 1550);
-    window.setTimeout(() => actionClass('battle-distant-run', 2300), 2050);
-    window.setTimeout(() => burst(.55 + Math.random() * .15, .68 + Math.random() * .12, 1), 2550);
-    window.setTimeout(() => {
-      tracer(.12, .49, .78, .52, 'friendly');
-      tracer(.88, .48, .35, .55, 'enemy');
-    }, 3300);
+      burst(.74 + Math.random() * .11, .23 + Math.random() * .11, 1.1);
+      smokePlume(.82, .22, 8);
+    }, 1650);
+    window.setTimeout(() => smokePlume(.5, .15, 5), 3300);
   }
 
   function drawBattle(now) {
@@ -171,7 +174,7 @@
     resizeBattleCanvas();
     window.addEventListener('resize', resizeBattleCanvas, { passive: true });
     runBattleBeat();
-    battleBeatTimer = window.setInterval(runBattleBeat, 5200);
+    battleBeatTimer = window.setInterval(runBattleBeat, 5800);
     battleFrame = window.requestAnimationFrame(drawBattle);
   }
 

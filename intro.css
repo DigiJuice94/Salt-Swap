@@ -1,4 +1,4 @@
-/* V1.11.91 — synchronized Canvas battlefield animation */
+/* V1.11.92 — simple one-sheep trench entrance with Canvas bombs and smoke */
 body.trenches-intro-open {
   overflow: hidden !important;
 }
@@ -39,13 +39,14 @@ body.trenches-intro-open {
 }
 
 .trenchesIntroScene {
-  z-index: -7;
-  background-image: url('/intro-battlefield.png?v=11191');
-  background-position: 50% 48%;
+  z-index: 0;
+  background-image: url('/intro-battlefield.png?v=11192');
+  background-position: 50% 50%;
   background-repeat: no-repeat;
   background-size: cover;
-  transform: none;
-  will-change: background-position;
+  transform: scale(1.035);
+  will-change: transform;
+  animation: trenchesIntroCamera 12s ease-in-out infinite alternate;
 }
 
 .trenchesIntroActors { z-index: -5; }
@@ -115,10 +116,10 @@ body.trenches-intro-open {
 .battle-distant-run .actor-distant { animation: distantRunnerBeat 2.3s ease-in-out both; }
 .battle-shake .trenchesIntroShade { animation: battlefieldFlash .38s ease-out; }
 
-.trenchesIntroAction { opacity: .22; }
+.trenchesIntroAction { opacity: .74; }
 
 .trenchesIntroShade {
-  z-index: -6;
+  z-index: 1;
   background:
     linear-gradient(180deg, rgba(10, 12, 8, .48) 0%, rgba(11, 12, 8, .09) 34%, rgba(8, 9, 6, .25) 66%, rgba(7, 8, 5, .75) 100%),
     linear-gradient(90deg, rgba(8, 8, 6, .35), transparent 31%, transparent 66%, rgba(8, 8, 6, .34));
@@ -426,8 +427,8 @@ body.trenches-intro-open {
   mix-blend-mode: screen;
   animation: battlefieldImpact 4.6s var(--impact-delay) infinite;
 }
-.trenchExplosion.one { left: 60%; top: 57%; --impact-delay: .6s; }
-.trenchExplosion.two { left: 49%; top: 72%; --impact-delay: 2.7s; }
+.trenchExplosion.one { left: 12%; top: 18%; --impact-delay: .6s; }
+.trenchExplosion.two { right: 13%; top: 24%; --impact-delay: 2.9s; }
 
 .trenchesIntroImpacts { position:absolute; inset:0; z-index:17; pointer-events:none; }
 .trenchImpact {
@@ -447,19 +448,19 @@ body.trenches-intro-open {
 
 .trenchSmokePuff {
   position: absolute;
-  bottom: -18%;
+  top: 7%;
   width: clamp(190px, 29vw, 470px);
   aspect-ratio: 1.6;
   border-radius: 50%;
   opacity: .18;
   filter: blur(38px);
   background: radial-gradient(ellipse, rgba(57, 54, 42, .95), rgba(31, 31, 25, .28) 55%, transparent 72%);
-  animation: trenchesIntroSmokeRise var(--smoke-speed, 16s) ease-in-out var(--smoke-delay, 0s) infinite;
+  animation: singleTrenchSmokeDrift var(--smoke-speed, 16s) ease-in-out var(--smoke-delay, 0s) infinite alternate;
 }
 
-.trenchSmokePuff:nth-child(1) { left: -6%; --smoke-speed: 15s; }
-.trenchSmokePuff:nth-child(2) { left: 34%; --smoke-speed: 19s; --smoke-delay: -7s; }
-.trenchSmokePuff:nth-child(3) { right: -7%; --smoke-speed: 17s; --smoke-delay: -3s; }
+.trenchSmokePuff:nth-child(1) { left: -6%; top: 10%; --smoke-speed: 15s; }
+.trenchSmokePuff:nth-child(2) { left: 35%; top: 4%; --smoke-speed: 19s; --smoke-delay: -7s; opacity: .12; }
+.trenchSmokePuff:nth-child(3) { right: -7%; top: 8%; --smoke-speed: 17s; --smoke-delay: -3s; }
 
 .trenchesIntroDebris {
   z-index: 6;
@@ -596,6 +597,12 @@ body.trenches-intro-open {
   0% { transform: translate3d(0, 25%, 0) scale(.9); opacity: .05; }
   42% { opacity: .2; }
   100% { transform: translate3d(5%, -130%, 0) scale(1.7); opacity: 0; }
+}
+
+@keyframes singleTrenchSmokeDrift {
+  0% { transform: translate3d(-5%, 8%, 0) scale(.92); opacity: .09; }
+  45% { opacity: .2; }
+  100% { transform: translate3d(9%, -9%, 0) scale(1.2); opacity: .13; }
 }
 
 @keyframes trenchesIntroDebrisFall {
