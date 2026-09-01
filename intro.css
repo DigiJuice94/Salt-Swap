@@ -1,4 +1,4 @@
-/* V1.11.95 — GitHub-sized animated video entrance with cinematic battle overlays */
+/* V1.11.96 — root-level GitHub video fix with cinematic battle overlays */
 body.trenches-intro-open {
   overflow: hidden !important;
 }
@@ -42,7 +42,7 @@ body.trenches-intro-open {
   z-index: 0;
   overflow: hidden;
   background-color: #17150f;
-  background-image: url('/assets/entrance-battlefield-poster.jpg?v=11195');
+  background-image: url('/entrance-battlefield-poster.jpg?v=11196');
   background-position: 50% 50%;
   background-repeat: no-repeat;
   background-size: cover;

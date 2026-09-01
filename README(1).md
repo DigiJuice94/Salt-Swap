@@ -1,3 +1,14 @@
+# The Trenches V1.11.96 — Root Video GitHub Fix
+
+## V1.11.96 update
+
+- Moves the entrance MP4 and poster into the project's main folder so GitHub's browser uploader includes them with the root files.
+- Updates the HTML, CSS, and Vercel routes to load both entrance files directly from the root.
+- Keeps the complete ZIP below GitHub's 25 MB browser-upload limit.
+- Preserves the entrance text, button, sound, small effects, and full application.
+
+## Previous V1.11.95 update
+
 # The Trenches V1.11.95 — GitHub-Ready Video Entrance
 
 ## V1.11.95 update

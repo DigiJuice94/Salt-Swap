@@ -23,6 +23,14 @@
       "use": "@vercel/static"
     },
     {
+      "src": "entrance-battlefield-hq.mp4",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "entrance-battlefield-poster.jpg",
+      "use": "@vercel/static"
+    },
+    {
       "src": "the-trenches-full-logo.png",
       "use": "@vercel/static"
     },
@@ -167,6 +175,14 @@
     {
       "src": "/intro.js",
       "dest": "/intro.js"
+    },
+    {
+      "src": "/entrance-battlefield-hq.mp4",
+      "dest": "/entrance-battlefield-hq.mp4"
+    },
+    {
+      "src": "/entrance-battlefield-poster.jpg",
+      "dest": "/entrance-battlefield-poster.jpg"
     },
     {
       "src": "/the-trenches-full-logo.png",

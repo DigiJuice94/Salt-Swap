@@ -1,4 +1,4 @@
-/* V1.11.95 — GitHub-sized animated entrance video with restrained effects and optional sound */
+/* V1.11.96 — root-level GitHub entrance video with restrained effects and optional sound */
 (() => {
   const intro = document.getElementById('trenchesIntro');
   if (!intro) return;
