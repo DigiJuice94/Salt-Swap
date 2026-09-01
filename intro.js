@@ -1,4 +1,4 @@
-/* V1.11.92 — one-sheep trench scene with restrained Canvas bombs, smoke, title sequence, and ambience */
+/* V1.11.93 — one-sheep trench scene with randomized blinking, rifle-bolt cycling, Canvas bombs, smoke, and ambience */
 (() => {
   const intro = document.getElementById('trenchesIntro');
   if (!intro) return;
@@ -8,12 +8,52 @@
   const debrisLayer = intro.querySelector('.trenchesIntroDebris');
   const impactsLayer = intro.querySelector('.trenchesIntroImpacts');
   const battleCanvas = document.getElementById('trenchesBattleCanvas');
+  const sheepRig = intro.querySelector('.trenchesSheepRig');
   let audioContext = null;
   let masterGain = null;
   let ambienceTimer = 0;
+  let sheepBlinkTimer = 0;
+  let sheepReloadTimer = 0;
 
   document.body.classList.add('trenches-intro-open');
   window.requestAnimationFrame(() => window.requestAnimationFrame(() => intro.classList.add('intro-ready')));
+
+  function triggerSheepBlink() {
+    if (!sheepRig || intro.hidden || intro.classList.contains('is-exiting')) return;
+    sheepRig.classList.remove('is-blinking');
+    void sheepRig.offsetWidth;
+    sheepRig.classList.add('is-blinking');
+    window.setTimeout(() => sheepRig.classList.remove('is-blinking'), 340);
+  }
+
+  function scheduleSheepBlink() {
+    window.clearTimeout(sheepBlinkTimer);
+    sheepBlinkTimer = window.setTimeout(() => {
+      triggerSheepBlink();
+      if (Math.random() > .68) window.setTimeout(triggerSheepBlink, 240);
+      scheduleSheepBlink();
+    }, 2400 + Math.random() * 3600);
+  }
+
+  function triggerSheepReload() {
+    if (!sheepRig || intro.hidden || intro.classList.contains('is-exiting')) return;
+    sheepRig.classList.remove('is-cycling');
+    void sheepRig.offsetWidth;
+    sheepRig.classList.add('is-cycling');
+    window.setTimeout(() => sheepRig.classList.remove('is-cycling'), 1260);
+  }
+
+  function scheduleSheepReload() {
+    window.clearTimeout(sheepReloadTimer);
+    sheepReloadTimer = window.setTimeout(() => {
+      triggerSheepReload();
+      scheduleSheepReload();
+    }, 4700 + Math.random() * 3100);
+  }
+
+  scheduleSheepBlink();
+  window.setTimeout(triggerSheepReload, 1500);
+  scheduleSheepReload();
 
   function spawnImpact() {
     if (!impactsLayer || intro.hidden || intro.classList.contains('is-exiting')) return;
@@ -287,6 +327,8 @@
     stopSound();
     window.clearInterval(impactTimer);
     window.clearInterval(battleBeatTimer);
+    window.clearTimeout(sheepBlinkTimer);
+    window.clearTimeout(sheepReloadTimer);
     window.cancelAnimationFrame(battleFrame);
     battleRunning = false;
     intro.classList.add('is-exiting');
@@ -307,6 +349,8 @@
     stopSound();
     battleRunning = false;
     window.clearInterval(battleBeatTimer);
+    window.clearTimeout(sheepBlinkTimer);
+    window.clearTimeout(sheepReloadTimer);
     window.cancelAnimationFrame(battleFrame);
   }, { once: true });
 })();

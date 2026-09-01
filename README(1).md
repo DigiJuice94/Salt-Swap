@@ -1,4 +1,14 @@
-# The Trenches V1.11.92 — Simple Sheep Trench Animation
+# The Trenches V1.11.93 — Sheep Reload & Blink Animation
+
+## V1.11.93 update
+
+- Builds directly on V1.11.92 and preserves the complete V1.11.91 application underneath it.
+- Adds randomized natural blinks, including an occasional quick double blink.
+- Adds a visible bolt-action reload cycle with the bolt lifting, pulling back, closing, and ejecting a brass casing.
+- Keeps the one-sheep trench composition, distant bombs, smoke, debris, ambience, title sequence, and Enter transition.
+- Uses code-driven overlays so no new characters or replacement entrance artwork are introduced.
+
+## Previous V1.11.92 update
 
 ## V1.11.92 update
 

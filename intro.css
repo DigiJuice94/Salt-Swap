@@ -1,4 +1,4 @@
-/* V1.11.92 — simple one-sheep trench entrance with Canvas bombs and smoke */
+/* V1.11.93 — one-sheep trench entrance with a working rifle bolt, natural blinking, bombs, and smoke */
 body.trenches-intro-open {
   overflow: hidden !important;
 }
@@ -40,16 +40,130 @@ body.trenches-intro-open {
 
 .trenchesIntroScene {
   z-index: 0;
-  background-image: url('/intro-battlefield.png?v=11192');
+  background-image: url('/intro-battlefield.png?v=11193');
   background-position: 50% 50%;
   background-repeat: no-repeat;
   background-size: cover;
   transform: scale(1.035);
   will-change: transform;
-  animation: trenchesIntroCamera 12s ease-in-out infinite alternate;
+  animation: singleSheepCamera 12s ease-in-out infinite alternate;
 }
 
 .trenchesIntroActors { z-index: -5; }
+
+.trenchesSheepRig {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: 50%;
+  width: max(100vw, 100vh);
+  height: max(100vw, 100vh);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  overflow: visible;
+}
+
+.trenchesSheepRigMotion {
+  position: absolute;
+  inset: 0;
+  animation: singleSheepCamera 12s ease-in-out infinite alternate;
+}
+
+.sheepEyelid {
+  position: absolute;
+  top: 35.7%;
+  width: 8.2%;
+  height: 5.6%;
+  border-bottom: max(2px, .28vmax) solid rgba(16, 15, 12, .96);
+  border-radius: 48% 48% 55% 55%;
+  background: linear-gradient(180deg, #77634d 0%, #57483a 72%, #342d28 100%);
+  box-shadow: inset 0 -1px 0 rgba(255, 221, 169, .08);
+  opacity: 0;
+  transform: scaleY(.05);
+  transform-origin: 50% 0;
+}
+
+.sheepEyelidLeft { left: 43.2%; rotate: 4deg; }
+.sheepEyelidRight { left: 55.1%; rotate: -4deg; }
+
+.trenchesSheepRig.is-blinking .sheepEyelid {
+  animation: sheepNaturalBlink .28s cubic-bezier(.45,0,.55,1) both;
+}
+
+.sheepBolt {
+  position: absolute;
+  z-index: 2;
+  left: 39.2%;
+  top: 53.6%;
+  width: 9.2%;
+  height: 5.7%;
+  transform-origin: 79% 44%;
+  opacity: 0;
+}
+
+.sheepBolt::before {
+  content: "";
+  position: absolute;
+  left: 20%;
+  top: 31%;
+  width: 69%;
+  height: 17%;
+  border: max(1px, .09vmax) solid rgba(14, 14, 12, .86);
+  border-radius: 999px;
+  background: linear-gradient(180deg, #c4b08b 0%, #6e6658 42%, #282a27 55%, #8a7d68 100%);
+  box-shadow: 0 .11vmax .2vmax rgba(0,0,0,.54), inset 0 .08vmax .08vmax rgba(255,244,210,.34);
+}
+
+.sheepBolt::after {
+  content: "";
+  position: absolute;
+  left: 12%;
+  top: 41%;
+  width: 19%;
+  aspect-ratio: 1;
+  border: max(1px, .09vmax) solid rgba(13, 13, 11, .9);
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 30%, #a8987a 0 12%, #514c42 44%, #232521 73%);
+  box-shadow: 0 .12vmax .22vmax rgba(0,0,0,.52);
+}
+
+.sheepBolt span {
+  position: absolute;
+  left: 22%;
+  top: 42%;
+  width: 22%;
+  height: 11%;
+  border-radius: 999px;
+  background: #343631;
+  transform: rotate(-38deg);
+  transform-origin: right center;
+  box-shadow: 0 1px 0 rgba(202,184,146,.32);
+}
+
+.trenchesSheepRig.is-cycling .sheepBolt {
+  opacity: .98;
+  animation: sheepBoltCycle 1.16s cubic-bezier(.4,0,.2,1) both;
+}
+
+.sheepEjectedCasing {
+  position: absolute;
+  z-index: 3;
+  left: 48%;
+  top: 53.2%;
+  width: .42%;
+  height: 1.15%;
+  min-width: 3px;
+  min-height: 7px;
+  border-radius: 30% 30% 44% 44%;
+  border: 1px solid rgba(67,42,11,.68);
+  background: linear-gradient(90deg, #7f521a, #f1c05d 46%, #9d651d);
+  box-shadow: 0 0 .2vmax rgba(255,184,63,.32);
+  opacity: 0;
+}
+
+.trenchesSheepRig.is-cycling .sheepEjectedCasing {
+  animation: sheepCasingEject 1.16s cubic-bezier(.2,.72,.25,1) both;
+}
 
 .trenchesBattleCanvas {
   position: absolute;
@@ -506,6 +620,32 @@ body.trenches-intro-open {
   100% { transform: scale(1.095) translate3d(.9%, .5%, 0); }
 }
 
+@keyframes singleSheepCamera {
+  0% { transform: scale(1.035); }
+  100% { transform: scale(1.07); }
+}
+
+@keyframes sheepNaturalBlink {
+  0%, 100% { opacity: 0; transform: scaleY(.05); }
+  28%, 66% { opacity: 1; transform: scaleY(1); }
+}
+
+@keyframes sheepBoltCycle {
+  0%, 100% { opacity: 0; transform: translate3d(0,0,0) rotate(0); }
+  9% { opacity: .98; transform: translate3d(0,0,0) rotate(0); }
+  20% { opacity: .98; transform: translate3d(0,-.7vmax,0) rotate(-12deg); }
+  46% { opacity: .98; transform: translate3d(-2.1vmax,-.72vmax,0) rotate(-12deg); }
+  61% { opacity: .98; transform: translate3d(-2.1vmax,-.72vmax,0) rotate(-8deg); }
+  82% { opacity: .98; transform: translate3d(0,-.12vmax,0) rotate(0); }
+}
+
+@keyframes sheepCasingEject {
+  0%, 33% { opacity: 0; transform: translate3d(0,0,0) rotate(0); }
+  42% { opacity: 1; }
+  70% { opacity: .9; transform: translate3d(2.6vmax,-4.2vmax,0) rotate(310deg); }
+  100% { opacity: 0; transform: translate3d(4.3vmax,-1.2vmax,0) rotate(660deg); }
+}
+
 @keyframes actorSheepRecoil { 0%,74%,100%{transform:translate3d(0,0,0)} 76%{transform:translate3d(-3px,1px,0)} 79%{transform:translate3d(1px,0,0)} }
 @keyframes actorReload { 0%,100%{transform:translate3d(0,1px,0)} 45%{transform:translate3d(1px,-2px,0)} 65%{transform:translate3d(-1px,-1px,0)} }
 @keyframes actorMedic { 0%,100%{transform:translate3d(0,0,0) rotate(0)} 50%{transform:translate3d(1px,2px,0) rotate(-.12deg)} }
@@ -664,6 +804,7 @@ body.trenches-intro-open {
 
 @media (prefers-reduced-motion: reduce) {
   .trenchesIntroScene,
+  .trenchesSheepRigMotion,
   .trenchesIntroActor,
   .trenchesIntroEyebrow,
   .trenchesIntroTitle,
@@ -675,6 +816,9 @@ body.trenches-intro-open {
   .trenchTracer,
   .trenchMuzzle,
   .trenchSmokePuff,
+  .sheepEyelid,
+  .sheepBolt,
+  .sheepEjectedCasing,
   .trenchDebrisPiece {
     animation: none !important;
   }
