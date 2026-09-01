@@ -1,4 +1,4 @@
-/* V1.11.93 — one-sheep trench entrance with a working rifle bolt, natural blinking, bombs, and smoke */
+/* V1.11.95 — GitHub-sized animated video entrance with cinematic battle overlays */
 body.trenches-intro-open {
   overflow: hidden !important;
 }
@@ -26,10 +26,10 @@ body.trenches-intro-open {
 }
 
 .trenchesIntroScene,
-.trenchesIntroActors,
 .trenchesIntroShade,
 .trenchesIntroVignette,
 .trenchesIntroGrain,
+.trenchesIntroHud,
 .trenchesIntroAction,
 .trenchesIntroSmoke,
 .trenchesIntroDebris {
@@ -40,130 +40,30 @@ body.trenches-intro-open {
 
 .trenchesIntroScene {
   z-index: 0;
-  background-image: url('/intro-battlefield.png?v=11193');
+  overflow: hidden;
+  background-color: #17150f;
+  background-image: url('/assets/entrance-battlefield-poster.jpg?v=11195');
   background-position: 50% 50%;
   background-repeat: no-repeat;
   background-size: cover;
-  transform: scale(1.035);
-  will-change: transform;
-  animation: singleSheepCamera 12s ease-in-out infinite alternate;
 }
 
-.trenchesIntroActors { z-index: -5; }
-
-.trenchesSheepRig {
-  position: absolute;
-  z-index: 3;
-  left: 50%;
-  top: 50%;
-  width: max(100vw, 100vh);
-  height: max(100vw, 100vh);
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  overflow: visible;
-}
-
-.trenchesSheepRigMotion {
-  position: absolute;
-  inset: 0;
-  animation: singleSheepCamera 12s ease-in-out infinite alternate;
-}
-
-.sheepEyelid {
-  position: absolute;
-  top: 35.7%;
-  width: 8.2%;
-  height: 5.6%;
-  border-bottom: max(2px, .28vmax) solid rgba(16, 15, 12, .96);
-  border-radius: 48% 48% 55% 55%;
-  background: linear-gradient(180deg, #77634d 0%, #57483a 72%, #342d28 100%);
-  box-shadow: inset 0 -1px 0 rgba(255, 221, 169, .08);
+.trenchesIntroVideo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;
+  background: transparent;
+  filter: contrast(1.055) saturate(1.075) brightness(.94);
+  transform: scale(1.006);
+  transform-origin: center;
   opacity: 0;
-  transform: scaleY(.05);
-  transform-origin: 50% 0;
+  transition: opacity .5s ease;
+  will-change: opacity;
 }
 
-.sheepEyelidLeft { left: 43.2%; rotate: 4deg; }
-.sheepEyelidRight { left: 55.1%; rotate: -4deg; }
-
-.trenchesSheepRig.is-blinking .sheepEyelid {
-  animation: sheepNaturalBlink .28s cubic-bezier(.45,0,.55,1) both;
-}
-
-.sheepBolt {
-  position: absolute;
-  z-index: 2;
-  left: 39.2%;
-  top: 53.6%;
-  width: 9.2%;
-  height: 5.7%;
-  transform-origin: 79% 44%;
-  opacity: 0;
-}
-
-.sheepBolt::before {
-  content: "";
-  position: absolute;
-  left: 20%;
-  top: 31%;
-  width: 69%;
-  height: 17%;
-  border: max(1px, .09vmax) solid rgba(14, 14, 12, .86);
-  border-radius: 999px;
-  background: linear-gradient(180deg, #c4b08b 0%, #6e6658 42%, #282a27 55%, #8a7d68 100%);
-  box-shadow: 0 .11vmax .2vmax rgba(0,0,0,.54), inset 0 .08vmax .08vmax rgba(255,244,210,.34);
-}
-
-.sheepBolt::after {
-  content: "";
-  position: absolute;
-  left: 12%;
-  top: 41%;
-  width: 19%;
-  aspect-ratio: 1;
-  border: max(1px, .09vmax) solid rgba(13, 13, 11, .9);
-  border-radius: 50%;
-  background: radial-gradient(circle at 38% 30%, #a8987a 0 12%, #514c42 44%, #232521 73%);
-  box-shadow: 0 .12vmax .22vmax rgba(0,0,0,.52);
-}
-
-.sheepBolt span {
-  position: absolute;
-  left: 22%;
-  top: 42%;
-  width: 22%;
-  height: 11%;
-  border-radius: 999px;
-  background: #343631;
-  transform: rotate(-38deg);
-  transform-origin: right center;
-  box-shadow: 0 1px 0 rgba(202,184,146,.32);
-}
-
-.trenchesSheepRig.is-cycling .sheepBolt {
-  opacity: .98;
-  animation: sheepBoltCycle 1.16s cubic-bezier(.4,0,.2,1) both;
-}
-
-.sheepEjectedCasing {
-  position: absolute;
-  z-index: 3;
-  left: 48%;
-  top: 53.2%;
-  width: .42%;
-  height: 1.15%;
-  min-width: 3px;
-  min-height: 7px;
-  border-radius: 30% 30% 44% 44%;
-  border: 1px solid rgba(67,42,11,.68);
-  background: linear-gradient(90deg, #7f521a, #f1c05d 46%, #9d651d);
-  box-shadow: 0 0 .2vmax rgba(255,184,63,.32);
-  opacity: 0;
-}
-
-.trenchesSheepRig.is-cycling .sheepEjectedCasing {
-  animation: sheepCasingEject 1.16s cubic-bezier(.2,.72,.25,1) both;
-}
+.trenchesIntro.video-ready .trenchesIntroVideo { opacity: 1; }
 
 .trenchesBattleCanvas {
   position: absolute;
@@ -174,63 +74,9 @@ body.trenches-intro-open {
   pointer-events: none;
 }
 
-.trenchesIntroActor {
-  position: absolute;
-  inset: 0;
-  display: block;
-  background: url('/intro-battlefield.png?v=11191') 50% 48% / cover no-repeat;
-  will-change: transform;
-  filter: saturate(1.04) contrast(1.02);
-}
-
-.actor-sheep {
-  -webkit-mask-image: radial-gradient(ellipse 18% 27% at 15% 77%, #000 0 57%, transparent 76%);
-  mask-image: radial-gradient(ellipse 18% 27% at 15% 77%, #000 0 57%, transparent 76%);
-  animation: actorSheepRecoil 2.15s steps(1) infinite;
-  transform-origin: 15% 78%;
-}
-.actor-pepe {
-  -webkit-mask-image: radial-gradient(ellipse 11% 18% at 7% 49%, #000 0 55%, transparent 76%);
-  mask-image: radial-gradient(ellipse 11% 18% at 7% 49%, #000 0 55%, transparent 76%);
-  animation: actorReload 3.4s ease-in-out infinite;
-  transform-origin: 7% 50%;
-}
-.actor-medic {
-  -webkit-mask-image: radial-gradient(ellipse 17% 20% at 31% 54%, #000 0 55%, transparent 78%);
-  mask-image: radial-gradient(ellipse 17% 20% at 31% 54%, #000 0 55%, transparent 78%);
-  animation: actorMedic 2.8s ease-in-out infinite;
-  transform-origin: 31% 57%;
-}
-.actor-cashcat {
-  -webkit-mask-image: radial-gradient(ellipse 16% 25% at 88% 70%, #000 0 58%, transparent 77%);
-  mask-image: radial-gradient(ellipse 16% 25% at 88% 70%, #000 0 58%, transparent 77%);
-  animation: actorCashCat 2.45s steps(1) .4s infinite;
-  transform-origin: 88% 73%;
-}
-.actor-troll {
-  -webkit-mask-image: radial-gradient(ellipse 10% 16% at 94% 45%, #000 0 56%, transparent 77%);
-  mask-image: radial-gradient(ellipse 10% 16% at 94% 45%, #000 0 56%, transparent 77%);
-  animation: actorTrollThrow 3.8s ease-in-out .2s infinite;
-  transform-origin: 94% 48%;
-}
-.actor-distant {
-  -webkit-mask-image: radial-gradient(ellipse 16% 11% at 55% 55%, #000 0 52%, transparent 78%);
-  mask-image: radial-gradient(ellipse 16% 11% at 55% 55%, #000 0 52%, transparent 78%);
-  animation: actorDistantRun 5.2s ease-in-out infinite;
-  transform-origin: 55% 57%;
-}
-
-/* JavaScript fires these classes on one shared timeline. Each masked actor
-   receives a different, readable action instead of one global camera wobble. */
-.battle-sheep-fire .actor-sheep { animation: sheepCombatBeat .72s cubic-bezier(.2,.8,.2,1) both; }
-.battle-pepe-reload .actor-pepe { animation: pepeReloadBeat 1.45s ease-in-out both; }
-.battle-medic-work .actor-medic { animation: medicBandageBeat 1.8s ease-in-out both; }
-.battle-cashcat-fire .actor-cashcat { animation: cashCatCombatBeat .76s cubic-bezier(.2,.8,.2,1) both; }
-.battle-troll-throw .actor-troll { animation: trollThrowBeat 1.15s cubic-bezier(.3,.7,.25,1) both; }
-.battle-distant-run .actor-distant { animation: distantRunnerBeat 2.3s ease-in-out both; }
 .battle-shake .trenchesIntroShade { animation: battlefieldFlash .38s ease-out; }
 
-.trenchesIntroAction { opacity: .74; }
+.trenchesIntroAction { opacity: .42; }
 
 .trenchesIntroShade {
   z-index: 1;
@@ -250,6 +96,50 @@ body.trenches-intro-open {
   mix-blend-mode: soft-light;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.88' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
   animation: trenchesIntroGrain .25s steps(2) infinite;
+}
+
+.trenchesIntroHud {
+  z-index: 9;
+  inset: clamp(78px, 9vh, 108px) clamp(20px, 3.4vw, 54px) clamp(54px, 7vh, 76px);
+  color: rgba(246, 225, 172, .64);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, .9);
+}
+
+.hudCorner {
+  position: absolute;
+  width: clamp(24px, 2.5vw, 38px);
+  height: clamp(24px, 2.5vw, 38px);
+  border-color: rgba(239, 210, 137, .38);
+  border-style: solid;
+}
+
+.hudTopLeft { top: 0; left: 0; border-width: 1px 0 0 1px; }
+.hudTopRight { top: 0; right: 0; border-width: 1px 1px 0 0; }
+.hudBottomLeft { bottom: 0; left: 0; border-width: 0 0 1px 1px; }
+.hudBottomRight { right: 0; bottom: 0; border-width: 0 1px 1px 0; }
+
+.hudLabel {
+  position: absolute;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: clamp(7px, .62vw, 10px);
+  font-weight: 800;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.hudFeed { top: 9px; left: 13px; }
+.hudSignal { right: 13px; bottom: 9px; }
+
+.hudSignal::before {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin: 0 7px 1px 0;
+  border-radius: 50%;
+  background: #f0bd59;
+  box-shadow: 0 0 10px rgba(240, 189, 89, .9);
+  animation: trenchesIntroLivePulse 1.4s ease-in-out infinite;
 }
 
 .trenchesIntroTopbar {
@@ -533,7 +423,7 @@ body.trenches-intro-open {
 
 .trenchExplosion {
   position: absolute;
-  width: clamp(54px, 7vw, 115px);
+  width: clamp(38px, 4.5vw, 78px);
   aspect-ratio: 1;
   opacity: 0;
   border-radius: 50%;
@@ -566,7 +456,7 @@ body.trenches-intro-open {
   width: clamp(190px, 29vw, 470px);
   aspect-ratio: 1.6;
   border-radius: 50%;
-  opacity: .18;
+  opacity: .12;
   filter: blur(38px);
   background: radial-gradient(ellipse, rgba(57, 54, 42, .95), rgba(31, 31, 25, .28) 55%, transparent 72%);
   animation: singleTrenchSmokeDrift var(--smoke-speed, 16s) ease-in-out var(--smoke-delay, 0s) infinite alternate;
@@ -618,32 +508,6 @@ body.trenches-intro-open {
 @keyframes trenchesIntroCamera {
   0% { transform: scale(1.035) translate3d(-.5%, -.3%, 0); }
   100% { transform: scale(1.095) translate3d(.9%, .5%, 0); }
-}
-
-@keyframes singleSheepCamera {
-  0% { transform: scale(1.035); }
-  100% { transform: scale(1.07); }
-}
-
-@keyframes sheepNaturalBlink {
-  0%, 100% { opacity: 0; transform: scaleY(.05); }
-  28%, 66% { opacity: 1; transform: scaleY(1); }
-}
-
-@keyframes sheepBoltCycle {
-  0%, 100% { opacity: 0; transform: translate3d(0,0,0) rotate(0); }
-  9% { opacity: .98; transform: translate3d(0,0,0) rotate(0); }
-  20% { opacity: .98; transform: translate3d(0,-.7vmax,0) rotate(-12deg); }
-  46% { opacity: .98; transform: translate3d(-2.1vmax,-.72vmax,0) rotate(-12deg); }
-  61% { opacity: .98; transform: translate3d(-2.1vmax,-.72vmax,0) rotate(-8deg); }
-  82% { opacity: .98; transform: translate3d(0,-.12vmax,0) rotate(0); }
-}
-
-@keyframes sheepCasingEject {
-  0%, 33% { opacity: 0; transform: translate3d(0,0,0) rotate(0); }
-  42% { opacity: 1; }
-  70% { opacity: .9; transform: translate3d(2.6vmax,-4.2vmax,0) rotate(310deg); }
-  100% { opacity: 0; transform: translate3d(4.3vmax,-1.2vmax,0) rotate(660deg); }
 }
 
 @keyframes actorSheepRecoil { 0%,74%,100%{transform:translate3d(0,0,0)} 76%{transform:translate3d(-3px,1px,0)} 79%{transform:translate3d(1px,0,0)} }
@@ -759,9 +623,13 @@ body.trenches-intro-open {
 }
 
 @media (max-width: 760px) {
-  .trenchesIntroScene,
-  .trenchesIntroActor {
+  .trenchesIntroScene {
     background-position: 43% 52%;
+  }
+
+  .trenchesIntroVideo {
+    object-fit: contain;
+    transform: none;
   }
 
   .trenchesIntroLive {
@@ -804,8 +672,6 @@ body.trenches-intro-open {
 
 @media (prefers-reduced-motion: reduce) {
   .trenchesIntroScene,
-  .trenchesSheepRigMotion,
-  .trenchesIntroActor,
   .trenchesIntroEyebrow,
   .trenchesIntroTitle,
   .trenchesIntroTagline,
@@ -816,11 +682,9 @@ body.trenches-intro-open {
   .trenchTracer,
   .trenchMuzzle,
   .trenchSmokePuff,
-  .sheepEyelid,
-  .sheepBolt,
-  .sheepEjectedCasing,
   .trenchDebrisPiece {
     animation: none !important;
   }
+  .trenchesIntroVideo { display: none !important; }
   .trenchesBattleCanvas { display: none !important; }
 }

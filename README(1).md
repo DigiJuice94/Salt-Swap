@@ -1,3 +1,27 @@
+# The Trenches V1.11.95 — GitHub-Ready Video Entrance
+
+## V1.11.95 update
+
+- Reduces the complete one-folder ZIP below GitHub's 25 MB browser-upload limit.
+- Optimizes the entrance loop to browser-compatible 1920×1080 H.264 video at 30 fps.
+- Removes only the unused pre-video entrance artwork; all current entrance and application features remain intact.
+- Keeps the video background, entrance text, button, sound, and restrained effects unchanged.
+
+## Previous V1.11.94 update
+
+# The Trenches V1.11.94 — High-Quality Video Entrance
+
+## V1.11.94 update
+
+- Uses the supplied `0831.mp4` animation as the entrance background only.
+- Re-encodes the clip as browser-compatible H.264 while preserving its 2560×1440 resolution and 60 fps motion.
+- Keeps the entrance text, animated title, Enter button, logo, sound control, and exit transition above the video.
+- Adds only restrained effects above the clip: light smoke, occasional sparks, one tracer, minimal debris, vignette, grain, and subtle trench-camera framing.
+- Removes the separate sheep blink/reload overlay so no extra character is placed over the video.
+- Preserves the full V1.11.93 application underneath the entrance.
+
+## Previous V1.11.93 update
+
 # The Trenches V1.11.93 — Sheep Reload & Blink Animation
 
 ## V1.11.93 update

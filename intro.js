@@ -1,4 +1,4 @@
-/* V1.11.93 — one-sheep trench scene with randomized blinking, rifle-bolt cycling, Canvas bombs, smoke, and ambience */
+/* V1.11.95 — GitHub-sized animated entrance video with restrained effects and optional sound */
 (() => {
   const intro = document.getElementById('trenchesIntro');
   if (!intro) return;
@@ -8,52 +8,25 @@
   const debrisLayer = intro.querySelector('.trenchesIntroDebris');
   const impactsLayer = intro.querySelector('.trenchesIntroImpacts');
   const battleCanvas = document.getElementById('trenchesBattleCanvas');
-  const sheepRig = intro.querySelector('.trenchesSheepRig');
+  const introVideo = document.getElementById('trenchesIntroVideo');
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let audioContext = null;
   let masterGain = null;
   let ambienceTimer = 0;
-  let sheepBlinkTimer = 0;
-  let sheepReloadTimer = 0;
 
   document.body.classList.add('trenches-intro-open');
   window.requestAnimationFrame(() => window.requestAnimationFrame(() => intro.classList.add('intro-ready')));
 
-  function triggerSheepBlink() {
-    if (!sheepRig || intro.hidden || intro.classList.contains('is-exiting')) return;
-    sheepRig.classList.remove('is-blinking');
-    void sheepRig.offsetWidth;
-    sheepRig.classList.add('is-blinking');
-    window.setTimeout(() => sheepRig.classList.remove('is-blinking'), 340);
+  if (introVideo) {
+    introVideo.volume = .6;
+    introVideo.muted = true;
+    const revealVideo = () => intro.classList.add('video-ready');
+    introVideo.addEventListener('loadeddata', revealVideo, { once: true });
+    introVideo.addEventListener('canplay', revealVideo, { once: true });
+    if (introVideo.readyState >= 2) revealVideo();
+    if (reducedMotion) introVideo.pause();
+    else introVideo.play().catch(() => intro.classList.add('video-fallback'));
   }
-
-  function scheduleSheepBlink() {
-    window.clearTimeout(sheepBlinkTimer);
-    sheepBlinkTimer = window.setTimeout(() => {
-      triggerSheepBlink();
-      if (Math.random() > .68) window.setTimeout(triggerSheepBlink, 240);
-      scheduleSheepBlink();
-    }, 2400 + Math.random() * 3600);
-  }
-
-  function triggerSheepReload() {
-    if (!sheepRig || intro.hidden || intro.classList.contains('is-exiting')) return;
-    sheepRig.classList.remove('is-cycling');
-    void sheepRig.offsetWidth;
-    sheepRig.classList.add('is-cycling');
-    window.setTimeout(() => sheepRig.classList.remove('is-cycling'), 1260);
-  }
-
-  function scheduleSheepReload() {
-    window.clearTimeout(sheepReloadTimer);
-    sheepReloadTimer = window.setTimeout(() => {
-      triggerSheepReload();
-      scheduleSheepReload();
-    }, 4700 + Math.random() * 3100);
-  }
-
-  scheduleSheepBlink();
-  window.setTimeout(triggerSheepReload, 1500);
-  scheduleSheepReload();
 
   function spawnImpact() {
     if (!impactsLayer || intro.hidden || intro.classList.contains('is-exiting')) return;
@@ -66,12 +39,11 @@
   }
 
   const impactTimer = window.setInterval(() => {
-    if (Math.random() > .34) spawnImpact();
-  }, 900);
+    if (Math.random() > .62) spawnImpact();
+  }, 1400);
 
   /* A real-time battle renderer keeps every projectile, casing, smoke puff,
      explosion and action beat independent instead of moving one flat layer. */
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let battleFrame = 0;
   let battleBeatTimer = 0;
   let battleRunning = !reducedMotion;
@@ -143,13 +115,14 @@
 
   function runBattleBeat() {
     if (!battleRunning || intro.hidden || intro.classList.contains('is-exiting')) return;
-    burst(.16 + Math.random() * .1, .25 + Math.random() * .1, 1.05);
-    smokePlume(.18, .24, 7);
+    burst(.15 + Math.random() * .08, .22 + Math.random() * .08, .62);
+    smokePlume(.18, .22, 3);
+    window.setTimeout(() => tracer(.16, .24, .82, .28), 420);
     window.setTimeout(() => {
-      burst(.74 + Math.random() * .11, .23 + Math.random() * .11, 1.1);
-      smokePlume(.82, .22, 8);
+      burst(.78 + Math.random() * .07, .22 + Math.random() * .08, .68);
+      smokePlume(.82, .22, 4);
     }, 1650);
-    window.setTimeout(() => smokePlume(.5, .15, 5), 3300);
+    window.setTimeout(() => smokePlume(.5, .15, 3), 3300);
   }
 
   function drawBattle(now) {
@@ -220,7 +193,7 @@
 
   if (debrisLayer) {
     const fragment = document.createDocumentFragment();
-    for (let i = 0; i < 18; i += 1) {
+    for (let i = 0; i < 10; i += 1) {
       const piece = document.createElement('i');
       piece.className = 'trenchDebrisPiece';
       piece.style.left = `${Math.round(Math.random() * 100)}%`;
@@ -293,6 +266,7 @@
 
   function stopSound() {
     window.clearTimeout(ambienceTimer);
+    if (introVideo) introVideo.muted = true;
     if (masterGain && audioContext) {
       masterGain.gain.cancelScheduledValues(audioContext.currentTime);
       masterGain.gain.setTargetAtTime(0.0001, audioContext.currentTime, .08);
@@ -311,15 +285,23 @@
       stopSound();
       return;
     }
-    if (!audioReady()) return;
-    masterGain.gain.cancelScheduledValues(audioContext.currentTime);
-    masterGain.gain.setTargetAtTime(0.055, audioContext.currentTime, .06);
+    if (introVideo) {
+      introVideo.muted = false;
+      introVideo.play().catch(() => {});
+    }
+    const synthReady = audioReady();
+    if (synthReady && masterGain) {
+      masterGain.gain.cancelScheduledValues(audioContext.currentTime);
+      masterGain.gain.setTargetAtTime(0.035, audioContext.currentTime, .06);
+    }
     soundButton.dataset.sound = 'on';
     soundButton.setAttribute('aria-pressed', 'true');
     soundButton.setAttribute('aria-label', 'Turn battlefield sound off');
     soundButton.textContent = '🔊';
-    playRumble();
-    scheduleAmbience();
+    if (synthReady) {
+      playRumble();
+      scheduleAmbience();
+    }
   });
 
   function enterTheTrenches() {
@@ -327,10 +309,9 @@
     stopSound();
     window.clearInterval(impactTimer);
     window.clearInterval(battleBeatTimer);
-    window.clearTimeout(sheepBlinkTimer);
-    window.clearTimeout(sheepReloadTimer);
     window.cancelAnimationFrame(battleFrame);
     battleRunning = false;
+    introVideo?.pause();
     intro.classList.add('is-exiting');
     document.body.classList.remove('trenches-intro-open');
     window.setTimeout(() => {
@@ -349,8 +330,7 @@
     stopSound();
     battleRunning = false;
     window.clearInterval(battleBeatTimer);
-    window.clearTimeout(sheepBlinkTimer);
-    window.clearTimeout(sheepReloadTimer);
     window.cancelAnimationFrame(battleFrame);
+    introVideo?.pause();
   }, { once: true });
 })();
