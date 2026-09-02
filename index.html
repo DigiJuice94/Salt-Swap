@@ -2205,18 +2205,14 @@ async function loadProfileHoldingsFor(profileWallet){
 }
 
 function walletTokenFallbackLogo(symbol){
-  const logos={
-    ETH:'/token-ethereum.svg',
-    WETH:'/token-ethereum.svg',
-    BNB:'/token-bnb.svg',
-    WBNB:'/token-bnb.svg',
-    USDC:'/token-usdc.svg',
-    'USDC.E':'/token-usdc.svg',
-    USDT:'/token-usdt.svg',
-    SOL:'/token-solana.svg',
-    WSOL:'/token-solana.svg'
-  };
-  return logos[String(symbol||'').trim().toUpperCase()]||'';
+  const ethereum='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="32" fill="#627eea"/><path fill="#fff" fill-opacity=".62" d="M32 7v18.48l15.62 6.98L32 7z"/><path fill="#fff" d="M32 7 16.38 32.46 32 25.48V7zM32 44.43v12.56l15.63-21.62L32 44.43z"/><path fill="#fff" fill-opacity=".62" d="m32 56.99-15.62-21.62L32 44.43v12.56z"/><path fill="#fff" fill-opacity=".2" d="m32 41.52 15.62-9.06L32 25.48v16.04z"/><path fill="#fff" fill-opacity=".62" d="m16.38 32.46 15.62 9.06V25.48l-15.62 6.98z"/></svg>';
+  const bnb='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="32" fill="#f3ba2f"/><g fill="#fff"><path d="m32 12 8 8-8 8-8-8 8-8zm-14 14 8 8-8 8-8-8 8-8zm28 0 8 8-8 8-8-8 8-8z"/><path d="m32 32 8 8-8 8-8-8 8-8zm0 20 8-8 4 4-12 12-12-12 4-4 8 8z"/></g></svg>';
+  const usdc='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="32" fill="#2775ca"/><path fill="#fff" d="M35 16v4.1c5 .9 8 3.8 8.5 8h-6.2c-.4-2-2-3.1-5-3.1-2.6 0-4.3 1-4.3 2.5 0 1.3 1 2 3.3 2.6l4.3 1c5.6 1.3 8.3 3.7 8.3 8 0 4.6-3.4 7.8-8.9 8.7V52h-6v-4.2c-5.5-.9-8.8-4.1-9.2-8.8h6.3c.5 2.4 2.5 3.8 5.9 3.8 3 0 4.8-1.1 4.8-2.8 0-1.3-1.1-2.1-3.6-2.7l-4.4-1.1c-5.1-1.2-7.7-3.8-7.7-7.9 0-4.4 3-7.4 7.9-8.2V16h6z"/><path fill="#fff" d="M14.7 16.6A23 23 0 0 0 9 32a23 23 0 0 0 5.7 15.4l4-3.6A17.7 17.7 0 0 1 14.3 32c0-4.5 1.7-8.6 4.4-11.8l-4-3.6zm34.6 0-4 3.6a17.7 17.7 0 0 1 4.4 11.8c0 4.5-1.7 8.6-4.4 11.8l4 3.6A23 23 0 0 0 55 32a23 23 0 0 0-5.7-15.4z"/></svg>';
+  const usdt='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="32" fill="#26a17b"/><path fill="#fff" d="M13 14h38v9H37v5.4c9.9.5 17.3 2.4 17.3 4.8S46.9 37.5 37 38v15H27V38c-9.9-.5-17.3-2.4-17.3-4.8s7.4-4.3 17.3-4.8V23H13v-9zm19 20.2c10.4 0 17.1-1.4 19-2.5-1.6-.9-6.6-2-14-2.4V33h-10v-3.7c-7.4.4-12.4 1.5-14 2.4 1.9 1.1 8.6 2.5 19 2.5z"/></svg>';
+  const solana='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="s" x1="10" y1="54" x2="54" y2="10" gradientUnits="userSpaceOnUse"><stop stop-color="#9945ff"/><stop offset="1" stop-color="#14f195"/></linearGradient></defs><circle cx="32" cy="32" r="32" fill="#111"/><path fill="url(#s)" d="M18 15h33l-6 7H12l6-7zm-6 13h33l7 7H19l-7-7zm6 14h33l-6 7H12l6-7z"/></svg>';
+  const logos={ETH:ethereum,WETH:ethereum,BNB:bnb,WBNB:bnb,USDC:usdc,'USDC.E':usdc,USDT:usdt,SOL:solana,WSOL:solana};
+  const svg=logos[String(symbol||'').trim().toUpperCase()]||'';
+  return svg?'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg):'';
 }
 
 function installWalletTokenLogoFallbacks(root){

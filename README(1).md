@@ -1,3 +1,15 @@
+# The Trenches V1.12.07 — Embedded Wallet Token Logos
+
+## V1.12.07 update
+
+- Fixes wallet logos reverting to generic letters after Vercel deployment.
+- Embeds the ETH, BNB, USDC, USDT, and Solana logo fallbacks directly in the page so no separate logo-file request can fail.
+- Keeps provider-supplied token artwork first and automatically uses the embedded logo if that image is missing or broken.
+- Shows the ETH logo for native ETH on both Ethereum and Base.
+- Keeps all V1.12.06 behavior and previous features unchanged.
+
+## Previous V1.12.06 update
+
 # The Trenches V1.12.06 — Wallet Token Logos
 
 ## V1.12.06 update
