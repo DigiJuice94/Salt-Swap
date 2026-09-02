@@ -1,3 +1,14 @@
+# The Trenches V1.12.09 — Remove Top Calls
+
+## V1.12.09 update
+
+- Removes the entire Top Calls card from the profile sidebar.
+- Moves the Watch List directly below the wallet-owned NFT section for a cleaner layout.
+- Removes the unused Top Calls styling.
+- Keeps the Zerion logo fix, wallet connections, NFT pricing, profile data, and all previous behavior unchanged.
+
+## Previous V1.12.08 update
+
 # The Trenches V1.12.08 — Zerion Wallet Logo Fix
 
 ## V1.12.08 update
