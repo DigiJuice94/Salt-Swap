@@ -1,4 +1,4 @@
-/* V1.11.97 — flicker-free root-level video entrance */
+/* V1.11.99 — approved artwork entrance with localized hover lighting */
 body.trenches-intro-open {
   overflow: hidden !important;
 }
@@ -7,16 +7,12 @@ body.trenches-intro-open {
   position: fixed;
   inset: 0;
   z-index: 2147483600;
-  display: grid;
-  place-items: center;
   overflow: hidden;
   isolation: isolate;
-  background: #17150f;
-  color: #f7f0d8;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #17110c;
   opacity: 1;
   visibility: visible;
-  transition: opacity .7s ease, visibility .7s ease;
+  transition: opacity .65s ease, visibility .65s ease;
 }
 
 .trenchesIntro.is-exiting {
@@ -25,648 +21,172 @@ body.trenches-intro-open {
   pointer-events: none;
 }
 
-.trenchesIntroScene,
-.trenchesIntroShade,
-.trenchesIntroVignette,
-.trenchesIntroGrain,
-.trenchesIntroHud,
-.trenchesIntroSmoke,
-.trenchesIntroDebris {
+/* Always 16:9 and sized like background-size: cover. Percentage hotspots stay aligned after crop. */
+.trenchesIntroStage {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100vw, 177.7778vh);
+  height: max(56.25vw, 100vh);
+  transform: translate(-50%, -50%) scale(1.01);
+  transform-origin: center;
+  opacity: 0;
+  transition: opacity .55s ease, transform .8s ease;
+}
+
+.trenchesIntro.intro-ready .trenchesIntroStage {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.trenchesIntro.is-exiting .trenchesIntroStage {
+  transform: translate(-50%, -50%) scale(1.018);
+}
+
+.trenchesIntroArtwork {
   position: absolute;
   inset: 0;
-  pointer-events: none;
-}
-
-.trenchesIntroScene {
-  z-index: 0;
-  overflow: hidden;
-  background-color: #17150f;
-  background-image: url('/entrance-battlefield-poster.jpg?v=11197');
-  background-position: 50% 50%;
-  background-repeat: no-repeat;
-  background-size: cover;
-}
-
-.trenchesIntroVideo {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: 50% 50%;
-  background: transparent;
-  filter: contrast(1.055) saturate(1.075) brightness(.94);
-  transform: scale(1.006);
-  transform-origin: center;
-  opacity: 0;
-  transition: opacity .5s ease;
-  will-change: opacity;
-}
-
-.trenchesIntro.video-ready .trenchesIntroVideo { opacity: 1; }
-
-.trenchesBattleCanvas {
-  position: absolute;
-  inset: 0;
-  z-index: 5;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
-.trenchesIntroShade {
-  z-index: 1;
-  background:
-    linear-gradient(180deg, rgba(10, 12, 8, .48) 0%, rgba(11, 12, 8, .09) 34%, rgba(8, 9, 6, .25) 66%, rgba(7, 8, 5, .75) 100%),
-    linear-gradient(90deg, rgba(8, 8, 6, .35), transparent 31%, transparent 66%, rgba(8, 8, 6, .34));
+  object-fit: fill;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .trenchesIntroVignette {
-  z-index: 7;
-  box-shadow: inset 0 0 150px 42px rgba(0, 0, 0, .66);
-}
-
-.trenchesIntroGrain {
-  z-index: 8;
-  opacity: .055;
-  mix-blend-mode: soft-light;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.88' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
-  animation: none;
-}
-
-.trenchesIntroHud {
-  z-index: 9;
-  inset: clamp(78px, 9vh, 108px) clamp(20px, 3.4vw, 54px) clamp(54px, 7vh, 76px);
-  color: rgba(246, 225, 172, .64);
-  text-shadow: 0 2px 8px rgba(0, 0, 0, .9);
-}
-
-.hudCorner {
   position: absolute;
-  width: clamp(24px, 2.5vw, 38px);
-  height: clamp(24px, 2.5vw, 38px);
-  border-color: rgba(239, 210, 137, .38);
-  border-style: solid;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  box-shadow: inset 0 0 clamp(42px, 8vw, 130px) rgba(0, 0, 0, .24);
 }
 
-.hudTopLeft { top: 0; left: 0; border-width: 1px 0 0 1px; }
-.hudTopRight { top: 0; right: 0; border-width: 1px 1px 0 0; }
-.hudBottomLeft { bottom: 0; left: 0; border-width: 0 0 1px 1px; }
-.hudBottomRight { right: 0; bottom: 0; border-width: 0 1px 1px 0; }
-
-.hudLabel {
+.trenchesIntroLight {
+  --light-size: 6.4%;
   position: absolute;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: clamp(7px, .62vw, 10px);
-  font-weight: 800;
-  letter-spacing: .16em;
-  text-transform: uppercase;
-}
-
-.hudFeed { top: 9px; left: 13px; }
-.hudSignal { right: 13px; bottom: 9px; }
-
-.hudSignal::before {
-  content: "";
-  display: inline-block;
-  width: 5px;
-  height: 5px;
-  margin: 0 7px 1px 0;
-  border-radius: 50%;
-  background: #f0bd59;
-  box-shadow: 0 0 10px rgba(240, 189, 89, .9);
-  animation: trenchesIntroLivePulse 1.4s ease-in-out infinite;
-}
-
-.trenchesIntroTopbar {
-  position: absolute;
-  z-index: 20;
-  top: clamp(14px, 2.4vw, 30px);
-  left: clamp(16px, 3vw, 44px);
-  right: clamp(16px, 3vw, 44px);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-}
-
-.trenchesIntroBrand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-}
-
-.trenchesIntroBrand img {
-  display: block;
-  width: clamp(150px, 17vw, 250px);
-  max-height: 68px;
-  object-fit: contain;
-  object-position: left center;
-  filter: drop-shadow(0 4px 15px rgba(0, 0, 0, .62));
-}
-
-.trenchesIntroLive {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  border: 1px solid rgba(234, 218, 170, .28);
-  border-radius: 999px;
-  padding: 8px 11px;
-  background: rgba(18, 20, 13, .48);
-  color: rgba(247, 240, 216, .84);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, .2);
-  backdrop-filter: blur(9px);
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-}
-
-.trenchesIntroLive::before {
-  content: "";
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #e6b75e;
-  box-shadow: 0 0 0 4px rgba(230, 183, 94, .12), 0 0 18px #e6b75e;
-  animation: trenchesIntroLivePulse 1.4s ease-in-out infinite;
-}
-
-.trenchesIntroSound {
-  width: 46px;
-  height: 46px;
-  border: 1px solid rgba(238, 221, 177, .34);
-  border-radius: 12px;
-  display: grid;
-  place-items: center;
-  background: rgba(14, 16, 11, .62);
-  color: #f8efd4;
-  box-shadow: 0 9px 30px rgba(0, 0, 0, .3);
-  backdrop-filter: blur(10px);
-  cursor: pointer;
-  transition: transform .18s ease, background .18s ease, border-color .18s ease;
-  font-size: 18px;
-}
-
-.trenchesIntroSound:hover,
-.trenchesIntroSound:focus-visible {
-  transform: translateY(-2px);
-  border-color: rgba(245, 206, 116, .78);
-  background: rgba(75, 73, 43, .82);
-  outline: none;
-}
-
-.trenchesIntroSound[data-sound="on"] {
-  color: #ffd77b;
-  border-color: rgba(255, 215, 123, .58);
-}
-
-.trenchesIntroContent {
-  position: relative;
-  z-index: 18;
-  width: min(940px, calc(100vw - 34px));
-  margin-top: clamp(40px, 10vh, 118px);
-  text-align: center;
-  display: grid;
-  justify-items: center;
-}
-
-.trenchesIntro:not(.intro-ready) .trenchesIntroEyebrow,
-.trenchesIntro:not(.intro-ready) .trenchesIntroTitle,
-.trenchesIntro:not(.intro-ready) .trenchesIntroTagline,
-.trenchesIntro:not(.intro-ready) .trenchesIntroEnter,
-.trenchesIntro:not(.intro-ready) .trenchesIntroMotto { opacity: 0; }
-
-.trenchesIntro.intro-ready .trenchesIntroEyebrow { animation: welcomeReveal .7s .25s both; }
-.trenchesIntro.intro-ready .trenchesIntroTitle { animation: titleSlam .82s .8s cubic-bezier(.18,.86,.24,1.18) both; }
-.trenchesIntro.intro-ready .trenchesIntroTagline { animation: detailReveal .7s 1.7s both; }
-.trenchesIntro.intro-ready .trenchesIntroEnter { animation: detailReveal .7s 2.05s both; }
-.trenchesIntro.intro-ready .trenchesIntroMotto { animation: detailReveal .7s 2.28s both; }
-
-.trenchesIntroEyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  margin-bottom: 14px;
-  color: #f3d18c;
-  font-size: clamp(10px, 1vw, 12px);
-  font-weight: 950;
-  letter-spacing: .24em;
-  text-transform: uppercase;
-  text-shadow: 0 2px 12px #000;
-}
-
-.trenchesIntroEyebrow::before,
-.trenchesIntroEyebrow::after {
-  content: "";
-  width: clamp(24px, 4vw, 56px);
-  height: 1px;
-  background: linear-gradient(90deg, transparent, #e3b75c);
-}
-
-.trenchesIntroEyebrow::after {
-  background: linear-gradient(90deg, #e3b75c, transparent);
-}
-
-.trenchesIntroTitle {
-  position: relative;
-  margin: 0;
-  color: #fff8df;
-  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
-  font-size: clamp(62px, 11.2vw, 164px);
-  font-weight: 900;
-  line-height: .78;
-  letter-spacing: -.025em;
-  text-transform: uppercase;
-  text-shadow:
-    0 3px 0 #6d603c,
-    0 7px 0 #2d2b1e,
-    0 15px 42px rgba(0, 0, 0, .9);
-  transform: scaleX(.94);
-}
-
-.trenchesIntroTitle > span { position: relative; z-index: 1; }
-
-.titleBulletHole {
-  position: absolute;
-  z-index: 5;
-  width: clamp(11px, 1.25vw, 21px);
+  z-index: 2;
+  width: var(--light-size);
   aspect-ratio: 1;
   border-radius: 50%;
-  opacity: 0;
-  background: radial-gradient(circle, #050505 0 24%, #2a271d 27% 39%, #c3ac70 42% 47%, transparent 52%);
-  filter: drop-shadow(1px 2px 1px #000);
-}
-.hole-one { left: 19%; top: 29%; --hole-delay: 3.35s; }
-.hole-two { left: 43%; top: 62%; --hole-delay: 3.62s; }
-.hole-three { right: 23%; top: 22%; --hole-delay: 3.88s; }
-.hole-four { right: 8%; top: 67%; --hole-delay: 4.12s; }
-.trenchesIntro.intro-ready .titleBulletHole { animation: titleShot .22s var(--hole-delay) cubic-bezier(.2,.9,.3,1.5) forwards; }
-
-.trenchesIntroTagline {
-  margin: clamp(18px, 2.3vw, 30px) 0 0;
-  color: rgba(255, 248, 223, .92);
-  font-size: clamp(14px, 1.7vw, 22px);
-  font-weight: 800;
-  letter-spacing: .07em;
-  text-shadow: 0 3px 18px rgba(0, 0, 0, .9);
+  pointer-events: none;
+  opacity: .19;
+  transform: translate(-50%, -50%) scale(.96);
+  transform-origin: center;
+  background: radial-gradient(circle,
+    rgba(255, 248, 191, .96) 0 5%,
+    rgba(255, 185, 67, .7) 12%,
+    rgba(255, 124, 28, .28) 32%,
+    rgba(255, 111, 19, 0) 70%);
+  filter: blur(3px);
+  mix-blend-mode: screen;
 }
 
-.trenchesIntroTagline strong {
-  color: #f0bf5d;
-  font-weight: 950;
-}
+.light-near-left { --light-size: 8.2%; left: 33.7%; top: 63.8%; }
+.light-tunnel-left { --light-size: 6.1%; left: 40.8%; top: 55.8%; }
+.light-tunnel-center { --light-size: 4.2%; left: 46.1%; top: 51.7%; }
+.light-tunnel-right { --light-size: 5.1%; left: 56.7%; top: 54.8%; }
 
+/* Invisible semantic control aligned over the ENTER plaque already in the art. */
 .trenchesIntroEnter {
-  position: relative;
-  min-width: min(320px, calc(100vw - 52px));
-  margin-top: clamp(24px, 4.2vh, 44px);
-  padding: 17px 32px 16px;
-  border: 1px solid #e9c26c;
-  border-radius: 4px;
-  overflow: hidden;
-  background: linear-gradient(180deg, #777852 0%, #555b3d 100%);
-  color: #fff9e6;
-  box-shadow:
-    0 0 0 4px rgba(24, 25, 17, .72),
-    0 0 0 5px rgba(232, 195, 108, .44),
-    0 14px 44px rgba(0, 0, 0, .56);
+  position: absolute;
+  z-index: 6;
+  left: 44.55%;
+  top: 39.55%;
+  width: 11.55%;
+  height: 8.4%;
+  min-width: 112px;
+  min-height: 42px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: clamp(5px, .55vw, 10px);
+  background: transparent;
+  color: transparent;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 950;
-  letter-spacing: .2em;
-  text-transform: uppercase;
-  transition: transform .2s ease, filter .2s ease, box-shadow .2s ease;
+  outline: none;
+  box-shadow: none;
+  transition: transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease;
 }
 
 .trenchesIntroEnter::before {
   content: "";
   position: absolute;
-  inset: 0;
-  background: linear-gradient(110deg, transparent 24%, rgba(255, 255, 255, .22) 48%, transparent 70%);
-  transform: translateX(-115%);
-  animation: trenchesIntroButtonSweep 3.2s ease-in-out infinite;
-}
-
-.trenchesIntroEnter span {
-  position: relative;
-  z-index: 1;
+  inset: -18%;
+  z-index: -1;
+  border-radius: 18%;
+  opacity: 0;
+  background: radial-gradient(ellipse, rgba(255, 205, 92, .44), rgba(255, 161, 45, .16) 42%, transparent 72%);
+  filter: blur(9px);
+  transition: opacity .18s ease;
 }
 
 .trenchesIntroEnter:hover,
 .trenchesIntroEnter:focus-visible {
-  transform: translateY(-3px) scale(1.015);
-  filter: brightness(1.13);
+  transform: translateY(-2px) scale(1.025);
+  border-color: rgba(255, 225, 143, .82);
+  background: rgba(255, 189, 68, .08);
   box-shadow:
-    0 0 0 4px rgba(24, 25, 17, .76),
-    0 0 0 5px rgba(241, 205, 121, .7),
-    0 18px 56px rgba(0, 0, 0, .64),
-    0 0 42px rgba(229, 180, 77, .2);
-  outline: none;
+    inset 0 0 18px rgba(255, 214, 117, .14),
+    0 0 8px rgba(255, 222, 134, .88),
+    0 0 24px rgba(255, 172, 51, .72),
+    0 0 52px rgba(255, 125, 27, .4);
+}
+
+.trenchesIntroEnter:hover::before,
+.trenchesIntroEnter:focus-visible::before {
+  opacity: 1;
 }
 
 .trenchesIntroEnter:active {
-  transform: translateY(0) scale(.99);
+  transform: scale(.985);
 }
 
-.trenchesIntroMotto {
-  margin-top: 18px;
-  color: rgba(250, 241, 211, .58);
-  font-size: 9px;
-  font-weight: 900;
-  letter-spacing: .22em;
-  text-transform: uppercase;
-  text-shadow: 0 2px 10px #000;
+.visuallyHidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
 }
 
-.trenchesIntroAction {
-  z-index: 4;
+.trenchesIntro.lights-flicker .trenchesIntroLight {
+  animation: trenchesLanternFlicker .92s steps(1, end) infinite;
 }
 
-.trenchTracer {
-  position: absolute;
-  width: clamp(75px, 10vw, 170px);
-  height: 2px;
-  border-radius: 99px;
-  opacity: 0;
-  background: linear-gradient(90deg, transparent, #ffcb55 38%, #fff8c4 70%, transparent);
-  box-shadow: 0 0 7px #ff8a25, 0 0 14px rgba(255, 134, 31, .8);
-  transform-origin: center;
-  animation: trenchesIntroTracer var(--tracer-speed, 2.8s) linear var(--tracer-delay, 0s) infinite;
-}
+.trenchesIntro.lights-flicker .light-near-left { animation-delay: -.11s; }
+.trenchesIntro.lights-flicker .light-tunnel-left { animation-delay: -.47s; animation-duration: 1.07s; }
+.trenchesIntro.lights-flicker .light-tunnel-center { animation-delay: -.72s; animation-duration: .81s; }
+.trenchesIntro.lights-flicker .light-tunnel-right { animation-delay: -.29s; animation-duration: 1.16s; }
 
-.trenchTracer:nth-child(1) { --tracer-delay: .2s; --tracer-speed: 2.7s; top: 47%; left: 30%; transform: rotate(-10deg); }
-.trenchTracer:nth-child(2) { --tracer-delay: 1.25s; --tracer-speed: 3.4s; top: 57%; left: 34%; transform: rotate(7deg); }
-.trenchTracer:nth-child(3) { --tracer-delay: 2s; --tracer-speed: 3s; top: 39%; left: 25%; transform: rotate(-5deg); }
-.trenchTracer:nth-child(4) { --tracer-delay: .8s; --tracer-speed: 3.8s; top: 68%; left: 21%; transform: rotate(4deg); }
-
-.trenchMuzzle {
-  position: absolute;
-  width: 58px;
-  aspect-ratio: 1;
-  opacity: 0;
-  border-radius: 50%;
-  background: radial-gradient(circle, #fff 0 5%, #ffe28c 9%, #ff9b31 26%, rgba(255, 114, 14, .26) 48%, transparent 68%);
-  mix-blend-mode: screen;
-  filter: blur(.3px);
-  animation: trenchesIntroMuzzle 2.6s steps(1) var(--muzzle-delay, 0s) infinite;
-}
-
-.trenchMuzzle.one { left: 38%; top: 47%; --muzzle-delay: .3s; }
-.trenchMuzzle.two { left: 18.5%; top: 68%; --muzzle-delay: 1.2s; }
-.trenchMuzzle.three { left: 23%; top: 52%; --muzzle-delay: 2s; }
-
-.trenchesIntroImpacts { position:absolute; inset:0; z-index:17; pointer-events:none; }
-.trenchImpact {
-  position:absolute;
-  width:9px;
-  aspect-ratio:1;
-  border-radius:50%;
-  background:#fff5b0;
-  box-shadow:0 0 8px 3px #ff9a24, 0 0 22px 7px rgba(255,110,20,.55);
-  animation: liveImpact .52s ease-out forwards;
-}
-
-.trenchesIntroSmoke {
-  z-index: 2;
-  overflow: hidden;
-}
-
-.trenchSmokePuff {
-  position: absolute;
-  top: 7%;
-  width: clamp(190px, 29vw, 470px);
-  aspect-ratio: 1.6;
-  border-radius: 50%;
-  opacity: .12;
-  filter: blur(38px);
-  background: radial-gradient(ellipse, rgba(57, 54, 42, .95), rgba(31, 31, 25, .28) 55%, transparent 72%);
-  animation: singleTrenchSmokeDrift var(--smoke-speed, 16s) ease-in-out var(--smoke-delay, 0s) infinite alternate;
-}
-
-.trenchSmokePuff:nth-child(1) { left: -6%; top: 10%; --smoke-speed: 15s; }
-.trenchSmokePuff:nth-child(2) { left: 35%; top: 4%; --smoke-speed: 19s; --smoke-delay: -7s; opacity: .12; }
-.trenchSmokePuff:nth-child(3) { right: -7%; top: 8%; --smoke-speed: 17s; --smoke-delay: -3s; }
-
-.trenchesIntroDebris {
-  z-index: 6;
-  overflow: hidden;
-}
-
-.trenchDebrisPiece {
-  position: absolute;
-  top: -20px;
-  width: var(--debris-size, 4px);
-  height: calc(var(--debris-size, 4px) * 1.8);
-  border-radius: 50%;
-  background: #7c6844;
-  box-shadow: 0 0 5px rgba(0, 0, 0, .55);
-  opacity: .65;
-  animation: trenchesIntroDebrisFall var(--debris-time, 8s) linear var(--debris-delay, 0s) infinite;
-}
-
-.trenchesIntroFooter {
-  position: absolute;
-  z-index: 20;
-  left: clamp(16px, 3vw, 44px);
-  right: clamp(16px, 3vw, 44px);
-  bottom: clamp(14px, 2.2vw, 27px);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 15px;
-  color: rgba(244, 233, 200, .5);
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-  text-shadow: 0 2px 8px #000;
-}
-
-.trenchesIntroFooter span:last-child {
-  text-align: right;
-}
-
-@keyframes trenchesIntroCamera {
-  0% { transform: scale(1.035) translate3d(-.5%, -.3%, 0); }
-  100% { transform: scale(1.095) translate3d(.9%, .5%, 0); }
-}
-
-@keyframes actorSheepRecoil { 0%,74%,100%{transform:translate3d(0,0,0)} 76%{transform:translate3d(-3px,1px,0)} 79%{transform:translate3d(1px,0,0)} }
-@keyframes actorReload { 0%,100%{transform:translate3d(0,1px,0)} 45%{transform:translate3d(1px,-2px,0)} 65%{transform:translate3d(-1px,-1px,0)} }
-@keyframes actorMedic { 0%,100%{transform:translate3d(0,0,0) rotate(0)} 50%{transform:translate3d(1px,2px,0) rotate(-.12deg)} }
-@keyframes actorCashCat { 0%,67%,100%{transform:translate3d(0,0,0)} 69%{transform:translate3d(3px,1px,0)} 72%{transform:translate3d(-1px,0,0)} }
-@keyframes actorTrollThrow { 0%,100%{transform:translate3d(0,1px,0) rotate(0)} 42%{transform:translate3d(-2px,-3px,0) rotate(-.18deg)} 58%{transform:translate3d(2px,0,0) rotate(.12deg)} }
-@keyframes actorDistantRun { 0%,100%{transform:translate3d(-2px,0,0)} 50%{transform:translate3d(4px,-1px,0)} }
-@keyframes sheepCombatBeat {
-  0%{transform:translate3d(0,10px,0) rotate(.2deg)}
-  28%{transform:translate3d(0,-3px,0) rotate(-.12deg)}
-  42%{transform:translate3d(-10px,-1px,0) rotate(-.45deg)}
-  54%{transform:translate3d(2px,0,0) rotate(.15deg)}
-  70%{transform:translate3d(-6px,1px,0) rotate(-.28deg)}
-  100%{transform:translate3d(0,8px,0) rotate(0)}
-}
-@keyframes pepeReloadBeat {
-  0%{transform:translate3d(0,0,0) rotate(0)}
-  20%{transform:translate3d(2px,7px,0) rotate(1deg)}
-  42%{transform:translate3d(-3px,3px,0) rotate(-1.2deg)}
-  62%{transform:translate3d(2px,-3px,0) rotate(.8deg)}
-  82%{transform:translate3d(-1px,-7px,0) rotate(-.55deg)}
-  100%{transform:translate3d(0,0,0) rotate(0)}
-}
-@keyframes medicBandageBeat {
-  0%,100%{transform:translate3d(0,0,0) rotate(0)}
-  18%{transform:translate3d(3px,4px,0) rotate(.45deg)}
-  38%{transform:translate3d(-2px,7px,0) rotate(-.4deg)}
-  58%{transform:translate3d(4px,2px,0) rotate(.3deg)}
-  78%{transform:translate3d(-1px,5px,0) rotate(-.35deg)}
-}
-@keyframes cashCatCombatBeat {
-  0%{transform:translate3d(0,11px,0) rotate(-.12deg)}
-  30%{transform:translate3d(0,-3px,0) rotate(.15deg)}
-  44%{transform:translate3d(10px,0,0) rotate(.5deg)}
-  58%{transform:translate3d(-2px,1px,0) rotate(-.15deg)}
-  72%{transform:translate3d(7px,2px,0) rotate(.32deg)}
-  100%{transform:translate3d(0,9px,0) rotate(0)}
-}
-@keyframes trollThrowBeat {
-  0%{transform:translate3d(0,9px,0) rotate(0)}
-  25%{transform:translate3d(-5px,-5px,0) rotate(-1.2deg)}
-  48%{transform:translate3d(7px,-2px,0) rotate(1.35deg)}
-  68%{transform:translate3d(1px,1px,0) rotate(.2deg)}
-  100%{transform:translate3d(0,8px,0) rotate(0)}
-}
-@keyframes distantRunnerBeat {
-  0%{transform:translate3d(-12px,4px,0) rotate(-.4deg)}
-  18%{transform:translate3d(-5px,-4px,0) rotate(.5deg)}
-  38%{transform:translate3d(5px,3px,0) rotate(-.45deg)}
-  58%{transform:translate3d(14px,-4px,0) rotate(.5deg)}
-  78%{transform:translate3d(23px,3px,0) rotate(-.35deg)}
-  100%{transform:translate3d(31px,0,0) rotate(0)}
-}
-@keyframes battlefieldFlash {
-  0%{filter:none}
-  18%{filter:brightness(1.28) sepia(.18)}
-  100%{filter:none}
-}
-@keyframes welcomeReveal { from{opacity:0;transform:translateY(-18px);letter-spacing:.5em} to{opacity:1;transform:none;letter-spacing:.24em} }
-@keyframes titleSlam { 0%{opacity:0;transform:translateY(-42vh) scale(1.35,.75)} 68%{opacity:1;transform:translateY(7px) scale(.91,1.07)} 82%{transform:translateY(-3px) scale(.96,.98)} 100%{opacity:1;transform:scaleX(.94)} }
-@keyframes detailReveal { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:none} }
-@keyframes titleShot { 0%{opacity:0;transform:scale(5);filter:blur(3px)} 65%{opacity:1;transform:scale(.72)} 100%{opacity:1;transform:scale(1);filter:drop-shadow(1px 2px 1px #000)} }
-@keyframes battlefieldImpact { 0%,76%,100%{opacity:0;transform:scale(.1)} 78%{opacity:1;transform:scale(1.2)} 82%{opacity:.3;transform:scale(1.65)} 86%{opacity:0;transform:scale(2)} }
-@keyframes liveImpact { 0%{opacity:1;transform:scale(.2)} 28%{opacity:1;transform:scale(1.8)} 100%{opacity:0;transform:scale(4)} }
-
-@keyframes trenchesIntroLivePulse {
-  50% { opacity: .55; box-shadow: 0 0 0 7px rgba(230, 183, 94, 0), 0 0 24px #e6b75e; }
-}
-
-@keyframes trenchesIntroButtonSweep {
-  0%, 58% { transform: translateX(-115%); }
-  86%, 100% { transform: translateX(115%); }
-}
-
-@keyframes trenchesIntroTracer {
-  0%, 70% { opacity: 0; translate: -45vw 7vh; }
-  72% { opacity: 1; }
-  80% { opacity: .92; }
-  88%, 100% { opacity: 0; translate: 62vw -8vh; }
-}
-
-@keyframes trenchesIntroMuzzle {
-  0%, 78%, 84%, 100% { opacity: 0; transform: scale(.25) rotate(0deg); }
-  79% { opacity: 1; transform: scale(1.05) rotate(30deg); }
-  80% { opacity: .25; transform: scale(.68) rotate(75deg); }
-  82% { opacity: .9; transform: scale(.9) rotate(110deg); }
-}
-
-@keyframes trenchesIntroSmokeRise {
-  0% { transform: translate3d(0, 25%, 0) scale(.9); opacity: .05; }
-  42% { opacity: .2; }
-  100% { transform: translate3d(5%, -130%, 0) scale(1.7); opacity: 0; }
-}
-
-@keyframes singleTrenchSmokeDrift {
-  0% { transform: translate3d(-5%, 8%, 0) scale(.92); opacity: .09; }
-  45% { opacity: .2; }
-  100% { transform: translate3d(9%, -9%, 0) scale(1.2); opacity: .13; }
-}
-
-@keyframes trenchesIntroDebrisFall {
-  0% { transform: translate3d(0, -10vh, 0) rotate(0deg); opacity: 0; }
-  12% { opacity: .65; }
-  100% { transform: translate3d(var(--debris-drift, 80px), 115vh, 0) rotate(620deg); opacity: 0; }
-}
-
-@keyframes trenchesIntroGrain {
-  0% { transform: translate(0, 0); }
-  25% { transform: translate(-1.5%, 1%); }
-  50% { transform: translate(1%, -1.5%); }
-  75% { transform: translate(1.5%, 1%); }
-}
-
-@media (max-width: 760px) {
-  .trenchesIntroScene {
-    background-position: 43% 52%;
-  }
-
-  .trenchesIntroVideo {
-    object-fit: contain;
-    transform: none;
-  }
-
-  .trenchesIntroLive {
-    display: none;
-  }
-
-  .trenchesIntroContent {
-    margin-top: 70px;
-  }
-
-  .trenchesIntroTitle {
-    line-height: .84;
-  }
-
-  .trenchesIntroTagline {
-    max-width: 330px;
-    line-height: 1.5;
-  }
-
-  .trenchesIntroFooter {
-    justify-content: center;
-  }
-
-  .trenchesIntroFooter span:last-child {
-    display: none;
-  }
-
-  .trenchesIntroVignette {
-    box-shadow: inset 0 0 85px 22px rgba(0, 0, 0, .68);
-  }
-}
-
-@media (max-height: 650px) and (orientation: landscape) {
-  .trenchesIntroContent { margin-top: 38px; }
-  .trenchesIntroTitle { font-size: clamp(54px, 11vw, 105px); }
-  .trenchesIntroTagline { margin-top: 13px; }
-  .trenchesIntroEnter { margin-top: 22px; padding-block: 13px; }
-  .trenchesIntroMotto { display: none; }
+@keyframes trenchesLanternFlicker {
+  0%, 17%, 23%, 55%, 63%, 100% { opacity: .23; transform: translate(-50%, -50%) scale(.98); }
+  18%, 21% { opacity: .08; transform: translate(-50%, -50%) scale(.91); }
+  22%, 56% { opacity: .46; transform: translate(-50%, -50%) scale(1.07); }
+  57%, 61% { opacity: .15; transform: translate(-50%, -50%) scale(.95); }
+  62% { opacity: .55; transform: translate(-50%, -50%) scale(1.1); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .trenchesIntroScene,
-  .trenchesIntroEyebrow,
-  .trenchesIntroTitle,
-  .trenchesIntroTagline,
-  .trenchesIntroMotto,
-  .trenchesIntroGrain,
-  .trenchesIntroLive::before,
-  .trenchesIntroEnter::before,
-  .trenchTracer,
-  .trenchMuzzle,
-  .trenchSmokePuff,
-  .trenchDebrisPiece {
-    animation: none !important;
+  .trenchesIntro,
+  .trenchesIntroStage,
+  .trenchesIntroEnter,
+  .trenchesIntroEnter::before {
+    transition-duration: .01ms !important;
   }
-  .trenchesIntroVideo { display: none !important; }
-  .trenchesBattleCanvas { display: none !important; }
+
+  .trenchesIntro.lights-flicker .trenchesIntroLight {
+    animation: none;
+    opacity: .34;
+  }
+}
+
+@media (max-width: 760px) {
+  .trenchesIntroEnter {
+    min-width: 96px;
+    min-height: 38px;
+  }
 }

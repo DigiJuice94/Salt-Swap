@@ -1,3 +1,27 @@
+# The Trenches V1.11.99 — Artwork Entrance + Hover Lights
+
+## V1.11.99 update
+
+- Replaces the old entrance video with the approved clean trench artwork.
+- Aligns one accessible ENTER hotspot directly over the painted ENTER sign.
+- Makes the ENTER sign glow on mouse hover and keyboard focus.
+- Makes only the lantern-light overlays flicker while ENTER is hovered or focused.
+- Keeps the background still at rest, with no full-screen flicker or flashing.
+- Removes the old MP4 from the packaged update to keep the GitHub upload smaller.
+
+## Previous V1.11.98 update
+
+# The Trenches V1.11.98 — Clean Video Entrance
+
+## V1.11.98 update
+
+- Reduces the entrance to the animated background, a soft dark overlay, the title, and the Enter button.
+- Removes the HUD frame, top logo/status bar, sound control, tagline, motto, footer, bullet holes, grain, Canvas particles, smoke, debris, sparks, and impacts.
+- Replaces the dramatic title slam and button shine with clean one-time fade-up reveals.
+- Keeps the root-level video deployment fix and GitHub-ready file size.
+
+## Previous V1.11.97 update
+
 # The Trenches V1.11.97 — Flicker-Free Video Entrance
 
 ## V1.11.97 update
