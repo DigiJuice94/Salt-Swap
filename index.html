@@ -2155,14 +2155,22 @@ async function loadProfileHoldingsFor(profileWallet){
         el.innerHTML='<div class="saltEmptyMini">No EVM token balances found.</div>';
         return;
       }
-      el.innerHTML=rows.slice(0,30).map(h=>`
+      el.innerHTML=rows.slice(0,30).map(h=>{
+        const symbol=String(h.symbol||'').trim().toUpperCase();
+        const fallbackLogo=walletTokenFallbackLogo(symbol);
+        const suppliedLogo=String(h.image||'').trim();
+        const logo=suppliedLogo||fallbackLogo;
+        const letter=socialEsc((symbol||'?').slice(0,1));
+        return `
         <div class="holdingRow evmHoldingRow">
           <div class="holdingTokenLeft">
-            <span class="holdingTokenLogo">${h.image?`<img src="${socialEsc(h.image)}" alt="">`:socialEsc(String(h.symbol||'?').slice(0,1).toUpperCase())}</span>
+            <span class="holdingTokenLogo" data-logo-letter="${letter}">${logo?`<img src="${socialEsc(logo)}" alt="${socialEsc(symbol||'Token')} logo"${suppliedLogo&&fallbackLogo?` data-fallback-src="${socialEsc(fallbackLogo)}"`:''}>`:letter}</span>
             <span><b>${socialEsc(h.symbol||h.name||'Token')}</b><small>${socialEsc(h.name||h.chain||'EVM')}</small></span>
           </div>
           <strong>${Number(h.balanceFormatted||0).toLocaleString(undefined,{maximumFractionDigits:6})}<small>${Number(h.usdValue||0)>0?'$'+Number(h.usdValue).toLocaleString(undefined,{maximumFractionDigits:2}):socialEsc(h.chain||'')}</small></strong>
-        </div>`).join('');
+        </div>`;
+      }).join('');
+      installWalletTokenLogoFallbacks(el);
     }catch(e){
       el.innerHTML=`<div class="saltEmptyMini">${socialEsc(readableError(e))}</div>`;
     }
@@ -2175,14 +2183,55 @@ async function loadProfileHoldingsFor(profileWallet){
   try{
     const j=await socialApi('/api/social-holdings?wallet='+encodeURIComponent(profileWallet));
     const rows=Array.isArray(j?.items)?j.items:[];
-    el.innerHTML=rows.length?rows.map(h=>`
+    el.innerHTML=rows.length?rows.map(h=>{
+      const symbol=String(h.symbol||'').trim().toUpperCase();
+      const fallbackLogo=walletTokenFallbackLogo(symbol);
+      const suppliedLogo=String(h.image||'').trim();
+      const logo=suppliedLogo||fallbackLogo;
+      const letter=socialEsc((symbol||'?').slice(0,1));
+      return `
       <div class="holdingRow">
-        <div><b>${socialEsc(h.symbol||h.name||'Token')}</b><span>${socialEsc(h.name||'')}</span></div>
+        <div class="holdingTokenLeft">
+          <span class="holdingTokenLogo" data-logo-letter="${letter}">${logo?`<img src="${socialEsc(logo)}" alt="${socialEsc(symbol||'Token')} logo"${suppliedLogo&&fallbackLogo?` data-fallback-src="${socialEsc(fallbackLogo)}"`:''}>`:letter}</span>
+          <span><b>${socialEsc(h.symbol||h.name||'Token')}</b><small>${socialEsc(h.name||'')}</small></span>
+        </div>
         <strong>${socialEsc(h.displayBalance||Number(h.balance||0).toLocaleString(undefined,{maximumFractionDigits:5}))}</strong>
-      </div>`).join(''):'<div class="saltEmptyMini">No tracked token holdings found.</div>';
+      </div>`;
+    }).join(''):'<div class="saltEmptyMini">No tracked token holdings found.</div>';
+    installWalletTokenLogoFallbacks(el);
   }catch(e){
     el.innerHTML=`<div class="saltEmptyMini">${socialEsc(readableError(e))}</div>`;
   }
+}
+
+function walletTokenFallbackLogo(symbol){
+  const logos={
+    ETH:'/token-ethereum.svg',
+    WETH:'/token-ethereum.svg',
+    BNB:'/token-bnb.svg',
+    WBNB:'/token-bnb.svg',
+    USDC:'/token-usdc.svg',
+    'USDC.E':'/token-usdc.svg',
+    USDT:'/token-usdt.svg',
+    SOL:'/token-solana.svg',
+    WSOL:'/token-solana.svg'
+  };
+  return logos[String(symbol||'').trim().toUpperCase()]||'';
+}
+
+function installWalletTokenLogoFallbacks(root){
+  root.querySelectorAll('.holdingTokenLogo img').forEach(img=>{
+    img.addEventListener('error',()=>{
+      const fallback=String(img.dataset.fallbackSrc||'');
+      if(fallback&&!img.dataset.fallbackTried){
+        img.dataset.fallbackTried='1';
+        img.src=fallback;
+        return;
+      }
+      const holder=img.closest('.holdingTokenLogo');
+      if(holder)holder.textContent=holder.dataset.logoLetter||'?';
+    });
+  });
 }
 async function loadProfileHoldings(){
   const profileWallet=(saltProfile||getRememberedSocialProfile())?.wallet||walletAddress;

@@ -1,3 +1,16 @@
+# The Trenches V1.12.06 — Wallet Token Logos
+
+## V1.12.06 update
+
+- Replaces generic single-letter wallet icons with recognizable token logos.
+- Uses live token artwork when the wallet provider supplies it.
+- Adds reliable local fallbacks for ETH/WETH, BNB/WBNB, USDC, USDT, and SOL/WSOL.
+- Automatically swaps a broken live image to the matching local logo, then falls back to a letter only for unknown tokens.
+- Shows logos in both EVM and Solana wallet-holdings lists.
+- Keeps the chain-aware NFT pricing and all previous entrance/profile behavior unchanged.
+
+## Previous V1.12.05 update
+
 # The Trenches V1.12.05 — Chain-Aware NFT Prices
 
 ## V1.12.05 update
