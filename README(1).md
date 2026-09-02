@@ -1,3 +1,16 @@
+# The Trenches V1.12.00 — War Audio Entrance
+
+## V1.12.00 update
+
+- Adds an accessible sound toggle to the top-right of the intro.
+- Generates layered battlefield ambience in the browser: distant gunfire, occasional explosions, wind, and a low rumble.
+- Starts muted to comply with browser autoplay rules; one click enables the audio.
+- Keeps the audio restrained and randomized so it does not sound like a short repeating loop.
+- Fades and shuts down all sound when ENTER is clicked or the page is hidden.
+- Adds no external audio file, keeping the update lightweight and GitHub-ready.
+
+## Previous V1.11.99 update
+
 # The Trenches V1.11.99 — Artwork Entrance + Hover Lights
 
 ## V1.11.99 update

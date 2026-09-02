@@ -17,7 +17,7 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=11090" />
   <link rel="manifest" href="/site.webmanifest?v=11090" />
   <link rel="stylesheet" href="/styles.css?v=11186" />
-  <link rel="stylesheet" href="/intro.css?v=11199" />
+  <link rel="stylesheet" href="/intro.css?v=11200" />
   <script defer src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.4/lib/index.iife.min.js"></script>
 
 <style>
@@ -100,7 +100,7 @@ body.publicProfileOpen{overflow:hidden}
 <body>
   <section id="trenchesIntro" class="trenchesIntro" aria-label="Welcome to The Trenches">
     <div class="trenchesIntroStage">
-      <img class="trenchesIntroArtwork" src="/entrance-trenches-art.png?v=11199" alt="" fetchpriority="high" />
+      <img class="trenchesIntroArtwork" src="/entrance-trenches-art.png?v=11200" alt="" fetchpriority="high" />
       <span class="trenchesIntroLight light-near-left" aria-hidden="true"></span>
       <span class="trenchesIntroLight light-tunnel-left" aria-hidden="true"></span>
       <span class="trenchesIntroLight light-tunnel-center" aria-hidden="true"></span>
@@ -110,6 +110,10 @@ body.publicProfileOpen{overflow:hidden}
       </button>
     </div>
     <div class="trenchesIntroVignette" aria-hidden="true"></div>
+    <button id="trenchesIntroSound" class="trenchesIntroSound" type="button" aria-pressed="false" aria-label="Turn battlefield sound on">
+      <span class="trenchesIntroSoundIcon" aria-hidden="true">🔇</span>
+      <span class="trenchesIntroSoundLabel">Sound off</span>
+    </button>
   </section>
   <img src="assets/trenches-sheep.png" alt="" class="trenchLogoAsset" aria-hidden="true" />
   <div class="ambient ambient-one"></div>
@@ -3613,6 +3617,6 @@ document.addEventListener('click',e=>{
     <div id="publicProfilePosts" class="publicProfilePosts"><div class="socialTimelineEmpty">Loading profile…</div></div>
   </section>
 </div>
-<script src="/intro.js?v=11199"></script>
+<script src="/intro.js?v=11200"></script>
 </body>
 </html>
