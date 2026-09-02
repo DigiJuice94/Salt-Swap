@@ -1,3 +1,16 @@
+# The Trenches V1.12.08 — Zerion Wallet Logo Fix
+
+## V1.12.08 update
+
+- Fixes the broken image shown beside Zerion in the Connect Wallet list after deployment.
+- Uses Zerion's registered browser-wallet icon when the extension supplies one.
+- Includes a deployment-safe embedded Zerion icon as the reliable fallback.
+- Removes the separate Zerion logo-file dependency that Vercel was not packaging.
+- Adds useful logo descriptions for wallet-picker accessibility.
+- Keeps wallet detection, connection behavior, profile data, and all V1.12.07 features unchanged.
+
+## Previous V1.12.07 update
+
 # The Trenches V1.12.07 — Embedded Wallet Token Logos
 
 ## V1.12.07 update
