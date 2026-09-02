@@ -1,3 +1,15 @@
+# The Trenches V1.12.04 — NFT Profile Save Fix
+
+## V1.12.04 update
+
+- Fixes OpenSea NFTs failing to appear in the selected profile frame after wallet signing.
+- Normalizes NFT data before signing so the browser and server verify the exact same payload.
+- Shows a visible save error inside the NFT picker instead of failing silently.
+- Disables the selected NFT while its save is processing to prevent duplicate signature requests.
+- Keeps OpenSea, Robinhood Chain, Solana, and all existing fallback NFT providers unchanged.
+
+## Previous V1.12.03 update
+
 # The Trenches V1.12.03 — OpenSea Wallet NFTs
 
 ## V1.12.03 update

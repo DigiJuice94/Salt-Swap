@@ -2005,7 +2005,10 @@ async function clearSocialAuthSession(){socialAuthSessionWallet='';try{await soc
 async function ensureSocialAuthSession(options={}){const suppliedWallet=String(options.wallet||walletAddress||''),suppliedProvider=options.provider||walletProvider||null;let signer;if(suppliedWallet&&suppliedProvider){signer={wallet:suppliedWallet,provider:suppliedProvider,profile:options.profile||getCachedProfileForWallet(suppliedWallet)||saltProfile}}else signer=await ensureScanSocialSigner();const active=await checkSocialAuthSession();if(active&&active.toLowerCase()===String(signer.wallet).toLowerCase())return signer;if(options.interactive===false)return null;const challenge=await socialApi('/api/social-auth?action=challenge&wallet='+encodeURIComponent(signer.wallet));let signature;if(/^0x[a-fA-F0-9]{40}$/.test(signer.wallet)){const hex=utf8ToHex(challenge.message),addr=String(signer.wallet).toLowerCase();try{signature=await signer.provider.request({method:'personal_sign',params:[hex,addr]})}catch(first){try{signature=await signer.provider.request({method:'personal_sign',params:[addr,hex]})}catch{throw first}}}else{if(!signer.provider?.signMessage)throw new Error('This wallet cannot sign the Trenches login message.');const signed=await signer.provider.signMessage(new TextEncoder().encode(challenge.message),'utf8');signature=bytesToBase64(signed?.signature||signed)}const evmChainId=/^0x[a-fA-F0-9]{40}$/.test(signer.wallet)?await currentEvmChainId(signer.provider):'';
 await socialApi('/api/social-auth',{method:'POST',body:JSON.stringify({wallet:signer.wallet,nonce:challenge.nonce,message:challenge.message,signature,evmChainId})});socialAuthSessionWallet=signer.wallet;return signer}
 function renderFavoriteNfts(favorites=[]){const slots=[...document.querySelectorAll('.favoriteNftSlot')];slots.forEach((el,i)=>{const nft=favorites[i];if(nft&&nft.image){const collection=socialEsc(nft.collection||nft.name||'NFT Collection'),price=Number.isFinite(Number(nft.priceSol))?`${Number(nft.priceSol).toLocaleString(undefined,{maximumFractionDigits:3})} SOL`:'Not listed';el.innerHTML=`<img src="${socialEsc(nft.image)}" alt="${socialEsc(nft.name||'NFT')}" /><div class="featuredNftMeta"><b>${collection}</b><div><span>Current price</span><strong>${price}</strong></div></div><small>Choose NFT</small>`}else el.innerHTML='<span>＋</span><small>Choose NFT</small>'})}
-async function saveProfileAppearance(patch={}){if(!walletAddress||!saltProfile)throw new Error('Connect your Salt profile first.');const banner=patch.banner!==undefined?patch.banner:(saltProfile.banner||''),favorites=patch.favorites!==undefined?patch.favorites:(saltProfile.favorites||[]),data=JSON.stringify({banner,favorites});const signingWallet=socialSigningWallet(walletAddress);
+function profileNftImage(value){const s=String(value||'').trim();if(!s)return'';if(s.startsWith('ipfs://'))return `https://ipfs.io/ipfs/${s.slice(7).replace(/^ipfs\//,'')}`;if(s.startsWith('ar://'))return `https://arweave.net/${s.slice(5)}`;if(/^https?:\/\//i.test(s)||s.startsWith('data:image/'))return s;return''}
+function profileFavoritePayload(nft={}){return{id:String(nft?.id||'').slice(0,100),name:String(nft?.name||'NFT').slice(0,100),image:profileNftImage(nft?.image),collection:String(nft?.collection||'').slice(0,100),priceSol:Number.isFinite(Number(nft?.priceSol))?Number(nft.priceSol):null}}
+function profileFavoritesPayload(favorites=[]){return Array.isArray(favorites)?favorites.slice(0,2).map(profileFavoritePayload):[]}
+async function saveProfileAppearance(patch={}){if(!walletAddress||!saltProfile)throw new Error('Connect your Salt profile first.');const banner=patch.banner!==undefined?String(patch.banner||''):String(saltProfile.banner||''),favorites=profileFavoritesPayload(patch.favorites!==undefined?patch.favorites:(saltProfile.favorites||[])),data=JSON.stringify({banner,favorites});const signingWallet=socialSigningWallet(walletAddress);
 const message=`Salt Swap profile appearance\nWallet: ${signingWallet}\nData: ${data}`;const signature=await signSaltMessage(message);const evmChainId=walletKind==='evm'?await currentEvmChainId(walletProvider):'';
 const saved=await socialApi('/api/social-profile',{method:'POST',body:JSON.stringify({action:'appearance',wallet:walletAddress,banner,favorites,message,signature,evmChainId})});cacheProfile(saved);renderProfile();return saved}
 async function prepareBanner(file){if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw new Error('Choose a JPG, PNG, or WebP banner.');if(file.size>10*1024*1024)throw new Error('Banner must be under 10 MB.');const bitmap=await createImageBitmap(file),w=1500,h=500,canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d'),scale=Math.max(w/bitmap.width,h/bitmap.height),sw=w/scale,sh=h/scale,sx=(bitmap.width-sw)/2,sy=(bitmap.height-sh)/2;ctx.drawImage(bitmap,sx,sy,sw,sh,0,0,w,h);bitmap.close?.();return canvas.toDataURL('image/jpeg',.76)}
@@ -2055,17 +2058,29 @@ async function openNftPicker(slot=0){
       </button>`).join('');
 
     grid.querySelectorAll('[data-nft-i]').forEach(btn=>btn.addEventListener('click',async()=>{
-      let nft=rows[Number(btn.dataset.nftI)];
-      const favorites=[...(saltProfile?.favorites||[])];
-      if(!isEvm){
-        try{
-          const d=await socialApi('/api/social-nft-detail?mint='+encodeURIComponent(nft.id));
-          nft={...nft,collection:d.collection||nft.collection||nft.name||'NFT Collection',priceSol:Number.isFinite(Number(d.priceSol))?Number(d.priceSol):null};
-        }catch{}
+      btn.disabled=true;
+      btn.setAttribute('aria-busy','true');
+      grid.querySelector('.nftSaveError')?.remove();
+      try{
+        let nft=rows[Number(btn.dataset.nftI)];
+        const favorites=[...(saltProfile?.favorites||[])];
+        if(!isEvm){
+          try{
+            const d=await socialApi('/api/social-nft-detail?mint='+encodeURIComponent(nft.id));
+            nft={...nft,collection:d.collection||nft.collection||nft.name||'NFT Collection',priceSol:Number.isFinite(Number(d.priceSol))?Number(d.priceSol):null};
+          }catch{}
+        }
+        favorites[activeNftSlot]=profileFavoritePayload(nft);
+        await saveProfileAppearance({favorites});
+        closeNftPicker();
+      }catch(e){
+        btn.disabled=false;
+        btn.removeAttribute('aria-busy');
+        const error=document.createElement('div');
+        error.className='emptyReviews nftSaveError';
+        error.textContent='Could not save this NFT: '+readableError(e);
+        grid.prepend(error);
       }
-      favorites[activeNftSlot]=nft;
-      await saveProfileAppearance({favorites});
-      closeNftPicker();
     }));
   }catch(e){
     grid.innerHTML=`<div class="emptyReviews">${socialEsc(readableError(e))}</div>`;
