@@ -1,3 +1,17 @@
+# The Trenches V1.12.10 — Active Wallet Thesis Signing
+
+## V1.12.10 update
+
+- Fixes Zerion profiles opening Trust Wallet when posting a thesis.
+- Checks the existing verified social session before requesting any new wallet signature.
+- Locks fallback signing to the wallet address attached to the active Trenches profile.
+- Remembers the selected EVM provider and reuses the exact Zerion provider after an EVM token scan.
+- Refuses to open a different wallet if the profile wallet is not available, and asks the user to reconnect the correct wallet instead.
+- Applies the same active-wallet protection to Ethereum, Base, BNB Chain, and other supported EVM profiles.
+- Keeps Top Calls removed and preserves all profile, NFT, wallet, and entrance behavior from V1.12.09.
+
+## Previous V1.12.09 update
+
 # The Trenches V1.12.09 — Remove Top Calls
 
 ## V1.12.09 update
