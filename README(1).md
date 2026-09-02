@@ -1,3 +1,14 @@
+# The Trenches V1.12.01 — Mascot Sheep Entrance
+
+## V1.12.01 update
+
+- Replaces the entrance artwork with the exact selected trench scene featuring the mascot sheep seated on a crate.
+- Keeps the existing ENTER hover glow and localized lantern-light flicker unchanged.
+- Keeps the sound toggle and procedural battlefield ambience from V1.12.00.
+- Adds no video or external audio files, keeping the update GitHub-ready.
+
+## Previous V1.12.00 update
+
 # The Trenches V1.12.00 — War Audio Entrance
 
 ## V1.12.00 update
