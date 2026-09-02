@@ -153,6 +153,10 @@
       "dest": "/api.mjs?route=social-nft-detail"
     },
     {
+      "src": "/api/opensea-nft-price",
+      "dest": "/api.mjs?route=opensea-nft-price"
+    },
+    {
       "src": "/api/social-holdings",
       "dest": "/api.mjs?route=social-holdings"
     },

@@ -1396,7 +1396,7 @@ async function socialProfileHandler(req,res){res.setHeader('Cache-Control','no-s
   };
   await kv('set',`salt:social:profile:${wallet}`,JSON.stringify(profile));
   return res.status(200).json(withTrenchesVerification(profile));
-}if(b.action==='tickers'){const tickers=Array.isArray(b.tickers)?b.tickers.slice(0,20).map(x=>({id:String(x?.id||'').slice(0,100),symbol:String(x?.symbol||'').slice(0,20),name:String(x?.name||'').slice(0,100),image:normalizeTokenIcon(x?.image)||'',price:number(x?.price),change24h:number(x?.change24h)})).filter(x=>x.id&&x.symbol):[];const oldRaw=await kv('get',`salt:social:profile:${wallet}`);if(!oldRaw)return res.status(404).json({error:'Create your Salt profile first.'});const old=JSON.parse(oldRaw),profile={...old,tickers,updatedAt:new Date().toISOString()};await kv('set',`salt:social:profile:${wallet}`,JSON.stringify(profile));return res.status(200).json(withTrenchesVerification(profile))}if(b.action==='banner'){const banner=String(b.banner||'');if(!banner.startsWith('data:image/jpeg;base64,')||banner.length>600000)return res.status(400).json({error:'Banner image is invalid or too large.'});const oldRaw=await kv('get',`salt:social:profile:${wallet}`);if(!oldRaw)return res.status(404).json({error:'Create your Salt profile first.'});const old=JSON.parse(oldRaw),profile={...old,banner,updatedAt:new Date().toISOString()};await kv('set',`salt:social:profile:${wallet}`,JSON.stringify(profile));return res.status(200).json(withTrenchesVerification(profile))}if(b.action==='appearance'){const banner=String(b.banner||''),favorites=Array.isArray(b.favorites)?b.favorites.slice(0,2).map(x=>({id:String(x?.id||'').slice(0,100),name:String(x?.name||'NFT').slice(0,100),image:normalizeTokenIcon(x?.image)||'',collection:String(x?.collection||'').slice(0,100),priceSol:Number.isFinite(Number(x?.priceSol))?Number(x.priceSol):null})):[];if(banner&&(!banner.startsWith('data:image/jpeg;base64,')||banner.length>600000))return res.status(400).json({error:'Banner image is invalid or too large.'});const data=JSON.stringify({banner,favorites}),expected=`Salt Swap profile appearance\nWallet: ${wallet}\nData: ${data}`,suppliedWallet=String(b.wallet||'').trim(),legacyExpected=isEvmSocialWallet(suppliedWallet)?`Salt Swap profile appearance\nWallet: ${suppliedWallet}\nData: ${data}`:expected,messageMatches=message===expected||message===legacyExpected;if(!messageMatches||!await verifySocialMessage(wallet,message,signature,evmChainId))return res.status(401).json({error:'Wallet signature could not be verified.'});const oldRaw=await kv('get',`salt:social:profile:${wallet}`);if(!oldRaw)return res.status(404).json({error:'Create your Salt profile first.'});const old=JSON.parse(oldRaw),profile={...old,banner,favorites,updatedAt:new Date().toISOString()};await kv('set',`salt:social:profile:${wallet}`,JSON.stringify(profile));return res.status(200).json(withTrenchesVerification(profile))}const username=cleanUsername(b.username),avatar=String(b.avatar||''),avatarHash=String(b.avatarHash||'none'),bio=String(b.bio||'').trim().slice(0,160);if(!username)return res.status(400).json({error:'Valid wallet and username are required.'});if(avatar&&(!avatar.startsWith('data:image/jpeg;base64,')||avatar.length>180000))return res.status(400).json({error:'Profile picture is invalid or too large.'});const expected=`Salt Swap profile\nWallet: ${wallet}\nUsername: ${username}\nAvatar: ${avatarHash}\nBio: ${bio}`;
+}if(b.action==='tickers'){const tickers=Array.isArray(b.tickers)?b.tickers.slice(0,20).map(x=>({id:String(x?.id||'').slice(0,100),symbol:String(x?.symbol||'').slice(0,20),name:String(x?.name||'').slice(0,100),image:normalizeTokenIcon(x?.image)||'',price:number(x?.price),change24h:number(x?.change24h)})).filter(x=>x.id&&x.symbol):[];const oldRaw=await kv('get',`salt:social:profile:${wallet}`);if(!oldRaw)return res.status(404).json({error:'Create your Salt profile first.'});const old=JSON.parse(oldRaw),profile={...old,tickers,updatedAt:new Date().toISOString()};await kv('set',`salt:social:profile:${wallet}`,JSON.stringify(profile));return res.status(200).json(withTrenchesVerification(profile))}if(b.action==='banner'){const banner=String(b.banner||'');if(!banner.startsWith('data:image/jpeg;base64,')||banner.length>600000)return res.status(400).json({error:'Banner image is invalid or too large.'});const oldRaw=await kv('get',`salt:social:profile:${wallet}`);if(!oldRaw)return res.status(404).json({error:'Create your Salt profile first.'});const old=JSON.parse(oldRaw),profile={...old,banner,updatedAt:new Date().toISOString()};await kv('set',`salt:social:profile:${wallet}`,JSON.stringify(profile));return res.status(200).json(withTrenchesVerification(profile))}if(b.action==='appearance'){const banner=String(b.banner||''),favorites=Array.isArray(b.favorites)?b.favorites.slice(0,2).map(x=>({id:String(x?.id||'').slice(0,100),name:String(x?.name||'NFT').slice(0,100),image:normalizeTokenIcon(x?.image)||'',collection:String(x?.collection||'').slice(0,100),chain:String(x?.chain||'').slice(0,40),tokenId:String(x?.tokenId||'').slice(0,200),price:Number.isFinite(Number(x?.price))&&Number(x.price)>0?Number(x.price):null,priceCurrency:String(x?.priceCurrency||'').slice(0,16),priceLabel:String(x?.priceLabel||'').slice(0,24),priceSol:Number.isFinite(Number(x?.priceSol))&&Number(x.priceSol)>0?Number(x.priceSol):null})):[];if(banner&&(!banner.startsWith('data:image/jpeg;base64,')||banner.length>600000))return res.status(400).json({error:'Banner image is invalid or too large.'});const data=JSON.stringify({banner,favorites}),expected=`Salt Swap profile appearance\nWallet: ${wallet}\nData: ${data}`,suppliedWallet=String(b.wallet||'').trim(),legacyExpected=isEvmSocialWallet(suppliedWallet)?`Salt Swap profile appearance\nWallet: ${suppliedWallet}\nData: ${data}`:expected,messageMatches=message===expected||message===legacyExpected;if(!messageMatches||!await verifySocialMessage(wallet,message,signature,evmChainId))return res.status(401).json({error:'Wallet signature could not be verified.'});const oldRaw=await kv('get',`salt:social:profile:${wallet}`);if(!oldRaw)return res.status(404).json({error:'Create your Salt profile first.'});const old=JSON.parse(oldRaw),profile={...old,banner,favorites,updatedAt:new Date().toISOString()};await kv('set',`salt:social:profile:${wallet}`,JSON.stringify(profile));return res.status(200).json(withTrenchesVerification(profile))}const username=cleanUsername(b.username),avatar=String(b.avatar||''),avatarHash=String(b.avatarHash||'none'),bio=String(b.bio||'').trim().slice(0,160);if(!username)return res.status(400).json({error:'Valid wallet and username are required.'});if(avatar&&(!avatar.startsWith('data:image/jpeg;base64,')||avatar.length>180000))return res.status(400).json({error:'Profile picture is invalid or too large.'});const expected=`Salt Swap profile\nWallet: ${wallet}\nUsername: ${username}\nAvatar: ${avatarHash}\nBio: ${bio}`;
 const suppliedWallet=String(b.wallet||'').trim();
 const legacyExpected=isEvmSocialWallet(suppliedWallet)?`Salt Swap profile\nWallet: ${suppliedWallet}\nUsername: ${username}\nAvatar: ${avatarHash}\nBio: ${bio}`:expected;
 const messageMatches=message===expected||message===legacyExpected;
@@ -1812,6 +1812,40 @@ async function fetchOpenSeaNfts(wallet,network){
     })).filter(n=>n.image&&(network.opensea!=='solana'||n.id));
   }catch{return[]}
 }
+function openSeaPriceNumber(price){
+  const raw=String(price?.value||'').trim(),decimals=Math.max(0,Math.min(36,Number(price?.decimals)||0));
+  if(!/^\d+$/.test(raw))return null;
+  const padded=raw.padStart(decimals+1,'0'),whole=decimals?padded.slice(0,-decimals):padded,fraction=decimals?padded.slice(-decimals).replace(/0+$/,''):'';
+  const value=Number(fraction?`${whole}.${fraction}`:whole);
+  return Number.isFinite(value)&&value>0?value:null;
+}
+async function fetchOpenSeaBestPrice(collection,identifier=''){
+  const key=process.env.OPENSEA_API_KEY||'';
+  if(!key)return null;
+  const base='https://api.opensea.io/api/v2/listings/collection/'+encodeURIComponent(collection);
+  const url=identifier?`${base}/nfts/${encodeURIComponent(identifier)}/best`:`${base}/best`;
+  try{
+    const response=await fetchJson(url,{headers:{accept:'application/json','x-api-key':key}},10000);
+    const listing=identifier?response:(Array.isArray(response?.listings)?response.listings[0]:response);
+    const current=listing?.price?.current,value=openSeaPriceNumber(current),currency=String(current?.currency||'').trim().slice(0,16);
+    if(value===null)return null;
+    return{price:value,currency,chain:String(listing?.chain||'').slice(0,40)};
+  }catch{return null}
+}
+async function openSeaNftPriceHandler(req,res){
+  res.setHeader('Cache-Control','public, max-age=60, s-maxage=120');
+  try{
+    if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});
+    if(!process.env.OPENSEA_API_KEY)return res.status(503).json({error:'OpenSea pricing needs OPENSEA_API_KEY configured in Vercel.'});
+    const collection=String(req.query?.collection||'').trim(),identifier=String(req.query?.identifier||'').trim();
+    if(!/^[a-zA-Z0-9][a-zA-Z0-9._:-]{0,199}$/.test(collection))return res.status(400).json({error:'Valid OpenSea collection required.'});
+    if(identifier&&!/^[a-zA-Z0-9][a-zA-Z0-9._:-]{0,199}$/.test(identifier))return res.status(400).json({error:'Valid NFT identifier required.'});
+    let result=identifier?await fetchOpenSeaBestPrice(collection,identifier):null,label='Listed price';
+    if(!result){result=await fetchOpenSeaBestPrice(collection);label='Floor price'}
+    if(!result)return res.status(200).json({price:null,currency:'',chain:'',label:'Current price'});
+    return res.status(200).json({...result,label});
+  }catch(e){return res.status(Number(e?.status)||500).json({error:errorText(e)})}
+}
 async function fetchAlchemyNfts(wallet,network){
   const key=process.env.ALCHEMY_API_KEY||process.env.ALCHEMY_KEY||'';
   if(!key)return[];
@@ -2046,7 +2080,7 @@ const pr=await kv('get',`salt:social:profile:${wallet}`);if(!pr)return res.statu
 
 async function healthHandler(req,res){
   res.setHeader('Cache-Control','no-store');
-  return res.status(200).json({ok:true,service:'The Trenches scanner',version:'1.11.86',providers:{helius:Boolean(process.env.HELIUS_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY),zerox:Boolean(process.env.ZEROX_API_KEY),social:Boolean(process.env.UPSTASH_REDIS_REST_URL&&process.env.UPSTASH_REDIS_REST_TOKEN)}});
+  return res.status(200).json({ok:true,service:'The Trenches scanner',version:'1.12.05',providers:{helius:Boolean(process.env.HELIUS_API_KEY),opensea:Boolean(process.env.OPENSEA_API_KEY),birdeye:Boolean(process.env.BIRDEYE_API_KEY),jupiter:Boolean(process.env.JUPITER_API_KEY),zerox:Boolean(process.env.ZEROX_API_KEY),social:Boolean(process.env.UPSTASH_REDIS_REST_URL&&process.env.UPSTASH_REDIS_REST_TOKEN)}});
 }
 
 export default async function handler(req,res){
@@ -2069,6 +2103,7 @@ export default async function handler(req,res){
     if(route==='social-profile')return socialProfileHandler(req,res);
     if(route==='social-nfts')return socialNftsHandler(req,res);
     if(route==='social-nft-detail')return socialNftDetailHandler(req,res);
+    if(route==='opensea-nft-price')return openSeaNftPriceHandler(req,res);
     if(route==='swap-balance')return swapBalanceHandler(req,res);
     if(route==='portfolio')return portfolioHandler(req,res);
     if(route==='portfolio-history')return portfolioHistoryHandler(req,res);

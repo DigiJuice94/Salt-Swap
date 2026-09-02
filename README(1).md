@@ -1,3 +1,16 @@
+# The Trenches V1.12.05 — Chain-Aware NFT Prices
+
+## V1.12.05 update
+
+- Removes the old hard-coded `SOL` label from EVM NFT cards.
+- Loads the selected NFT's active OpenSea listing price and native listing currency.
+- Falls back to the collection floor price when the individual NFT is not listed.
+- Labels values accurately as “Listed price” or “Floor price” and shows “Not listed” instead of `0 SOL` when no price exists.
+- Refreshes prices when profile NFT cards render, including NFTs saved before this update.
+- Preserves chain, token identifier, currency, and pricing fields in newly saved profile NFTs.
+
+## Previous V1.12.04 update
+
 # The Trenches V1.12.04 — NFT Profile Save Fix
 
 ## V1.12.04 update
