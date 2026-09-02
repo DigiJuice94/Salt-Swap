@@ -1,3 +1,27 @@
+# The Trenches V1.12.03 — OpenSea Wallet NFTs
+
+## V1.12.03 update
+
+- Uses OpenSea as the primary source for wallet-owned NFTs on Ethereum, Base, Polygon, Arbitrum, Optimism, Robinhood Chain, and Solana.
+- Keeps Alchemy and Reservoir as EVM fallbacks and Helius as the Solana fallback.
+- Leaves the normal wallet connection flow unchanged; users do not need an OpenSea account or a separate OpenSea wallet.
+- Labels NFT picker results with the data source and correctly remembers which of the two profile NFT slots the user selected.
+- Keeps BNB Chain NFT support through the existing Alchemy/Reservoir route because OpenSea does not currently list BNB Chain as a supported account-NFT chain.
+- Requires `OPENSEA_API_KEY` in the Vercel environment to enable OpenSea lookups.
+
+## Previous V1.12.02 update
+
+# The Trenches V1.12.02 — Animated Title Entrance
+
+## V1.12.02 update
+
+- Animates the exact baked-in “THE TRENCHES” title when the entrance first opens.
+- Brings the title forward through a soft blur, settles it cleanly into its original position, then hands back to the untouched artwork.
+- Runs the animation once per page load and disables it automatically for reduced-motion visitors.
+- Keeps the selected sheep artwork, ENTER hover glow, lantern flicker, sound toggle, and procedural war audio unchanged.
+
+## Previous V1.12.01 update
+
 # The Trenches V1.12.01 — Mascot Sheep Entrance
 
 ## V1.12.01 update

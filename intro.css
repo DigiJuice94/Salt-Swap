@@ -1,4 +1,4 @@
-/* V1.12.00 — approved artwork entrance, hover lighting, and opt-in war audio */
+/* V1.12.02 — selected artwork, animated title reveal, hover lighting, and opt-in war audio */
 body.trenches-intro-open {
   overflow: hidden !important;
 }
@@ -52,6 +52,50 @@ body.trenches-intro-open {
   object-fit: fill;
   user-select: none;
   -webkit-user-drag: none;
+}
+
+/* The title is baked into the approved art. A feathered curtain hides it briefly,
+   while an exact crop of that same artwork moves forward and settles into place. */
+.trenchesIntroTitleCurtain,
+.trenchesIntroTitleReveal {
+  position: absolute;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.trenchesIntroTitleCurtain {
+  left: 27.5%;
+  top: 23.4%;
+  width: 45%;
+  height: 15.8%;
+  opacity: 1;
+  background: radial-gradient(ellipse at center,
+    rgba(29, 19, 12, .98) 0 54%,
+    rgba(35, 22, 13, .94) 67%,
+    rgba(35, 22, 13, 0) 100%);
+  -webkit-backdrop-filter: blur(11px) brightness(.42);
+  backdrop-filter: blur(11px) brightness(.42);
+  -webkit-mask-image: radial-gradient(ellipse at center, #000 0 64%, rgba(0, 0, 0, .92) 77%, transparent 100%);
+  mask-image: radial-gradient(ellipse at center, #000 0 64%, rgba(0, 0, 0, .92) 77%, transparent 100%);
+}
+
+.trenchesIntroTitleReveal {
+  inset: 0;
+  opacity: 0;
+  background: url('/entrance-trenches-art.png?v=11202') center / 100% 100% no-repeat;
+  clip-path: inset(24.7% 28.7% 61.5% 28.7%);
+  transform: translateY(7%) scale(.78);
+  transform-origin: 50% 30.8%;
+  filter: blur(11px) brightness(.68);
+  will-change: opacity, transform, filter;
+}
+
+.trenchesIntro.intro-ready .trenchesIntroTitleCurtain {
+  animation: trenchesTitleCurtain 1.82s .34s cubic-bezier(.22, .72, .25, 1) forwards;
+}
+
+.trenchesIntro.intro-ready .trenchesIntroTitleReveal {
+  animation: trenchesTitleArrival 1.82s .34s cubic-bezier(.18, .82, .24, 1) forwards;
 }
 
 .trenchesIntroVignette {
@@ -214,12 +258,48 @@ body.trenches-intro-open {
   62% { opacity: .55; transform: translate(-50%, -50%) scale(1.1); }
 }
 
+@keyframes trenchesTitleCurtain {
+  0%, 57% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes trenchesTitleArrival {
+  0% {
+    opacity: 0;
+    transform: translateY(7%) scale(.78);
+    filter: blur(11px) brightness(.68);
+  }
+  16% { opacity: .28; }
+  58% {
+    opacity: 1;
+    transform: translateY(-.6%) scale(1.035);
+    filter: blur(0) brightness(1.12) drop-shadow(0 8px 16px rgba(0, 0, 0, .58));
+  }
+  76% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0) brightness(1);
+  }
+  88% { opacity: 1; }
+  100% {
+    opacity: 0;
+    transform: translateY(0) scale(1);
+    filter: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .trenchesIntro,
   .trenchesIntroStage,
   .trenchesIntroEnter,
   .trenchesIntroEnter::before {
     transition-duration: .01ms !important;
+  }
+
+  .trenchesIntroTitleCurtain,
+  .trenchesIntroTitleReveal {
+    display: none !important;
+    animation: none !important;
   }
 
   .trenchesIntro.lights-flicker .trenchesIntroLight {

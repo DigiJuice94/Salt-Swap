@@ -1401,7 +1401,44 @@ const suppliedWallet=String(b.wallet||'').trim();
 const legacyExpected=isEvmSocialWallet(suppliedWallet)?`Salt Swap profile\nWallet: ${suppliedWallet}\nUsername: ${username}\nAvatar: ${avatarHash}\nBio: ${bio}`:expected;
 const messageMatches=message===expected||message===legacyExpected;
 if(!messageMatches||!await verifySocialMessage(wallet,message,signature,evmChainId))return res.status(401).json({error:'Wallet signature could not be verified.'});const digest=avatar?await crypto.subtle.digest('SHA-256',new TextEncoder().encode(avatar)):null,serverHash=digest?[...new Uint8Array(digest)].map(x=>x.toString(16).padStart(2,'0')).join(''):'none';if(serverHash!==avatarHash)return res.status(400).json({error:'Profile picture verification failed.'});const now=new Date().toISOString(),oldRaw=await kv('get',`salt:social:profile:${wallet}`),old=oldRaw?JSON.parse(oldRaw):null,userKey=`salt:social:username:${username.toLowerCase()}`,existingOwner=await kv('get',userKey);if(existingOwner&&existingOwner!==wallet)return res.status(409).json({error:'That username is already taken. Pick another one.'});if(!existingOwner){const claimed=await kv('set',userKey,wallet,'nx');if(!claimed){const winner=await kv('get',userKey);if(winner!==wallet)return res.status(409).json({error:'That username was just claimed. Pick another one.'})}}if(old?.username&&old.username.toLowerCase()!==username.toLowerCase()){const oldKey=`salt:social:username:${old.username.toLowerCase()}`,oldOwner=await kv('get',oldKey);if(oldOwner===wallet)await kv('del',oldKey)}const profile={wallet,username,avatar:avatar||'',bio,banner:old?.banner||'',favorites:old?.favorites||[],tickers:old?.tickers||[],following:Array.isArray(old?.following)?old.following:[],followers:Array.isArray(old?.followers)?old.followers:[],createdAt:old?.createdAt||now,updatedAt:now};await kv('set',`salt:social:profile:${wallet}`,JSON.stringify(profile));await setSocialSession(res,req,wallet);return res.status(200).json(withTrenchesVerification(profile))}catch(e){return res.status(Number(e?.status)||500).json({error:errorText(e)})}}
-async function socialNftsHandler(req,res){res.setHeader('Cache-Control','no-store');try{if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});const wallet=safeSolWallet(req.query.wallet),key=process.env.HELIUS_API_KEY;if(!wallet)return res.status(400).json({error:'Valid Solana wallet required.'});if(!key)return res.status(503).json({error:'NFT lookup needs HELIUS_API_KEY configured in Vercel.'});const j=await fetchJson(`https://mainnet.helius-rpc.com/?api-key=${encodeURIComponent(key)}`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:'salt-social-nfts',method:'getAssetsByOwner',params:{ownerAddress:wallet,page:1,limit:100,displayOptions:{showFungible:false}}})},12000),items=(j?.result?.items||[]).filter(a=>{const i=String(a?.interface||'').toLowerCase();return i.includes('nft')||i.includes('programmablenft')}).map(a=>{const grouping=Array.isArray(a?.grouping)?a.grouping:[],collectionGroup=grouping.find(g=>String(g?.group_key||'').toLowerCase()==='collection');return{id:String(a.id||''),name:String(a?.content?.metadata?.name||a?.content?.metadata?.symbol||'NFT'),image:heliusAssetImage(a),collection:String(a?.content?.metadata?.collection?.name||a?.content?.metadata?.collection||collectionGroup?.group_value||'').slice(0,100)}}).filter(a=>a.id&&a.image).slice(0,60);return res.status(200).json({items})}catch(e){return res.status(Number(e?.status)||500).json({error:errorText(e)})}}
+async function socialNftsHandler(req,res){
+  res.setHeader('Cache-Control','no-store');
+  try{
+    if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});
+    const wallet=safeSolWallet(req.query.wallet);
+    if(!wallet)return res.status(400).json({error:'Valid Solana wallet required.'});
+
+    let items=await fetchOpenSeaNfts(wallet,{chain:'Solana',opensea:'solana'});
+    if(!items.length){
+      const key=process.env.HELIUS_API_KEY;
+      if(!key){
+        if(process.env.OPENSEA_API_KEY)return res.status(200).json({items:[]});
+        return res.status(503).json({error:'NFT lookup needs OPENSEA_API_KEY or HELIUS_API_KEY configured in Vercel.'});
+      }
+      const j=await fetchJson(`https://mainnet.helius-rpc.com/?api-key=${encodeURIComponent(key)}`,{
+        method:'POST',
+        headers:{'content-type':'application/json'},
+        body:JSON.stringify({jsonrpc:'2.0',id:'salt-social-nfts',method:'getAssetsByOwner',params:{ownerAddress:wallet,page:1,limit:100,displayOptions:{showFungible:false}}})
+      },12000);
+      items=(j?.result?.items||[]).filter(a=>{
+        const i=String(a?.interface||'').toLowerCase();
+        return i.includes('nft')||i.includes('programmablenft');
+      }).map(a=>{
+        const grouping=Array.isArray(a?.grouping)?a.grouping:[];
+        const collectionGroup=grouping.find(g=>String(g?.group_key||'').toLowerCase()==='collection');
+        return{
+          id:String(a.id||''),
+          chain:'Solana',
+          name:String(a?.content?.metadata?.name||a?.content?.metadata?.symbol||'NFT'),
+          image:heliusAssetImage(a),
+          collection:String(a?.content?.metadata?.collection?.name||a?.content?.metadata?.collection||collectionGroup?.group_value||'').slice(0,100),
+          source:'Helius'
+        };
+      }).filter(a=>a.id&&a.image);
+    }
+    return res.status(200).json({items:items.slice(0,60)});
+  }catch(e){return res.status(Number(e?.status)||500).json({error:errorText(e)})}
+}
 async function socialNftDetailHandler(req,res){res.setHeader('Cache-Control','no-store');try{if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});const mint=String(req.query.mint||'').trim();if(!mint||mint.length<32||mint.length>100)return res.status(400).json({error:'Valid NFT mint required.'});let collection='',priceSol=null;try{const meta=await fetchJson(`https://api-mainnet.magiceden.dev/v2/tokens/${encodeURIComponent(mint)}`,{headers:{accept:'application/json'}},7000);collection=String(meta?.collectionName||meta?.collection||meta?.collectionSymbol||'').slice(0,100)}catch{}try{const listings=await fetchJson(`https://api-mainnet.magiceden.dev/v2/tokens/${encodeURIComponent(mint)}/listings?listingAggMode=true`,{headers:{accept:'application/json'}},7000);const rows=Array.isArray(listings)?listings:[];const prices=rows.map(x=>Number(x?.price??x?.listPrice)).filter(x=>Number.isFinite(x)&&x>0);if(prices.length)priceSol=Math.min(...prices)}catch{}return res.status(200).json({mint,collection,priceSol})}catch(e){return res.status(Number(e?.status)||500).json({error:errorText(e)})}}
 async function swapBalanceHandler(req,res){
   res.setHeader('Cache-Control','no-store');
@@ -1739,8 +1776,12 @@ async function dexTokenUsdByAddress(address,chainHint=''){
 }
 
 const EVM_NFT_NETWORKS=[
-  {chain:'Ethereum',alchemy:'eth-mainnet',reservoir:'https://api.reservoir.tools'},
-  {chain:'Base',alchemy:'base-mainnet',reservoir:'https://api-base.reservoir.tools'},
+  {chain:'Ethereum',opensea:'ethereum',alchemy:'eth-mainnet',reservoir:'https://api.reservoir.tools'},
+  {chain:'Base',opensea:'base',alchemy:'base-mainnet',reservoir:'https://api-base.reservoir.tools'},
+  {chain:'Polygon',opensea:'polygon',alchemy:'polygon-mainnet',reservoir:'https://api-polygon.reservoir.tools'},
+  {chain:'Arbitrum',opensea:'arbitrum',alchemy:'arb-mainnet',reservoir:'https://api-arbitrum.reservoir.tools'},
+  {chain:'Optimism',opensea:'optimism',alchemy:'opt-mainnet',reservoir:'https://api-optimism.reservoir.tools'},
+  {chain:'Robinhood Chain',opensea:'robinhood'},
   {chain:'BNB Chain',alchemy:'bnb-mainnet',reservoir:'https://api-bsc.reservoir.tools'}
 ];
 
@@ -1750,6 +1791,26 @@ function normalizeNftImage(v){
   if(s.startsWith('ipfs://'))return'https://ipfs.io/ipfs/'+s.slice(7);
   if(/^https?:\/\//i.test(s))return s;
   return'';
+}
+async function fetchOpenSeaNfts(wallet,network){
+  const key=process.env.OPENSEA_API_KEY||'';
+  if(!key||!network?.opensea)return[];
+  try{
+    const url=`https://api.opensea.io/api/v2/chain/${encodeURIComponent(network.opensea)}/account/${encodeURIComponent(wallet)}/nfts?limit=200`;
+    const j=await fetchJson(url,{headers:{accept:'application/json','x-api-key':key}},12000);
+    const rows=Array.isArray(j?.nfts)?j.nfts:[];
+    return rows.filter(n=>!n?.is_disabled&&!n?.is_nsfw).map(n=>({
+      id:network.opensea==='solana'?String(n?.identifier||n?.contract||''):'',
+      chain:network.chain,
+      name:n?.name||n?.collection||'NFT',
+      collection:n?.collection||network.chain,
+      image:normalizeNftImage(n?.display_image_url||n?.image_url||n?.original_image_url||''),
+      contract:String(n?.contract||''),
+      tokenId:String(n?.identifier||''),
+      openseaUrl:/^https:\/\/opensea\.io\//i.test(String(n?.opensea_url||''))?String(n.opensea_url):'',
+      source:'OpenSea'
+    })).filter(n=>n.image&&(network.opensea!=='solana'||n.id));
+  }catch{return[]}
 }
 async function fetchAlchemyNfts(wallet,network){
   const key=process.env.ALCHEMY_API_KEY||process.env.ALCHEMY_KEY||'';
@@ -1764,7 +1825,8 @@ async function fetchAlchemyNfts(wallet,network){
       collection:n?.contract?.name||n?.collection?.name||network.chain,
       image:normalizeNftImage(n?.image?.cachedUrl||n?.image?.thumbnailUrl||n?.image?.originalUrl||n?.raw?.metadata?.image||''),
       contract:n?.contract?.address||'',
-      tokenId:n?.tokenId||''
+      tokenId:n?.tokenId||'',
+      source:'Alchemy'
     })).filter(n=>n.image);
   }catch{return[]}
 }
@@ -1783,7 +1845,8 @@ async function fetchReservoirNfts(wallet,network){
         collection:t?.collection?.name||network.chain,
         image:normalizeNftImage(t?.imageSmall||t?.image||t?.media||''),
         contract:t?.contract||'',
-        tokenId:t?.tokenId||''
+        tokenId:t?.tokenId||'',
+        source:'Reservoir'
       }
     }).filter(n=>n.image);
   }catch{return[]}
@@ -1794,12 +1857,13 @@ async function evmNftsHandler(req,res){
     const wallet=String(req.query?.wallet||'').trim();
     if(!/^0x[a-fA-F0-9]{40}$/.test(wallet))return res.status(400).json({error:'Valid EVM wallet required.'});
 
-    let nfts=[];
-    for(const network of EVM_NFT_NETWORKS){
-      let rows=await fetchAlchemyNfts(wallet,network);
-      if(!rows.length)rows=await fetchReservoirNfts(wallet,network);
-      nfts.push(...rows);
-    }
+    const groups=await Promise.all(EVM_NFT_NETWORKS.map(async network=>{
+      let rows=await fetchOpenSeaNfts(wallet,network);
+      if(!rows.length&&network.alchemy)rows=await fetchAlchemyNfts(wallet,network);
+      if(!rows.length&&network.reservoir)rows=await fetchReservoirNfts(wallet,network);
+      return rows;
+    }));
+    let nfts=groups.flat();
 
     const seen=new Set();
     nfts=nfts.filter(n=>{
