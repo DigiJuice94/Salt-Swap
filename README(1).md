@@ -1,3 +1,15 @@
+# The Trenches V1.12.13 — Clean Wallet Holdings
+
+## V1.12.13 update
+
+- Fixes overlapping token symbols, names, and balances in profile wallet holdings.
+- Uses a stable two-column row: token logo/details on the left and balance/value on the right.
+- Stacks each token symbol above its full name and cleanly shortens unusually long text with an ellipsis.
+- Applies the same clean layout to Solana and EVM profiles, including profiles viewed by other visitors.
+- Keeps the lowered intro title, live post-author updates, and every feature from V1.12.12.
+
+## Previous V1.12.12 update
+
 # The Trenches V1.12.12 — Lower Intro Title
 
 ## V1.12.12 update

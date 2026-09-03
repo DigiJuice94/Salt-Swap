@@ -1,6 +1,6 @@
 {
   "name": "the-trenches",
-  "version": "1.12.12",
+  "version": "1.12.13",
   "private": true,
   "type": "module",
   "dependencies": {

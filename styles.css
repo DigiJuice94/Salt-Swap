@@ -5264,3 +5264,74 @@ main,
 body{
   isolation:isolate;
 }
+
+/* ==========================================================
+   V1.12.13 — clean two-column profile wallet holdings
+   ========================================================== */
+.walletHoldingsCard .holdingRow{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:10px!important;
+  min-width:0;
+}
+
+.walletHoldingsCard .holdingTokenLeft{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-width:0;
+  overflow:hidden;
+}
+
+.walletHoldingsCard .holdingTokenLeft>span:last-child{
+  display:grid;
+  min-width:0;
+  overflow:hidden;
+}
+
+.walletHoldingsCard .holdingTokenLeft>span:last-child b,
+.walletHoldingsCard .holdingTokenLeft>span:last-child small{
+  display:block;
+  min-width:0;
+  max-width:100%;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.walletHoldingsCard .holdingTokenLeft>span:last-child b{
+  color:#203b4e;
+  font-size:12px;
+  line-height:1.2;
+}
+
+.walletHoldingsCard .holdingTokenLeft>span:last-child small{
+  margin-top:2px;
+  color:#8c968d;
+  font-size:9px;
+  line-height:1.2;
+}
+
+.walletHoldingsCard .holdingRow>strong{
+  display:block;
+  justify-self:end;
+  min-width:0;
+  max-width:88px;
+  overflow:hidden;
+  color:#55758a;
+  font-size:10px;
+  line-height:1.2;
+  text-align:right;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.walletHoldingsCard .holdingRow>strong small{
+  display:block;
+  max-width:88px;
+  overflow:hidden;
+  margin-top:2px;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
