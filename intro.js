@@ -1,4 +1,4 @@
-/* V1.12.02 — animated title entrance, interactions, and procedural battlefield audio */
+/* V1.12.11 — animated title entrance, interactions, and procedural battlefield audio */
 (() => {
   const intro = document.getElementById('trenchesIntro');
   const enter = document.getElementById('trenchesIntroEnter');

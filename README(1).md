@@ -1,3 +1,18 @@
+# The Trenches V1.12.11 — Live Authors + New Intro
+
+## V1.12.11 update
+
+- Replaces the entrance background with the selected wide sunset trench artwork.
+- Adds a new live “THE TRENCHES” title that rises from the horizon, sharpens into focus, glows, and finishes with a light sweep when the page opens.
+- Keeps the ENTER plaque aligned and clickable with its hover glow and lantern flicker effects.
+- Keeps the optional battlefield sound control and entrance transition.
+- Makes every thesis display its author’s current username and profile picture instead of the old copy saved at posting time.
+- Applies current author details to profile feeds, community feeds, token thesis lists, replies, and quotes.
+- Keeps the wallet address as the permanent post owner, preserving every post and interaction.
+- Adds EVM-wallet support to profile feed loading and preserves the active-wallet signing fix from V1.12.10.
+
+## Previous V1.12.10 update
+
 # The Trenches V1.12.10 — Active Wallet Thesis Signing
 
 ## V1.12.10 update

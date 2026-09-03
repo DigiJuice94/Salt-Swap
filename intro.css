@@ -1,4 +1,4 @@
-/* V1.12.02 — selected artwork, animated title reveal, hover lighting, and opt-in war audio */
+/* V1.12.11 — new trench artwork, animated title, hover lighting, and opt-in war audio */
 body.trenches-intro-open {
   overflow: hidden !important;
 }
@@ -54,48 +54,90 @@ body.trenches-intro-open {
   -webkit-user-drag: none;
 }
 
-/* The title is baked into the approved art. A feathered curtain hides it briefly,
-   while an exact crop of that same artwork moves forward and settles into place. */
-.trenchesIntroTitleCurtain,
-.trenchesIntroTitleReveal {
+/* The title is live HTML so it stays sharp and animates independently from the artwork. */
+.trenchesIntroTitle {
   position: absolute;
   z-index: 3;
+  left: 50%;
+  top: 6.2%;
+  width: 66%;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #f7d38a;
+  text-align: center;
+  white-space: nowrap;
   pointer-events: none;
-}
-
-.trenchesIntroTitleCurtain {
-  left: 27.5%;
-  top: 23.4%;
-  width: 45%;
-  height: 15.8%;
-  opacity: 1;
-  background: radial-gradient(ellipse at center,
-    rgba(29, 19, 12, .98) 0 54%,
-    rgba(35, 22, 13, .94) 67%,
-    rgba(35, 22, 13, 0) 100%);
-  -webkit-backdrop-filter: blur(11px) brightness(.42);
-  backdrop-filter: blur(11px) brightness(.42);
-  -webkit-mask-image: radial-gradient(ellipse at center, #000 0 64%, rgba(0, 0, 0, .92) 77%, transparent 100%);
-  mask-image: radial-gradient(ellipse at center, #000 0 64%, rgba(0, 0, 0, .92) 77%, transparent 100%);
-}
-
-.trenchesIntroTitleReveal {
-  inset: 0;
   opacity: 0;
-  background: url('/entrance-trenches-art.png?v=11202') center / 100% 100% no-repeat;
-  clip-path: inset(24.7% 28.7% 61.5% 28.7%);
-  transform: translateY(7%) scale(.78);
-  transform-origin: 50% 30.8%;
-  filter: blur(11px) brightness(.68);
-  will-change: opacity, transform, filter;
+  transform: translate(-50%, 46%) scale(.78);
+  transform-origin: 50% 100%;
+  filter: blur(13px) brightness(.7);
+  will-change: opacity, transform, filter, letter-spacing;
 }
 
-.trenchesIntro.intro-ready .trenchesIntroTitleCurtain {
-  animation: trenchesTitleCurtain 1.82s .34s cubic-bezier(.22, .72, .25, 1) forwards;
+.trenchesIntroTitle::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 8%;
+  right: 8%;
+  top: 12%;
+  bottom: -14%;
+  border-radius: 50%;
+  opacity: 0;
+  background: radial-gradient(ellipse, rgba(255, 186, 72, .42), rgba(255, 128, 28, .12) 46%, transparent 73%);
+  filter: blur(20px);
 }
 
-.trenchesIntro.intro-ready .trenchesIntroTitleReveal {
-  animation: trenchesTitleArrival 1.82s .34s cubic-bezier(.18, .82, .24, 1) forwards;
+.trenchesIntroTitleThe {
+  margin-bottom: -.18em;
+  font: 900 min(2.2vw, 3.8vh)/1 Inter, ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .72em;
+  padding-left: .72em;
+  color: #ffe7b0;
+  text-shadow: 0 2px 0 #50301a, 0 0 16px rgba(255, 180, 68, .45);
+}
+
+.trenchesIntroTitleMain {
+  position: relative;
+  overflow: hidden;
+  padding: 0 .08em .07em;
+  font: 900 min(7.3vw, 12.8vh)/.92 Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+  letter-spacing: .035em;
+  -webkit-text-stroke: min(.28vw, .48vh) #29170d;
+  paint-order: stroke fill;
+  text-shadow:
+    0 min(.55vw, 1vh) 0 #6d3e20,
+    0 min(.82vw, 1.42vh) min(.85vw, 1.48vh) rgba(19, 8, 3, .62),
+    0 0 min(1.7vw, 3vh) rgba(255, 167, 53, .3);
+}
+
+.trenchesIntroTitleMain::after {
+  content: "";
+  position: absolute;
+  inset: -35% auto -35% -34%;
+  width: 22%;
+  opacity: 0;
+  transform: skewX(-18deg);
+  background: linear-gradient(90deg, transparent, rgba(255, 248, 207, .82), transparent);
+  mix-blend-mode: screen;
+}
+
+.trenchesIntro.intro-ready .trenchesIntroTitle {
+  animation: trenchesTitleArrival 1.65s .28s cubic-bezier(.16, .84, .23, 1) forwards;
+}
+
+.trenchesIntro.intro-ready .trenchesIntroTitleMain {
+  animation: trenchesTitleLetters 1.65s .28s cubic-bezier(.16, .84, .23, 1) both;
+}
+
+.trenchesIntro.intro-ready .trenchesIntroTitle::before {
+  animation: trenchesTitleGlow 1.9s .52s ease-out forwards;
+}
+
+.trenchesIntro.intro-ready .trenchesIntroTitleMain::after {
+  animation: trenchesTitleSheen .72s 1.22s ease-out forwards;
 }
 
 .trenchesIntroVignette {
@@ -170,7 +212,7 @@ body.trenches-intro-open {
   mix-blend-mode: screen;
 }
 
-.light-near-left { --light-size: 8.2%; left: 33.7%; top: 63.8%; }
+.light-near-left { --light-size: 8.2%; left: 33.7%; top: 67.4%; }
 .light-tunnel-left { --light-size: 6.1%; left: 40.8%; top: 55.8%; }
 .light-tunnel-center { --light-size: 4.2%; left: 46.1%; top: 51.7%; }
 .light-tunnel-right { --light-size: 5.1%; left: 56.7%; top: 54.8%; }
@@ -258,34 +300,49 @@ body.trenches-intro-open {
   62% { opacity: .55; transform: translate(-50%, -50%) scale(1.1); }
 }
 
-@keyframes trenchesTitleCurtain {
-  0%, 57% { opacity: 1; }
-  100% { opacity: 0; }
-}
-
 @keyframes trenchesTitleArrival {
   0% {
     opacity: 0;
-    transform: translateY(7%) scale(.78);
-    filter: blur(11px) brightness(.68);
+    transform: translate(-50%, 46%) scale(.78);
+    filter: blur(13px) brightness(.7);
+    letter-spacing: .12em;
   }
-  16% { opacity: .28; }
-  58% {
+  22% { opacity: .42; }
+  68% {
     opacity: 1;
-    transform: translateY(-.6%) scale(1.035);
-    filter: blur(0) brightness(1.12) drop-shadow(0 8px 16px rgba(0, 0, 0, .58));
+    transform: translate(-50%, -2%) scale(1.045);
+    filter: blur(0) brightness(1.18);
+    letter-spacing: .035em;
   }
-  76% {
+  84% {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translate(-50%, 0) scale(.99);
     filter: blur(0) brightness(1);
   }
-  88% { opacity: 1; }
   100% {
-    opacity: 0;
-    transform: translateY(0) scale(1);
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
     filter: none;
+    letter-spacing: .035em;
   }
+}
+
+@keyframes trenchesTitleGlow {
+  0% { opacity: 0; transform: scale(.72); }
+  45% { opacity: .8; transform: scale(1.06); }
+  100% { opacity: .28; transform: scale(1); }
+}
+
+@keyframes trenchesTitleLetters {
+  0% { letter-spacing: .17em; }
+  68% { letter-spacing: .025em; }
+  100% { letter-spacing: .035em; }
+}
+
+@keyframes trenchesTitleSheen {
+  0% { left: -34%; opacity: 0; }
+  18% { opacity: .8; }
+  100% { left: 112%; opacity: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -296,9 +353,25 @@ body.trenches-intro-open {
     transition-duration: .01ms !important;
   }
 
-  .trenchesIntroTitleCurtain,
-  .trenchesIntroTitleReveal {
-    display: none !important;
+  .trenchesIntroTitle {
+    animation: none !important;
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+    filter: none;
+  }
+
+  .trenchesIntroTitle::before {
+    animation: none !important;
+    opacity: .28;
+    transform: scale(1);
+  }
+
+  .trenchesIntroTitleMain::after {
+    display: none;
+    animation: none !important;
+  }
+
+  .trenchesIntroTitleMain {
     animation: none !important;
   }
 
