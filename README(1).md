@@ -1,3 +1,15 @@
+# The Trenches V1.12.14 — Full-Width Translucent Trending
+
+## V1.12.14 update
+
+- Expands the dark Trending experience across the entire page instead of keeping it inside the old centered site width.
+- Makes the dark green page surface slightly translucent so the falling parachute coins remain visible behind it.
+- Keeps cards dark and readable with controlled transparency rather than washing out market prices and controls.
+- Preserves the full-width layout and falling-coin visibility on desktop, tablet, and mobile.
+- Keeps the clean wallet holdings fix and every feature from V1.12.13.
+
+## Previous V1.12.13 update
+
 # The Trenches V1.12.13 — Clean Wallet Holdings
 
 ## V1.12.13 update

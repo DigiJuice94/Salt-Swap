@@ -5335,3 +5335,70 @@ body{
   text-overflow:ellipsis;
   white-space:nowrap;
 }
+
+/* ==========================================================
+   V1.12.14 — full-width translucent Trending page
+   ========================================================== */
+body.trending-active main{
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0!important;
+}
+
+body.trending-active .floatingTokens{
+  display:block!important;
+  opacity:.82!important;
+}
+
+body.trending-active .trendingPage{
+  width:100%!important;
+  max-width:none!important;
+  box-sizing:border-box;
+  background:
+    radial-gradient(circle at 10% 0%,rgba(90,134,91,.14),transparent 30%),
+    radial-gradient(circle at 90% 15%,rgba(116,157,104,.10),transparent 32%),
+    rgba(8,24,19,.80)!important;
+  backdrop-filter:blur(1.5px);
+  -webkit-backdrop-filter:blur(1.5px);
+}
+
+body.trending-active .trendingTerminal{
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+}
+
+body.trending-active .trendingHero{
+  background:linear-gradient(135deg,rgba(30,51,43,.90),rgba(17,34,29,.87))!important;
+}
+
+body.trending-active .trendingPulseGrid article,
+body.trending-active .trendingModeTabs button,
+body.trending-active .trendingChainTabs button,
+body.trending-active .trendingSearch,
+body.trending-active .trendingTableShell,
+body.trending-active .trendingInfoCard{
+  background-color:rgba(15,33,28,.88)!important;
+}
+
+body.trending-active .trendingModeTabs button.active,
+body.trending-active .trendingChainTabs button.active{
+  background-color:rgba(49,75,58,.94)!important;
+}
+
+body.trending-active .trendingSpotCard{
+  background:linear-gradient(145deg,rgba(20,40,32,.91),rgba(15,31,26,.88))!important;
+}
+
+body.trending-active .trendingSpotCard.lead{
+  background:linear-gradient(145deg,rgba(27,53,40,.91),rgba(16,37,30,.88))!important;
+}
+
+@media(max-width:620px){
+  body.trending-active .trendingPage{
+    padding-left:10px!important;
+    padding-right:10px!important;
+    background:rgba(8,24,19,.84)!important;
+  }
+}
