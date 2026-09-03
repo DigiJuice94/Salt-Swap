@@ -1,3 +1,13 @@
+# The Trenches V1.12.12 — Lower Intro Title
+
+## V1.12.12 update
+
+- Lowers “THE TRENCHES” into the middle of the open space between the top of the page and the ENTER sign.
+- Keeps the title’s rise, blur, glow, letter-spacing, and light-sweep animation unchanged.
+- Keeps the ENTER hover glow, lantern flicker, battlefield sound, live post-author updates, and every feature from V1.12.11.
+
+## Previous V1.12.11 update
+
 # The Trenches V1.12.11 — Live Authors + New Intro
 
 ## V1.12.11 update

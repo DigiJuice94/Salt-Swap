@@ -1,4 +1,4 @@
-/* V1.12.11 — new trench artwork, animated title, hover lighting, and opt-in war audio */
+/* V1.12.12 — lower centered title, new trench artwork, hover lighting, and opt-in war audio */
 body.trenches-intro-open {
   overflow: hidden !important;
 }
@@ -59,7 +59,7 @@ body.trenches-intro-open {
   position: absolute;
   z-index: 3;
   left: 50%;
-  top: 6.2%;
+  top: 11.8%;
   width: 66%;
   margin: 0;
   display: flex;
